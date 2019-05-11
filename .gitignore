@@ -1,0 +1,7 @@
+messages.log
+_pycache__
+*.pyc
+db.sqlite3
+.pytest_cache
+venv
+.idea
