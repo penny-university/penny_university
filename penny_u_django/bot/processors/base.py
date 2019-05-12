@@ -1,3 +1,5 @@
+from functools import wraps
+
 class Event(dict):
     """I assume a simple model for a event for now."""
     def __init__(self, *args, **kwargs):
@@ -6,6 +8,7 @@ class Event(dict):
 
 def event_filter(filter_func):
     def decorator(func):
+        @wraps(func)
         def wrapper(*args):
             event = args[0] if isinstance(args[0], Event) else args[1]  # b/c 0 arg is `self`
             if filter_func(event):
@@ -15,6 +18,7 @@ def event_filter(filter_func):
 
 
 def event_filter_factory(filter_func_maker):
+    @wraps(filter_func_maker)
     def decorator_creator(*args, **kwargs):
         filter_func = filter_func_maker(*args, **kwargs)
         return event_filter(filter_func)

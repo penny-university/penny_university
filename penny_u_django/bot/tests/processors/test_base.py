@@ -33,6 +33,8 @@ def test_event_filter(mocker):
     def my_func(event):
         tester(event)
 
+    assert my_func.__name__ == 'my_func'  # otherwise we're not transferring the function properties correctly
+
     my_func(Event({'call_me': False}))
     assert tester.called is False
 
@@ -49,9 +51,13 @@ def test_event_filter_factory(mocker):
             return event['color'] == color
         return filter_func
 
+    assert is_color.__name__ == 'is_color'  # otherwise we're not transferring the function properties correctly
+
     @is_color('green')
     def my_func(event):
         tester(event)
+
+    assert my_func.__name__ == 'my_func'
 
     my_func(Event({'color': 'red'}))
     assert tester.called is False
