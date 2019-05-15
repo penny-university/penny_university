@@ -146,4 +146,3 @@ LOGGING = {
 }
 
 SLACKER_KEY = os.environ['SLACKER_KEY']
-    

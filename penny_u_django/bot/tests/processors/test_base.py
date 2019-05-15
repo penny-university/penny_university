@@ -4,6 +4,7 @@ from bot.processors.base import (
     BotModule,
     event_filter,
     event_filter_factory,
+    process_all_events,
 )
 
 
@@ -15,15 +16,36 @@ def test_Bot(mocker):
 
 
 def test_BotModule(mocker):
-    tester = mocker.Mock()
+    tester1 = mocker.Mock()
+    tester2 = mocker.Mock()
+    tester3 = mocker.Mock()
+    tester4 = mocker.Mock()
+
     class MyBotModule(BotModule):
-        def something(self, event):
-            tester(event)
+        some_var = 'make sure we don\'t try to call this'
+
+        @event_filter(lambda e: True)  # pass through all events
+        def process_events_1(self, event):
+            tester1(event)
+
+        @process_all_events
+        def process_events_2(self, event):
+            tester2(event)
+
+        def not_a_processor_3(self, event):
+            tester3(event)
+
+        def not_a_processor_4(self, event):
+            tester4(event)
 
     my_bot_module = MyBotModule()
-    my_bot_module(Event({'some': 'message'}))
+    event = {'some': 'message'}
+    my_bot_module(Event(event))
 
-    assert tester.call_args == mocker.call({'some': 'message'})
+    assert tester1.call_args == mocker.call(event)
+    assert tester2.call_args == mocker.call(event)
+    assert tester3.called == False
+    assert tester4.called == False
 
 
 def test_event_filter(mocker):
@@ -32,6 +54,8 @@ def test_event_filter(mocker):
     @event_filter(lambda e: e['call_me'])
     def my_func(event):
         tester(event)
+
+    assert my_func.__name__ == 'my_func'  # otherwise we're not transferring the function properties correctly
 
     my_func(Event({'call_me': False}))
     assert tester.called is False
@@ -49,9 +73,13 @@ def test_event_filter_factory(mocker):
             return event['color'] == color
         return filter_func
 
+    assert is_color.__name__ == 'is_color'  # otherwise we're not transferring the function properties correctly
+
     @is_color('green')
     def my_func(event):
         tester(event)
+
+    assert my_func.__name__ == 'my_func'
 
     my_func(Event({'color': 'red'}))
     assert tester.called is False

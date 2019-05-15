@@ -17,7 +17,7 @@ def test_greeting(mocker):
         "channel_type": "channel"
     })
     greeter(event)
-    assert slack.chat.post_message.call_args == mocker.call('U42HCBFEF', GreetingBotModule.GREETING_MESSAGE)
+    assert slack.chat_postMessage.call_args == mocker.call(channel='U42HCBFEF', text='welcome')
 
 
 def test_greeting_wrong_channel(mocker):
