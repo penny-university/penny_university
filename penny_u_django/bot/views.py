@@ -2,7 +2,7 @@ import json
 import logging
 
 from django.conf import settings
-from slacker import Slacker
+import slack
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -14,8 +14,8 @@ from bot.processors.base import (
     Event,
 )
 
-slack = Slacker(settings.SLACKER_KEY)
 
+slack = slack.WebClient(token='xoxb-137475540163-590324511111-RmgUhLGqmFDK05VSqdvCSyr4')
 bot = Bot(event_processors=[GreetingBotModule(slack)])
 
 
