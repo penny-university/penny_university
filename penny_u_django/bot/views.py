@@ -15,7 +15,7 @@ from bot.processors.base import (
 )
 
 
-slack = slack.WebClient(token='xoxb-137475540163-590324511111-RmgUhLGqmFDK05VSqdvCSyr4')
+slack = slack.WebClient(token=settings.SLACKER_KEY)
 bot = Bot(event_processors=[GreetingBotModule(slack)])
 
 
