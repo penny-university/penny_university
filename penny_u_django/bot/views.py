@@ -44,3 +44,26 @@ def hook(request):
             # text = event['text']
             # slack.chat.post_message('#penny-playground', text)
         return HttpResponse('')
+
+
+@xframe_options_exempt
+@csrf_exempt
+def interactive(request):
+    blob = json.loads(request.body)
+    message_logger = logging.getLogger('messages')
+    message_logger.info(request.body)
+
+    if 'challenge' in blob:
+        return HttpResponse(json.loads(request.body)['challenge'])
+    else:
+        print(blob)
+        event = blob['event']
+        is_bot = False
+        if 'subtype' in event and event['subtype'] == 'bot_message':
+            is_bot = True
+        if not is_bot:
+            # channel = 'CHCM2MFHU'
+            # bot(Event(event))
+            # text = event['text']
+            # slack.chat.post_message('#penny-playground', text)
+        return HttpResponse('')
