@@ -54,13 +54,8 @@ def interactive(request):
     message_logger.info(payload)
 
     print(payload)
-    event = payload['event']
-    is_bot = False
-    if 'subtype' in event and event['subtype'] == 'bot_message':
-        is_bot = True
-    if not is_bot:
-        # channel = 'CHCM2MFHU'
-        # bot(Event(event))
-        # text = event['text']
-        slack.chat.post_message('#penny-playground', str(payload))
+    actions = payload['actions']
+
+    slack.chat.post_message('#penny-playground', str(actions[0]['value']))
+
     return HttpResponse('')
