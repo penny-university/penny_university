@@ -55,7 +55,7 @@ def interactive(request):
 
     dialog_template = {
         "callback_id": "interests",
-        "title": "Tell Penny About Yourself",
+        "title": "Your Interests",
         "submit_label": "Submit",
         "notify_on_cancel": True,
         "state": "Interests",
