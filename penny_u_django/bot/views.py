@@ -14,13 +14,13 @@ from bot.processors.base import (
     Event,
 )
 
-
 slack = slack.WebClient(token=settings.SLACKER_KEY)
 bot = Bot(event_processors=[GreetingBotModule(slack)])
 
 
 def index(request):
-    return HttpResponse("Screwing around, setting up a django server, making sure I can get through firewall, exercising old neurons, learning 'screen'")
+    return HttpResponse(
+        "Screwing around, setting up a django server, making sure I can get through firewall, exercising old neurons, learning 'screen'")
 
 
 @xframe_options_exempt
@@ -49,21 +49,18 @@ def hook(request):
 @xframe_options_exempt
 @csrf_exempt
 def interactive(request):
-    payload = json.loads(request.form['payload'])
+    payload = json.loads(request.POST['payload'])
     message_logger = logging.getLogger('messages')
     message_logger.info(payload)
 
-    if 'challenge' in payload:
-        return HttpResponse(json.loads(request.body)['challenge'])
-    else:
-        print(payload)
-        event = payload['event']
-        is_bot = False
-        if 'subtype' in event and event['subtype'] == 'bot_message':
-            is_bot = True
-        if not is_bot:
-            # channel = 'CHCM2MFHU'
-            # bot(Event(event))
-            # text = event['text']
-            slack.chat.post_message('#penny-playground', str(payload))
-        return HttpResponse('')
+    print(payload)
+    event = payload['event']
+    is_bot = False
+    if 'subtype' in event and event['subtype'] == 'bot_message':
+        is_bot = True
+    if not is_bot:
+        # channel = 'CHCM2MFHU'
+        # bot(Event(event))
+        # text = event['text']
+        slack.chat.post_message('#penny-playground', str(payload))
+    return HttpResponse('')
