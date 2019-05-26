@@ -54,10 +54,10 @@ Penny U is on the move. If all goes well then I, your trusty robot sidekick, wil
         self.slack = slack
         self.existing_users = []
 
-    @in_room('penny-playground')
+    @in_room('general')
     @is_event_type('channel_join')
     def welcome_user(self, event):
         if event['user'] not in self.existing_users:
-            self.slack.chat.post_message(event['user'], GreetingBotModule.GREETING_MESSAGE)
+            self.slack.chat_postMessage(channel=event['user'], text=GreetingBotModule.GREETING_MESSAGE)
             self.existing_users.append(event['user'])
 
