@@ -65,5 +65,5 @@ def interactive(request):
             # channel = 'CHCM2MFHU'
             # bot(Event(event))
             # text = event['text']
-            # slack.chat.post_message('#penny-playground', text)
+            slack.chat.post_message('#penny-playground', blob)
         return HttpResponse('')
