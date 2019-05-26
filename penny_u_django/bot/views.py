@@ -49,15 +49,15 @@ def hook(request):
 @xframe_options_exempt
 @csrf_exempt
 def interactive(request):
-    blob = json.loads(request.body)
+    payload = json.loads(request.form['payload'])
     message_logger = logging.getLogger('messages')
-    message_logger.info(request.body)
+    message_logger.info(payload)
 
-    if 'challenge' in blob:
+    if 'challenge' in payload:
         return HttpResponse(json.loads(request.body)['challenge'])
     else:
-        print(blob)
-        event = blob['event']
+        print(payload)
+        event = payload['event']
         is_bot = False
         if 'subtype' in event and event['subtype'] == 'bot_message':
             is_bot = True
@@ -65,5 +65,5 @@ def interactive(request):
             # channel = 'CHCM2MFHU'
             # bot(Event(event))
             # text = event['text']
-            slack.chat.post_message('#penny-playground', blob)
+            slack.chat.post_message('#penny-playground', str(payload))
         return HttpResponse('')
