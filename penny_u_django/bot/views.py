@@ -56,6 +56,6 @@ def interactive(request):
     print(payload)
     actions = payload['actions']
 
-    slack.chat.post_message('#penny-playground', str(actions[0]['value']))
+    slack.chat_postMessage(channel="#penny-playground", text=actions[0]['value'])
 
     return HttpResponse('')
