@@ -53,9 +53,28 @@ def interactive(request):
     message_logger = logging.getLogger('messages')
     message_logger.info(payload)
 
-    print(payload)
-    actions = payload['actions']
+    dialog_template = {
+        "callback_id": "interests",
+        "title": "Tell Penny About Yourself",
+        "submit_label": "Submit",
+        "notify_on_cancel": True,
+        "state": "Interests",
+        "elements": [
+            {
+                "type": "text",
+                "label": "What do you want to teach?",
+                "name": "teach",
+                "hint": "Provide a list of subjects you would be interested in teaching."
+            },
+            {
+                "type": "text",
+                "label": "What do you want to learn?",
+                "name": "learn",
+                "hint": "Provide a list of subjects you would be interested in learning."
+            },
+        ]
+    }
 
-    slack.chat_postMessage(channel="#penny-playground", text=actions[0]['value'])
+    slack.dialog_open(dialog=dialog_template, trigger_id=payload['trigger_id'])
 
     return HttpResponse('')
