@@ -2,6 +2,7 @@ from bot.processors.base import (
     BotModule,
     event_filter_factory,
 )
+from bot.message_templates import greeting
 
 CHANNEL_NAME__ID = {
     'data': 'C41403LBA',
@@ -61,3 +62,10 @@ Penny U is on the move. If all goes well then I, your trusty robot sidekick, wil
             self.slack.chat_postMessage(channel=event['user'], text=GreetingBotModule.GREETING_MESSAGE)
             self.existing_users.append(event['user'])
 
+    @in_room('penny_playground')
+    @is_event_type('channel_join')
+    def welcome_user_blocks(self, event):
+        if event['user'] not in self.existing_users:
+            self.slack.chat_postMessage(channel=event['user'], blocks=greeting.greeting(event['user']['name']),
+                                        callback_id="greeting")
+            self.existing_users.append(event['user'])
