@@ -4,7 +4,7 @@ def greeting(user_id):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Welcome to Penny University, <{id}>*".format(id=user_id)
+                "text": "*Welcome to Penny University, <@{id}>*".format(id=user_id)
             }
         },
         {
