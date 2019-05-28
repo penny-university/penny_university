@@ -1,10 +1,10 @@
-def greeting(name):
+def greeting(user_id):
     message = [
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Welcome to Penny University, {name}*".format(name=name)
+                "text": "*Welcome to Penny University, <{id}>*".format(id=user_id)
             }
         },
         {
