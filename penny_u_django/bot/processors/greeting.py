@@ -128,5 +128,5 @@ class InteractiveBotModule(BotModule):
     @is_event_type('dialog_submission')
     @has_callback_id('interests')
     def submit_interests(self, event):
-        message = greeting.joined(event['user']['id'], event['submission']['teaching'], event['submission']['learning'])
+        message = greeting.joined(event['user']['id'], event['submission']['teach'], event['submission']['learn'])
         self.slack.chat_postMessage(channel='penny-playground', blocks=message)
