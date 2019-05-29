@@ -33,7 +33,7 @@ def in_room(room):
 
 
 @event_filter_factory
-def is_event_type(type):
+def is_event_subtype(type):
     def filter_func(event):
         return event['subtype'] == type
 
@@ -56,16 +56,77 @@ Penny U is on the move. If all goes well then I, your trusty robot sidekick, wil
         self.existing_users = []
 
     @in_room('general')
-    @is_event_type('channel_join')
+    @is_event_subtype('channel_join')
     def welcome_user(self, event):
         if event['user'] not in self.existing_users:
             self.slack.chat_postMessage(channel=event['user'], text=GreetingBotModule.GREETING_MESSAGE)
             self.existing_users.append(event['user'])
 
     @in_room('penny-playground')
-    @is_event_type('channel_join')
+    @is_event_subtype('channel_join')
     def welcome_user_blocks(self, event):
         if event['user'] not in self.existing_users:
-            self.slack.chat_postMessage(channel=event['user'], blocks=greeting.greeting(event['user']),
-                                        callback_id="greeting")
+            self.slack.chat_postMessage(channel=event['user'], blocks=greeting.greeting(event['user']))
             self.existing_users.append(event['user'])
+
+
+@event_filter_factory
+def is_event_type(type):
+    def filter_func(event):
+        return event['type'] == type
+
+    return filter_func
+
+
+@event_filter_factory
+def has_trigger_id():
+    def filter_func(event):
+        return 'trigger_id' in event.keys()
+
+    return filter_func
+
+
+@event_filter_factory
+def has_callback_id(callback_id):
+    def filter_func(event):
+        return event['callback_id'] == callback_id
+
+    return filter_func
+
+
+class InteractiveBotModule(BotModule):
+    DIALOG_TEMPLATE = {
+        "callback_id": "interests",
+        "title": "Your Interests",
+        "submit_label": "Submit",
+        "notify_on_cancel": True,
+        "state": "Interests",
+        "elements": [
+            {
+                "type": "text",
+                "label": "What do you want to teach?",
+                "name": "teach",
+                "hint": "Provide a list of subjects you would be interested in teaching."
+            },
+            {
+                "type": "text",
+                "label": "What do you want to learn?",
+                "name": "learn",
+                "hint": "Provide a list of subjects you would be interested in learning."
+            },
+        ]
+    }
+
+    def __init__(self, slack):
+        self.slack = slack
+
+    @is_event_type('block_actions')
+    @has_trigger_id()
+    def show_interests_dialog(self, event):
+        self.slack.dialog_open(dialog=InteractiveBotModule.DIALOG_TEMPLATE, trigger_id=event['trigger_id'])
+
+    @is_event_type('dialog_submission')
+    @has_callback_id('interests')
+    def submit_interests(self, event):
+        message = greeting.joined(event['user']['id'], event['submission']['teaching'], event['submission']['learning'])
+        self.slack.chat_postMessage(channel='penny-playground', blocks=message)

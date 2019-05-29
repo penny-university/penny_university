@@ -8,14 +8,14 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 
-from bot.processors.greeting import GreetingBotModule
+from bot.processors.greeting import GreetingBotModule, InteractiveBotModule
 from bot.processors.base import (
     Bot,
     Event,
 )
 
 slack = slack.WebClient(token=settings.SLACKER_KEY)
-bot = Bot(event_processors=[GreetingBotModule(slack)])
+bot = Bot(event_processors=[GreetingBotModule(slack), InteractiveBotModule(slack)])
 
 
 def index(request):
@@ -53,28 +53,6 @@ def interactive(request):
     message_logger = logging.getLogger('messages')
     message_logger.info(payload)
 
-    dialog_template = {
-        "callback_id": "interests",
-        "title": "Your Interests",
-        "submit_label": "Submit",
-        "notify_on_cancel": True,
-        "state": "Interests",
-        "elements": [
-            {
-                "type": "text",
-                "label": "What do you want to teach?",
-                "name": "teach",
-                "hint": "Provide a list of subjects you would be interested in teaching."
-            },
-            {
-                "type": "text",
-                "label": "What do you want to learn?",
-                "name": "learn",
-                "hint": "Provide a list of subjects you would be interested in learning."
-            },
-        ]
-    }
-
-    slack.dialog_open(dialog=dialog_template, trigger_id=payload['trigger_id'])
+    bot(Event(payload))
 
     return HttpResponse('')

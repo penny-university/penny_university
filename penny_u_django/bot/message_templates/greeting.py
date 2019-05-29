@@ -46,9 +46,45 @@ def greeting(user_id):
                         "text": "Connect account",
                         "emoji": True
                     },
+                    "callback_id": "join_penny_u",
                     "value": "click_me_123"
                 }
             ]
         }
     ]
+    return message
+
+
+def joined(user_id, teaching_interests, learning_interests):
+    message = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*<@{id}> just joined Penny University!*".format(id=user_id)
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Their teaching interests: {}".format(teaching_interests)
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Their learning interests: {}".format(learning_interests)
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Say hello, everyone!"
+            }
+        }
+    ]
+
     return message
