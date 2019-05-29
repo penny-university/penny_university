@@ -46,7 +46,6 @@ def greeting(user_id):
                         "text": "Connect account",
                         "emoji": True
                     },
-                    "callback_id": "join_penny_u",
                     "value": "click_me_123"
                 }
             ]
