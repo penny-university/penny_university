@@ -12,7 +12,7 @@ def test_greeting(mocker):
         "subtype": "channel_join",
         "ts": "1557281569.001300",
         "text": "<@U42HCBFEF> has joined the channel",
-        "channel": "CHCM2MFHU",
+        "channel": "C41G02RK4",  # general
         "event_ts": "1557281569.001300",
         "channel_type": "channel"
     })
