@@ -1,5 +1,6 @@
 from bot.processors.base import (
     BotModule,
+    event_filter,
     event_filter_factory,
 )
 from bot.message_templates import greeting
@@ -78,12 +79,9 @@ def is_event_type(type):
     return filter_func
 
 
-@event_filter_factory
-def has_trigger_id():
-    def filter_func(event):
-        return 'trigger_id' in event.keys()
-
-    return filter_func
+@event_filter
+def has_trigger_id(event):
+    return 'trigger_id' in event.keys()
 
 
 @event_filter_factory
@@ -121,7 +119,7 @@ class InteractiveBotModule(BotModule):
         self.slack = slack
 
     @is_event_type('block_actions')
-    @has_trigger_id()
+    @has_trigger_id
     def show_interests_dialog(self, event):
         self.slack.dialog_open(dialog=InteractiveBotModule.DIALOG_TEMPLATE, trigger_id=event['trigger_id'])
 
