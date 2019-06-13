@@ -34,9 +34,24 @@ def in_room(room):
 
 
 @event_filter_factory
+def is_event_type(type_string):
+    def filter_func(event):
+        type_arr = type_string.split('.')
+        assert 1 <= len(type_arr) <= 2, 'Format for type_string must be "foo" or "foo.bar"'
+        if type_arr[0] != '*' and event['type'] != type_arr[0]:
+            return False
+        if type_arr[0] != '*' and event['type'] != type_arr[0]:
+            return False
+
+        return event['type'] == type
+
+    return filter_func
+
+
+@event_filter_factory
 def is_event_subtype(type):
     def filter_func(event):
-        return event['subtype'] == type
+        return 'subtype' in event and event['subtype'] == type
 
     return filter_func
 
@@ -69,14 +84,6 @@ Penny U is on the move. If all goes well then I, your trusty robot sidekick, wil
         if event['user'] not in self.existing_users:
             self.slack.chat_postMessage(channel=event['user'], blocks=greeting.greeting(event['user']))
             self.existing_users.append(event['user'])
-
-
-@event_filter_factory
-def is_event_type(type):
-    def filter_func(event):
-        return event['type'] == type
-
-    return filter_func
 
 
 @event_filter
