@@ -1,36 +1,27 @@
 from bot.processors.base import Event
 from bot.processors.greeting import is_event_type
 
-#
-# @event_filter_factory
-# def is_event_type(type):
-#     def filter_func(event):
-#         return event['type'] == type
-#
-#     return filter_func
-#
 
-def test_is_event_type(mocker):
-    fruit_apple_tester = mocker.Mock()
-    star_apple_tester = mocker.Mock()
-    fruit_star_tester = mocker.Mock()
-    star_star_tester = mocker.Mock()
-
+def test_is_event_type():
     @is_event_type('fruit.apple')
     def fruit_apple_handler(event):
-        fruit_apple_tester = mocker.Mock()
+        return True
 
     @is_event_type('*.apple')
     def star_apple_handler(event):
-        star_apple_tester = mocker.Mock()
+        return True
 
     @is_event_type('fruit.*')
     def fruit_star_handler(event):
-        fruit_star_tester = mocker.Mock()
+        return True
+
+    @is_event_type('fruit')
+    def fruit_handler(event):
+        return True
 
     @is_event_type('*.*')
     def star_star_handler(event):
-        star_star_tester = mocker.Mock()
+        return True
 
     fruit_apple_event = {
         "type": "fruit",
@@ -42,12 +33,35 @@ def test_is_event_type(mocker):
         "subtype": "banana",
     }
 
+    fruit_event = {
+        "type": "fruit",
+    }
+
+    computer_event = {
+        "type": "computer",
+    }
+
     computer_apple_event = {
         "type": "computer",
         "subtype": "apple",
     }
 
-    import ipdb;ipdb.set_trace()
-    fruit_apple_handler(Event(fruit_apple_event))
-    assert fruit_apple_tester.called == True
+    non_typed_event = {}
 
+    assert fruit_apple_handler(Event(fruit_apple_event))
+    assert star_apple_handler(Event(fruit_apple_event))
+    assert fruit_star_handler(Event(fruit_apple_event))
+    assert fruit_handler(Event(fruit_apple_event))  # unspecified subtype is same as '*'
+    assert star_star_handler(Event(fruit_apple_event))
+    assert fruit_star_handler(Event(fruit_event))
+    assert fruit_handler(Event(fruit_event))
+
+    assert not fruit_apple_handler(Event(fruit_banana_event))
+    assert not fruit_apple_handler(Event(computer_apple_event))
+    assert not star_apple_handler(Event(fruit_banana_event))
+    assert not fruit_star_handler(Event(computer_apple_event))
+    assert not fruit_star_handler(Event(computer_event))
+    assert not fruit_apple_handler(Event(fruit_event))
+
+    # if is_event_type is used, then it's assumed that event must be typed
+    assert not star_star_handler(Event(non_typed_event))

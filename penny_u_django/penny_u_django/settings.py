@@ -145,4 +145,7 @@ LOGGING = {
     },
 }
 
-SLACKER_KEY = os.environ['SLACKER_KEY']
+SLACKER_KEY = os.environ.get('SLACKER_KEY')
+if SLACKER_KEY is None:
+    print('WARNING: SLACKER_KEY is None')
+PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']

@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from bot.processors.base import (
     BotModule,
     event_filter,
@@ -37,13 +39,20 @@ def in_room(room):
 def is_event_type(type_string):
     def filter_func(event):
         type_arr = type_string.split('.')
-        assert 1 <= len(type_arr) <= 2, 'Format for type_string must be "foo" or "foo.bar"'
-        if type_arr[0] != '*' and event['type'] != type_arr[0]:
+        assert 1 <= len(type_arr) <= 2, 'Format for type_string must be "foo" or "foo.bar" of "*.bar" or "foo.*"'
+        if len(type_arr) == 1:
+            type_arr.append('*')
+        if 'type' not in event:
             return False
         if type_arr[0] != '*' and event['type'] != type_arr[0]:
             return False
-
-        return event['type'] == type
+        if 'subtype' in event:
+            if type_arr[1] != '*' and event['subtype'] != type_arr[1]:
+                return False
+        else:
+            if type_arr[1] != '*':
+                return False
+        return True
 
     return filter_func
 
@@ -69,26 +78,31 @@ Penny U is on the move. If all goes well then I, your trusty robot sidekick, wil
 
     def __init__(self, slack):
         self.slack = slack
-        self.existing_users = []
+
+    def notify_admins(self, message):
+        for user in settings.PENNY_ADMIN_USERS:
+            self.slack.chat_postMessage(channel=user, text=message)
+
 
     @in_room('general')
-    @is_event_subtype('channel_join')
+    @is_event_type('message.channel_join')
     def welcome_user(self, event):
-        if event['user'] not in self.existing_users:
-            self.slack.chat_postMessage(channel=event['user'], text=GreetingBotModule.GREETING_MESSAGE)
-            self.existing_users.append(event['user'])
+        self.slack.chat_postMessage(channel=event['user'], text=GreetingBotModule.GREETING_MESSAGE)
+        self.notify_admins(f'{event["user"]} just received a greeting message.')
 
     @in_room('penny-playground')
-    @is_event_subtype('channel_join')
+    @is_event_type('message.channel_join')
     def welcome_user_blocks(self, event):
-        if event['user'] not in self.existing_users:
-            self.slack.chat_postMessage(channel=event['user'], blocks=greeting.greeting(event['user']))
-            self.existing_users.append(event['user'])
-
+        self.slack.chat_postMessage(channel=event['user'], blocks=greeting.greeting(event['user']))
+        self.notify_admins(f'{event["user"]} just received a greeting message.')
 
 @event_filter
-def has_trigger_id(event):
-    return 'trigger_id' in event.keys()
+def is_block_interaction_event(event):
+    """Detects whether or not the event is a block interaction event
+
+    (such events have a 'trigger_id')
+    """
+    return 'trigger_id' in event
 
 
 @event_filter_factory
@@ -125,8 +139,8 @@ class InteractiveBotModule(BotModule):
     def __init__(self, slack):
         self.slack = slack
 
+    @is_block_interaction_event
     @is_event_type('block_actions')
-    @has_trigger_id
     def show_interests_dialog(self, event):
         self.slack.dialog_open(dialog=InteractiveBotModule.DIALOG_TEMPLATE, trigger_id=event['trigger_id'])
 

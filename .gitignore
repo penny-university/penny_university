@@ -5,3 +5,4 @@ db.sqlite3
 .pytest_cache
 venv
 .idea
+.DS_Store
