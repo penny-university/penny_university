@@ -14,8 +14,8 @@ from bot.processors.base import (
     Event,
 )
 
-slack = slack.WebClient(token=settings.SLACKER_KEY)
-bot = Bot(event_processors=[GreetingBotModule(slack), InteractiveBotModule(slack)])
+slack_client = slack.WebClient(token=settings.SLACKER_KEY)
+bot = Bot(event_processors=[GreetingBotModule(slack_client), InteractiveBotModule(slack_client)])
 
 
 def index(request):

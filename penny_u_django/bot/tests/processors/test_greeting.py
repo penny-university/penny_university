@@ -1,11 +1,17 @@
+from django.conf import settings
+
 from bot.processors.base import Event
 from bot.processors.greeting import GreetingBotModule
 from bot.processors.greeting import InteractiveBotModule
+from penny_u_django import settings as penny_u_django_settings
+
+settings.configure(penny_u_django_settings)
 
 
 def test_greeting(mocker):
     slack = mocker.Mock()
     greeter = GreetingBotModule(slack)
+    greeter.notify_admins = mocker.Mock()
     GreetingBotModule.GREETING_MESSAGE = 'welcome'
     event = Event({
         "user": "U42HCBFEF",
