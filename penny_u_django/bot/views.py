@@ -8,14 +8,14 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 
-from bot.processors.greeting import GreetingBotModule, InteractiveBotModule
+from bot.processors.greeting import GreetingBotModule
 from bot.processors.base import (
     Bot,
     Event,
 )
 
 slack_client = slack.WebClient(token=settings.SLACKER_KEY)
-bot = Bot(event_processors=[GreetingBotModule(slack_client), InteractiveBotModule(slack_client)])
+bot = Bot(event_processors=[GreetingBotModule(slack_client)])
 
 
 def index(request):

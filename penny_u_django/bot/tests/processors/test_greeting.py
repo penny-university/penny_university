@@ -2,7 +2,6 @@ from django.conf import settings
 
 from bot.processors.base import Event
 from bot.processors.greeting import GreetingBotModule
-from bot.processors.greeting import InteractiveBotModule
 from penny_u_django import settings as penny_u_django_settings
 
 settings.configure(penny_u_django_settings)
@@ -59,15 +58,3 @@ def test_greeting_wrong_type(mocker):
     })
     greeter(event)
     assert not slack.chat.post_message.called
-
-
-def test_show_interests_dialog(mocker):
-    slack = mocker.Mock()
-    bot_module = InteractiveBotModule(slack)
-    InteractiveBotModule.DIALOG_TEMPLATE = 'welcome'
-    event = Event({
-        "type": "block_actions",
-        "trigger_id": "whatevs",
-    })
-    bot_module(event)
-    assert slack.dialog_open.call_args == mocker.call(dialog='welcome', trigger_id='whatevs')
