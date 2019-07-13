@@ -145,7 +145,7 @@ LOGGING = {
     },
 }
 
-SLACKER_KEY = os.environ.get('SLACKER_KEY')
-if SLACKER_KEY is None:
-    print('WARNING: SLACKER_KEY is None')
+SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
+if SLACK_API_KEY is None:
+    print('WARNING: SLACK_API_KEY is None')
 PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
