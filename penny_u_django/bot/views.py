@@ -8,19 +8,18 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 
-from bot.processors.greeting import GreetingBotModule, InteractiveBotModule
+from bot.processors.greeting import GreetingBotModule
 from bot.processors.base import (
     Bot,
     Event,
 )
 
 slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
-bot = Bot(event_processors=[GreetingBotModule(slack_client), InteractiveBotModule(slack_client)])
+bot = Bot(event_processors=[GreetingBotModule(slack_client)])
 
 
 def index(request):
-    return HttpResponse(
-        "Screwing around, setting up a django server, making sure I can get through firewall, exercising old neurons, learning 'screen'")
+    return HttpResponse("At least something works.")
 
 
 @xframe_options_exempt
@@ -39,10 +38,7 @@ def hook(request):
         if 'subtype' in event and event['subtype'] == 'bot_message':
             is_bot = True
         if not is_bot:
-            # channel = 'CHCM2MFHU'
             bot(Event(event))
-            # text = event['text']
-            # slack.chat.post_message('#penny-playground', text)
         return HttpResponse('')
 
 
@@ -51,7 +47,7 @@ def hook(request):
 def interactive(request):
     payload = json.loads(request.POST['payload'])
     message_logger = logging.getLogger('messages')
-    message_logger.info(payload)
+    message_logger.info(request.POST['payload'])
 
     bot(Event(payload))
 

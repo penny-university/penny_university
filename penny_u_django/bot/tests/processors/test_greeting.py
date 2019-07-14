@@ -1,11 +1,9 @@
-from django.conf import settings
+import pytest
 
+from bot.models import User
 from bot.processors.base import Event
+import bot.processors.greeting
 from bot.processors.greeting import GreetingBotModule
-from bot.processors.greeting import InteractiveBotModule
-from penny_u_django import settings as penny_u_django_settings
-
-settings.configure(penny_u_django_settings)
 
 
 def test_greeting(mocker):
@@ -14,31 +12,32 @@ def test_greeting(mocker):
     greeter.notify_admins = mocker.Mock()
     GreetingBotModule.GREETING_MESSAGE = 'welcome'
     event = Event({
-        "user": "U42HCBFEF",
-        "type": "message",
-        "subtype": "channel_join",
-        "ts": "1557281569.001300",
-        "text": "<@U42HCBFEF> has joined the channel",
-        "channel": "C41G02RK4",  # general
-        "event_ts": "1557281569.001300",
-        "channel_type": "channel"
+        'user': 'U42HCBFEF',
+        'type': 'message',
+        'subtype': 'channel_join',
+        'ts': '1557281569.001300',
+        'text': '<@U42HCBFEF> has joined the channel',
+        'channel': 'C41G02RK4',  # general
+        'event_ts': '1557281569.001300',
+        'channel_type': 'channel'
     })
-    greeter(event)
-    assert slack.chat_postMessage.call_args == mocker.call(channel='U42HCBFEF', text='welcome')
+    with mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome'):
+        greeter(event)
+    assert slack.chat_postMessage.call_args == mocker.call(channel='U42HCBFEF', blocks='welcome')
 
 
 def test_greeting_wrong_channel(mocker):
     slack = mocker.Mock()
     greeter = GreetingBotModule(slack)
     event = Event({
-        "user": "U42HCBFEF",
-        "type": "message",
-        "subtype": "channel_join",
-        "ts": "1557281569.001300",
-        "text": "<@U42HCBFEF> has joined the channel",
-        "channel": "WRONGCHANNELHERE",
-        "event_ts": "1557281569.001300",
-        "channel_type": "channel"
+        'user': 'U42HCBFEF',
+        'type': 'message',
+        'subtype': 'channel_join',
+        'ts': '1557281569.001300',
+        'text': '<@U42HCBFEF> has joined the channel',
+        'channel': 'WRONGCHANNELHERE',
+        'event_ts': '1557281569.001300',
+        'channel_type': 'channel'
     })
     greeter(event)
     assert not slack.chat.post_message.called
@@ -48,14 +47,14 @@ def test_greeting_wrong_type(mocker):
     slack = mocker.Mock()
     greeter = GreetingBotModule(slack)
     event = Event({
-        "user": "U42HCBFEF",
-        "type": "message",
-        "subtype": "wrong_type",
-        "ts": "1557281569.001300",
-        "text": "<@U42HCBFEF> has joined the channel",
-        "channel": "CHCM2MFHU",
-        "event_ts": "1557281569.001300",
-        "channel_type": "channel"
+        'user': 'U42HCBFEF',
+        'type': 'message',
+        'subtype': 'wrong_type',
+        'ts': '1557281569.001300',
+        'text': '<@U42HCBFEF> has joined the channel',
+        'channel': 'CHCM2MFHU',
+        'event_ts': '1557281569.001300',
+        'channel_type': 'channel'
     })
     greeter(event)
     assert not slack.chat.post_message.called
@@ -63,11 +62,92 @@ def test_greeting_wrong_type(mocker):
 
 def test_show_interests_dialog(mocker):
     slack = mocker.Mock()
-    bot_module = InteractiveBotModule(slack)
-    InteractiveBotModule.DIALOG_TEMPLATE = 'welcome'
+    bot_module = GreetingBotModule(slack)
     event = Event({
-        "type": "block_actions",
-        "trigger_id": "whatevs",
+        'type': 'block_actions',
+        'trigger_id': 'whatevs',
     })
+
+    real_greeting = bot.processors.greeting.DIALOG_TEMPLATE
+    bot.processors.greeting.DIALOG_TEMPLATE = 'welcome'
     bot_module(event)
+    bot.processors.greeting.DIALOG_TEMPLATE = real_greeting
     assert slack.dialog_open.call_args == mocker.call(dialog='welcome', trigger_id='whatevs')
+
+
+@pytest.mark.django_db
+def test_submit_interests(mocker):
+    slack = mocker.Mock()
+    bot_module = GreetingBotModule(slack)
+
+    # Create initial response
+    event = Event({
+        'type': 'dialog_submission',
+        'callback_id': 'interests',
+        'user': {'id': 'SOME_USER_ID'},
+        'submission': {
+            'metro_name': 'SOME_METRO',
+            'topics_to_learn': 'SOME_LEARNINGS',
+            'topics_to_share': '',  # user omitted answer
+            'how_you_learned_about_pennyu': 'SOME_REFERER',
+        }
+    })
+
+    slack_resp = mocker.Mock()
+    slack.users_info.return_value = slack_resp
+    slack_resp.data = {
+        'user': {
+            'profile': {'email': 'SOME_EMAIL'},
+            'name': 'SOME_SLACK_NAME',
+            'real_name': 'SOME_REAL_NAME',
+        }
+    }
+    bot_module(event)
+
+    user = User.objects.get(slack_id='SOME_USER_ID')
+
+    initial_created = user.created
+    initial_updated = user.updated
+
+    assert user.email == 'SOME_EMAIL'
+    assert user.slack_id == 'SOME_USER_ID'
+    assert user.user_name == 'SOME_SLACK_NAME'
+    assert user.real_name == 'SOME_REAL_NAME'
+    assert user.metro_name == 'SOME_METRO'
+    assert user.topics_to_learn == 'SOME_LEARNINGS'
+    assert user.topics_to_share == ''
+    assert user.how_you_learned_about_pennyu == 'SOME_REFERER'
+    assert user.created
+    assert user.updated
+
+    assert 'interested in learning' in slack.chat_postMessage.call_args_list[0][1]['text']
+    assert 'SOME_LEARNINGS' in slack.chat_postMessage.call_args_list[0][1]['text']
+    assert 'knows a thing' not in slack.chat_postMessage.call_args_list[0][1]['text']
+
+    # create updated response
+    event = Event({
+        'type': 'dialog_submission',
+        'callback_id': 'interests',
+        'user': {'id': 'SOME_USER_ID'},
+        'submission': {
+            'metro_name': 'SOME_OTHER_METRO',
+            'topics_to_learn': 'SOME_OTHER_LEARNINGS',
+            'topics_to_share': 'SOME_OTHER_TEACHINGS',
+            'how_you_learned_about_pennyu': 'SOME_OTHER_REFERER',
+        }
+    })
+
+    bot_module(event)
+
+    user = User.objects.get(slack_id='SOME_USER_ID')
+
+    assert user.email == 'SOME_EMAIL'
+    assert user.slack_id == 'SOME_USER_ID'
+    assert user.user_name == 'SOME_SLACK_NAME'
+    assert user.real_name == 'SOME_REAL_NAME'
+    assert user.metro_name == 'SOME_OTHER_METRO'
+    assert user.topics_to_learn == 'SOME_OTHER_LEARNINGS'
+    assert user.topics_to_share == 'SOME_OTHER_TEACHINGS'
+    assert user.how_you_learned_about_pennyu == 'SOME_OTHER_REFERER'
+    assert user.created == initial_created
+    assert user.updated > initial_updated
