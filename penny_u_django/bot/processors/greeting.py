@@ -76,8 +76,11 @@ def greeting_blocks(user_id):
         {
             'type': 'section',
             'text': {
-                'type': 'plain_text',
-                'text': 'Next steps - let us know a little more about yourself:',
+                'type': 'mrkdwn',
+                'text': (
+                    'Next steps - let us know a little more about yourself. (_Note: survey response will be publicly '
+                    'viewable._)'
+                )
             }
         },
         {
@@ -92,7 +95,7 @@ def greeting_blocks(user_id):
                     'value': 'interests_survey'
                 }
             ]
-        }
+        },
     ]
     return message
 
