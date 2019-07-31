@@ -99,44 +99,48 @@ def greeting_blocks(user_id):
     ]
     return message
 
-
-DIALOG_TEMPLATE = {
-        'callback_id': 'interests',
-        'title': 'Let\'s get to know you',
-        'submit_label': 'Submit',
-        'notify_on_cancel': True,
-        'state': 'arbitrary data',
-        'elements': [
-            {
-                'name': 'topics_to_learn',
-                'type': 'textarea',
-                'label': 'What do you want to learn?',
-                'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
-                'optional': 'true',
-            },
-            {
-                'name': 'topics_to_share',
-                'type': 'textarea',
-                'label': 'What do you able to share with others?',
-                'hint': 'Provide a comma separated list of subjects you would be interested in sharing.',
-                'optional': 'true',
-            },
-            {
-                'name': 'metro_name',
-                'type': 'text',
-                'label': 'Where are you from?',
-                'hint': 'City and state (or country if not the U.S.).',
-                'optional': 'true',
-            },
-            {
-                'name': 'how_you_learned_about_pennyu',
-                'type': 'text',
-                'label': 'How did you learn about Penny University?',
-                'hint': 'Who told you? Where did you hear about us?',
-                'optional': 'true',
-            },
-        ]
-    }
+def onboarding_template(user=None):
+    template = {
+            'callback_id': 'interests',
+            'title': 'Let\'s get to know you',
+            'submit_label': 'Submit',
+            'notify_on_cancel': True,
+            'state': 'arbitrary data',
+            'elements': [
+                {
+                    'name': 'topics_to_learn',
+                    'type': 'textarea',
+                    'label': 'What do you want to learn?',
+                    'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
+                    'optional': 'true',
+                    'value': user.topics_to_learn if user else ''
+                },
+                {
+                    'name': 'topics_to_share',
+                    'type': 'textarea',
+                    'label': 'What do you able to share with others?',
+                    'hint': 'Provide a comma separated list of subjects you would be interested in sharing.',
+                    'optional': 'true',
+                    'value': user.topics_to_share if user else ''
+                },
+                {
+                    'name': 'metro_name',
+                    'type': 'text',
+                    'label': 'Where are you from?',
+                    'hint': 'City and state (or country if not the U.S.).',
+                    'optional': 'true',
+                    'value': user.metro_name if user else ''
+                },
+                {
+                    'name': 'how_you_learned_about_pennyu',
+                    'type': 'text',
+                    'label': 'How did you learn about Penny University?',
+                    'hint': 'Who told you? Where did you hear about us?',
+                    'optional': 'true',
+                    'value': user.how_you_learned_about_pennyu if user else ''
+                },
+            ]
+        }
 
 @event_filter_factory
 def in_room(room):
@@ -202,6 +206,9 @@ class GreetingBotModule(BotModule):
     @is_block_interaction_event
     @is_event_type('block_actions')
     def show_interests_dialog(self, event):
+        slack_id = event['user']['id']
+        user = User.objects.filter(slack_id=slack_id).first()
+        onboarding_template(user)
         self.slack.dialog_open(dialog=DIALOG_TEMPLATE, trigger_id=event['trigger_id'])
 
     @is_event_type('dialog_submission')
