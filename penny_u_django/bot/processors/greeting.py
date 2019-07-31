@@ -141,6 +141,7 @@ def onboarding_template(user=None):
                 },
             ]
         }
+        return template
 
 @event_filter_factory
 def in_room(room):
@@ -208,8 +209,8 @@ class GreetingBotModule(BotModule):
     def show_interests_dialog(self, event):
         slack_id = event['user']['id']
         user = User.objects.filter(slack_id=slack_id).first()
-        onboarding_template(user)
-        self.slack.dialog_open(dialog=DIALOG_TEMPLATE, trigger_id=event['trigger_id'])
+        template = onboarding_template(user)
+        self.slack.dialog_open(dialog=template, trigger_id=event['trigger_id'])
 
     @is_event_type('dialog_submission')
     @has_callback_id('interests')
