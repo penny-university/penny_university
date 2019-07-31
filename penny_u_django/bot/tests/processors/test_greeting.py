@@ -60,19 +60,43 @@ def test_greeting_wrong_type(mocker):
     assert not slack.chat.post_message.called
 
 
+@pytest.mark.django_db
 def test_show_interests_dialog(mocker):
     slack = mocker.Mock()
     bot_module = GreetingBotModule(slack)
     event = Event({
         'type': 'block_actions',
         'trigger_id': 'whatevs',
+        'user': {
+            'id': 0
+        }
     })
 
-    real_greeting = bot.processors.greeting.DIALOG_TEMPLATE
-    bot.processors.greeting.DIALOG_TEMPLATE = 'welcome'
-    bot_module(event)
-    bot.processors.greeting.DIALOG_TEMPLATE = real_greeting
+    with mocker.patch('bot.processors.greeting.onboarding_template', return_value='welcome'):
+        bot_module(event)
     assert slack.dialog_open.call_args == mocker.call(dialog='welcome', trigger_id='whatevs')
+
+
+@pytest.mark.django_db
+def test_show_interests_dialog_existing_user(mocker):
+    slack = mocker.Mock()
+    bot_module = GreetingBotModule(slack)
+
+    User.objects.create(slack_id=0, topics_to_learn='django')
+
+    event = Event({
+        'type': 'block_actions',
+        'trigger_id': 'whatevs',
+        'user': {
+            'id': 0
+        }
+    })
+
+    bot_module(event)
+    assert slack.dialog_open.call_args[1]['dialog']['elements'][0]['name'] == 'topics_to_learn'
+    assert slack.dialog_open.call_args[1]['dialog']['elements'][0]['value'] == 'django'
+    assert slack.dialog_open.call_args[1]['dialog']['elements'][1]['name'] == 'topics_to_share'
+    assert slack.dialog_open.call_args[1]['dialog']['elements'][1]['value'] == ''
 
 
 @pytest.mark.django_db

@@ -141,7 +141,7 @@ def onboarding_template(user=None):
                 },
             ]
         }
-        return template
+    return template
 
 @event_filter_factory
 def in_room(room):
