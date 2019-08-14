@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+
+    <style>
+        .overlay-text {
+            position: relative;
+            z-index: 1000;
+        }
+
+        .postion-relative {
+            position: relative;
+        }
+
+        .bg-image {
+            background: url("{% static 'home/images/background.jpg' %}") no-repeat center;
+            background-size: cover;
+            min-height: 600px;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            opacity: 0.4;
+            background: #141515;
+            height: auto;
+        }
+    </style>
+
+    <title>Penny Universty</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-light">
+        <div class="m-auto d-flex justify-content-center">
+            <span class="navbar-brand mb-0 h1">Penny University</span>
+        </div>
+    </nav>
+
+    <div class="position-relative">
+        <div class="overlay"></div>
+        <div
+            class="jumbotron jumbotron-fluid mb-0 bg-image text-white d-flex align-items-center justify-content-center">
+            <div class="overlay-text">
+                <h1 class="display-2">Penny University</h1>
+                <h3 class="mt-4">A peer to peer learning community</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="jumbotron jumbotron-fluid bg-dark text-white mb-0">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-8">
+                    <h3 class="display-4 align-self-left">Our Goal</h3>
+                    <p><strong>Bring people together to learn and grow.</strong></p>
+                    <p>
+                        We believe there is a better way for knowledge to be shared and distributed.
+                        People should be at the center of the learning process, and engaging with others
+                        is the most effective way for people to expand their minds and skillsets.
+                        Communities and businesses grow stronger when people build relationships through
+                        mentorship and co-learning, and that is exactly what Penny University is made
+                        to accomplish.
+                    </p>
+                </div>
+                <div class="col-md-2">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="jumbotron jumbotron-fluid mb-0 bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3 class="display-4">Our Tradition</h3>
+                    <p><strong>350 years of history.</strong></p>
+                    <p>
+                        The name "Penny University" is a reference to the early coffeehouses in Oxford, England.
+                        These coffeehouses held an important association with the European Age of Enlightenment.
+                        For the price of a penny, scholars and laypeople alike would be given admittance to the
+                        coffeehouse, enjoy an endless supply of coffee, and more importantly enjoy learning through
+                        conversations with their peers. Thus these coffeehouses came to be called "Penny Universities".
+                    </p>
+                    <p>
+                        Our new group, Penny University, serves as a modern take on this old tradition by connecting
+                        those who desire to learn with those who are willing to share what they know.
+                        This can certainly be at a coffeehouse, but anywhere else as well, including
+                        just a quick Google Hangout. There are no mentors or mentees, leaders or followers.
+                    </p>
+                    <p>
+                        <strong>We are all peers and we are here to both learn and to teach.</strong>
+                    </p>
+                </div>
+                <div class="col-md-4 d-flex justify-content-center align-items-center">
+                    <img src="{% static 'home/images/PennyUniversityLogoCircle.png' %}" class="img-fluid" alt="Penny">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="jumbotron jumbotron-fluid bg-dark text-white mb-0">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 d-flex justify-content-center align-items-center">
+                    <div class="bg-white p-4" style="border-radius: 50%">
+                        <img src="{% static 'home/images/SlackLogo.png' %}" class="img-fluid" alt="Penny"
+                            style="max-height: 200px;">
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <h3 class="display-4">Join Us</h3>
+                    <p><strong>Become part of a new learning community.</strong></p>
+                    <p>
+                        Our members meet through Slack, where they discover each others interests in what they
+                        can teach and what they would like to learn. With the help of our bot, they set up
+                        Penny Chats with one another to in order to share knowledge, and then write up what
+                        they've learned and share it with the community.
+                    </p>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCJ68F3Fq6qXhYDuATsHSH5jY92vchjD9Oq0QaK_4QOeL2jw/viewform"
+                        class="btn btn-primary">
+                        Join Us on Slack
+                    </a>
+                    <div class="mt-3">
+                        <p>Not sure yet?
+                            <a href="https://groups.google.com/forum/#!forum/penny-university">
+                                Check out what we've been up to on our forum.
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer></footer>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
