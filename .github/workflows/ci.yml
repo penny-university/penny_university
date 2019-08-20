@@ -36,4 +36,4 @@ jobs:
       - name: Build Image
         uses: actions/docker/cli@master
         with:
-          args: build -t penny_u_django/penny_u_django -f penny_u_django/Dockerfile
+          args: build -t penny_u_django/penny_u_django penny_u_django
