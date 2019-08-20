@@ -1,0 +1,4 @@
+# install base requirements
+-r requirements.txt
+
+pytest
