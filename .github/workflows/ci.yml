@@ -34,6 +34,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Build Image
-      - uses: actions/docker/cli@master
+        uses: actions/docker/cli@master
         with:
           - build -t penny_u_django/penny_u_django .
