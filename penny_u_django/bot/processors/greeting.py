@@ -1,4 +1,4 @@
-from django.conf import settings
+from common.helpers import notify_admins
 
 from bot.models import User
 from bot.processors.base import (
@@ -194,15 +194,11 @@ class GreetingBotModule(BotModule):
     def __init__(self, slack):
         self.slack = slack
 
-    def notify_admins(self, message):
-        for user in settings.PENNY_ADMIN_USERS:
-            self.slack.chat_postMessage(channel=user, text=message)
-
     @in_room(GREETING_CHANNEL)
     @is_event_type('message.channel_join')
     def welcome_user(self, event):
         self.slack.chat_postMessage(channel=event['user'], blocks=greeting_blocks(event['user']))
-        self.notify_admins(f'<@{event["user"]}> just received a greeting message.')
+        notify_admins(self.slack, f'<@{event["user"]}> just received a greeting message.')
 
     @is_block_interaction_event
     @is_event_type('block_actions')
@@ -235,4 +231,4 @@ class GreetingBotModule(BotModule):
             message += f"\n\n*This person also knows a thing or two about these topics:*\n{kwargs['topics_to_share']}"
 
         self.slack.chat_postMessage(channel=GREETING_CHANNEL, text=message)
-        self.notify_admins(f'User <@{slack_id}> just filled out the survey.')
+        notify_admins(self.slack, f'User <@{slack_id}> just filled out the survey.')
