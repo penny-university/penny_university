@@ -9,7 +9,6 @@ from bot.processors.greeting import GreetingBotModule
 def test_greeting(mocker):
     slack = mocker.Mock()
     greeter = GreetingBotModule(slack)
-    greeter.notify_admins = mocker.Mock()
     GreetingBotModule.GREETING_MESSAGE = 'welcome'
     event = Event({
         'user': 'U42HCBFEF',
@@ -22,7 +21,8 @@ def test_greeting(mocker):
         'channel_type': 'channel'
     })
     with mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome'):
-        greeter(event)
+        with mocker.patch('bot.processors.greeting.notify_admins'):
+            greeter(event)
     assert slack.chat_postMessage.call_args == mocker.call(channel='U42HCBFEF', blocks='welcome')
 
 
