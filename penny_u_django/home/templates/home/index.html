@@ -1,49 +1,8 @@
-<!doctype html>
-<html lang="en">
+{% extends "home/base.html" %}
 {% load static %}
 
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% block content %}
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
-
-    <style>
-        .overlay-text {
-            position: relative;
-            z-index: 1000;
-        }
-
-        .postion-relative {
-            position: relative;
-        }
-
-        .bg-image {
-            background: url("{% static 'home/images/background.jpg' %}") no-repeat center;
-            background-size: cover;
-            min-height: 600px;
-        }
-
-        .overlay {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            opacity: 0.4;
-            background: #141515;
-            height: auto;
-        }
-    </style>
-
-    <title>Penny Universty</title>
-</head>
-
-<body>
     <nav class="navbar navbar-light">
         <div class="m-auto d-flex justify-content-center">
             <span class="navbar-brand mb-0 h1">Penny University</span>
@@ -52,8 +11,7 @@
 
     <div class="position-relative">
         <div class="overlay"></div>
-        <div
-            class="jumbotron jumbotron-fluid mb-0 bg-image text-white d-flex align-items-center justify-content-center">
+        <div class="jumbotron mb-0 bg-image text-white d-flex align-items-center justify-content-center">
             <div class="overlay-text">
                 <h1 class="display-2">Penny University</h1>
                 <h3 class="mt-4">A peer to peer learning community</h3>
@@ -119,7 +77,7 @@
                 <div class="col-md-4 d-flex justify-content-center align-items-center">
                     <div class="bg-white p-4" style="border-radius: 50%">
                         <img src="{% static 'home/images/SlackLogo.png' %}" class="img-fluid" alt="Penny"
-                            style="max-height: 200px;">
+                             style="max-height: 200px;">
                     </div>
                 </div>
                 <div class="col-md-8">
@@ -131,10 +89,9 @@
                         Penny Chats with one another to in order to share knowledge, and then write up what
                         they've learned and share it with the community.
                     </p>
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSeCJ68F3Fq6qXhYDuATsHSH5jY92vchjD9Oq0QaK_4QOeL2jw/viewform"
-                        class="btn btn-primary">
-                        Join Us on Slack
-                    </a>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#formModal">
+                        Join Us On Slack!
+                    </button>
                     <div class="mt-3">
                         <p>Not sure yet?
                             <a href="https://groups.google.com/forum/#!forum/penny-university">
@@ -147,19 +104,6 @@
         </div>
     </div>
 
-    <footer></footer>
+    {% include 'home/modal.html' %}
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"></script>
-</body>
-
-</html>
+{% endblock %}
