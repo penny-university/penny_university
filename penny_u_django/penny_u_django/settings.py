@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'penny_u_django.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'mounted_files', 'db.sqlite3'),
     }
 }
 
@@ -133,7 +133,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'messages.log',
+            'filename': os.path.join('mounted_files', 'messages.log'),
             'formatter': 'standard',
         },
     },
