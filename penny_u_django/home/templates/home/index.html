@@ -3,10 +3,19 @@
 
 {% block content %}
 
-    <nav class="navbar navbar-light">
+    <nav class="navbar navbar-dark">
         <div class="m-auto d-flex justify-content-center">
             <span class="navbar-brand mb-0 h1">Penny University</span>
         </div>
+        <div class="float-right">
+            <a href="#" class="fa fa-facebook"></a>
+            <a href="#" class="fa fa-instagram"></a>
+            <a href="#" class="fa fa-twitter"></a>
+            <button id="nav-join-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#formModal">
+                Join Us!
+            </button>
+        </div>
+
     </nav>
 
     <div class="position-relative">
@@ -15,6 +24,11 @@
             <div class="overlay-text">
                 <h1 class="display-2">Penny University</h1>
                 <h3 class="mt-4">A peer to peer learning community</h3>
+                <div class="text-center mt-5">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#formModal">
+                        Join Us!
+                    </button>
+                </div>
             </div>
         </div>
     </div>
