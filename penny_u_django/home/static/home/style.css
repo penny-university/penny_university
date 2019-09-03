@@ -1,38 +1,55 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto+Slab:700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Lato|Roboto+Slab:700&display=swap');
 
 
-h1,h2,h3,h4,h5,.navbar-brand {
+body {
+    color: #25282A;
+    font-family: 'Lato', sans-serif;
+}
+
+
+h1, h2, h3, h4, h5, .navbar-brand {
     font-family: 'Roboto Slab', serif;
 }
 
 
-.bg-dark,.navbar-dark {
-    background-color: #595348 !important;
-}
-
-.bg-white {
-    color: #292621;
+.bg-dark, .navbar-dark {
+    background-color: #CBBEA5 !important;
 }
 
 
 #nav-join-btn {
-    margin-left:10px;
+    margin-left: 10px;
+}
+
+a {
+    color: #008DD5;
+}
+
+.btn-primary {
+    background-color: #008DD5;
+}
+
+.btn-danger {
+    background-color: #C84630;
 }
 
 /* Style all font awesome icons */
 .fa {
-  padding-right: 20px;
-  padding-left: 20px;
-  font-size: 25px !important;
-  width: 10px;
-  height: 10px;
-  text-decoration: none;
-  color:white;
+    padding: 10px;
+    font-size: 20px !important;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    background-color: #25282A;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 0 5px;
 }
 
 /* Add a hover effect if you want */
 .fa:hover {
-  color: white;
-  opacity: 0.5;
-  text-decoration: none;
+    color: white;
+    opacity: 0.7;
+    text-decoration: none;
 }
