@@ -6,11 +6,20 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description"
+          content="Penny University is a peer learning group with the goal of connecting people in order to share knowledge. Together, we learn!">
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'home/style.css' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'home/favicon.ico' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'home/favicon.ico' %}">
+
+    <!-- Add icon library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <style>
         html, body {
@@ -44,6 +53,7 @@
         }
     </style>
 
+    <title>Penny University</title>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-371T9B5LM2"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -52,8 +62,6 @@
 
       gtag('config', 'G-371T9B5LM2');
     </script>
-
-    <title>Penny Universty</title>
 </head>
 
 <body>

@@ -3,28 +3,46 @@
 
 {% block content %}
 
-    <nav class="navbar navbar-light">
-        <div class="m-auto d-flex justify-content-center">
-            <span class="navbar-brand mb-0 h1">Penny University</span>
+    <nav class="navbar navbar-light row">
+        <div class="container">
+            <div class="col-md-6 d-flex justify-content-center justify-content-md-start">
+                <span class="navbar-brand mb-0 mr-0 h1">Penny University</span>
+            </div>
+            <div class="col-md-6 d-flex align-items-center justify-content-center justify-content-md-end">
+                <div>
+                    <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
+                    <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
+                    <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
+                </div>
+                <button id="nav-join-btn" type="button" class="btn btn-outline-dark" data-toggle="modal"
+                        data-target="#formModal">
+                    Join Us! <i class="fa fa-slack"></i>
+                </button>
+            </div>
         </div>
     </nav>
 
     <div class="position-relative">
         <div class="overlay"></div>
-        <div class="jumbotron mb-0 bg-image text-white d-flex align-items-center justify-content-center">
-            <div class="overlay-text">
-                <h1 class="display-2">Penny University</h1>
+        <div class="bg-image text-white text-center d-flex align-items-center">
+            <div class="overlay-text container">
+                <h1 class="display-4">Penny University</h1>
                 <h3 class="mt-4">A peer to peer learning community</h3>
+                <div class="mt-4">
+                    <button type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#formModal">
+                        Join Us On Slack! <i class="fa fa-slack"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="jumbotron jumbotron-fluid bg-dark text-white mb-0">
+    <div class="jumbotron jumbotron-fluid bg-dark mb-0">
         <div class="container">
             <div class="row">
                 <div class="col-md-2"></div>
                 <div class="col-md-8">
-                    <h3 class="display-4 align-self-left">Our Goal</h3>
+                    <h2>Our Goal</h2>
                     <p><strong>Bring people together to learn and grow.</strong></p>
                     <p>
                         We believe there is a better way for knowledge to be shared and distributed.
@@ -45,7 +63,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-8">
-                    <h3 class="display-4">Our Tradition</h3>
+                    <h2>Our Tradition</h2>
                     <p><strong>350 years of history.</strong></p>
                     <p>
                         The name "Penny University" is a reference to the early coffeehouses in Oxford, England.
@@ -71,7 +89,7 @@
         </div>
     </div>
 
-    <div class="jumbotron jumbotron-fluid bg-dark text-white mb-0">
+    <div class="jumbotron jumbotron-fluid bg-dark mb-0">
         <div class="container">
             <div class="row">
                 <div class="col-md-4 d-flex justify-content-center align-items-center">
@@ -81,7 +99,7 @@
                     </div>
                 </div>
                 <div class="col-md-8">
-                    <h3 class="display-4">Join Us</h3>
+                    <h2>Join Us</h2>
                     <p><strong>Become part of a new learning community.</strong></p>
                     <p>
                         Our members meet through Slack, where they discover each others interests in what they
@@ -90,7 +108,7 @@
                         they've learned and share it with the community.
                     </p>
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#formModal">
-                        Join Us On Slack!
+                        Join Us On Slack! <i class="fa fa-slack"></i>
                     </button>
                     <div class="mt-3">
                         <p>Not sure yet?

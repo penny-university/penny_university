@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700|Roboto+Slab:400&display=swap');
+
+
+body {
+    color: #2D2B25;
+    font-family: 'Open Sans', sans-serif;
+}
+
+
+h1, h2, h3, .navbar-brand {
+    font-family: 'Roboto Slab', serif;
+    text-transform: capitalize;
+}
+
+.btn {
+    font-family: 'Roboto Slab', serif;
+}
+
+
+.bg-dark, .navbar-dark {
+    background-color: #2D2B25 !important;
+    color: #F0F0F0;
+}
+
+.navbar-secondary {
+    background-color: #CBBEA5 !important;
+}
+
+.btn-secondary {
+    background-color: #CBBEA5;
+}
+
+#nav-join-btn {
+    margin-left: 10px;
+}
+
+a {
+    color: #008DD5;
+}
+
+.btn-primary {
+    background-color: #008DD5;
+    border-color: #008DD5;
+}
+
+.btn-danger {
+    background-color: #F0544F;
+    border-color: #F0544F;
+}
+
+/* Style all font awesome icons */
+a.fa {
+    padding: 10px;
+    font-size: 20px !important;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 0 5px;
+}
+
+/* Add a hover effect if you want */
+a.fa:hover {
+    color: white;
+    opacity: 0.7;
+    text-decoration: none;
+}
+
+
+/* Set a specific color for each brand */
+.fa-facebook {
+  background: #3B5998;
+  color: white;
+}
+
+.fa-instagram {
+  background: #D30F62;
+  color: white;
+}
+
+.fa-twitter {
+  background: #55ACEE;
+  color: white;
+}
