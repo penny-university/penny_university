@@ -19,7 +19,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        cd penny_university
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Test with pytest
@@ -36,4 +35,4 @@ jobs:
       - name: Build Image
         uses: actions/docker/cli@master
         with:
-          args: build -t penny_university/penny_university penny_university
+          args: build -t penny_university penny_university
