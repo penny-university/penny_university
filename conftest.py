@@ -1,7 +1,7 @@
 from django.conf import settings
 import os
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'penny_u_django.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'penny_university.settings'
 
 
 try:
