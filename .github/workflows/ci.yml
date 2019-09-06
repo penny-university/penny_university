@@ -34,4 +34,4 @@ jobs:
       - name: Build Image
         uses: actions/docker/cli@master
         with:
-          args: build -t penny_university penny_university
+          args: build -t penny_university .
