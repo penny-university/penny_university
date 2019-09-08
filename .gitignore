@@ -1,3 +1,7 @@
+staticfiles/*
+
+!staticfiles/.gitignore
+
 messages.log
 __pycache__
 *.pyc
