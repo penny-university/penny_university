@@ -39,6 +39,7 @@ jobs:
     - name: Test with pytest
       env:
         SLACK_API_TOKEN: ""
+        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
       run: |
         pip install -r dev-requirements.txt
         pytest
