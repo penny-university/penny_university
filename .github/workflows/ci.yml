@@ -30,10 +30,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      env:
-        LDFLAGS: "-L/usr/local/lib -L/usr/local/opt/openssl/lib -L/usr/local/opt/readline/lib"
       run: |
-        sudo apt-get install libpq-dev
+        sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Test with pytest
