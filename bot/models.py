@@ -15,3 +15,11 @@ class User(models.Model):
 
     class Meta:
         db_table = 'user'
+
+
+class PennyChat(models.Model):
+    title = models.TextField()
+    description = models.TextField()
+    invitees = models.TextField()
+    template_timestamp = models.TextField()
+    template_channel = models.TextField()

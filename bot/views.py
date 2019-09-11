@@ -9,13 +9,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from bot.processors.greeting import GreetingBotModule
+from bot.processors.pennychat import PennyChatBotModule
 from bot.processors.base import (
     Bot,
     Event,
 )
 
 slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
-bot = Bot(event_processors=[GreetingBotModule(slack_client)])
+bot = Bot(event_processors=[GreetingBotModule(slack_client), PennyChatBotModule(slack_client)])
 
 
 def index(request):
@@ -51,4 +52,11 @@ def interactive(request):
 
     bot(Event(payload))
 
+    return HttpResponse('')
+
+
+@csrf_exempt
+def penny_chat(request):
+    event = request.POST
+    PennyChatBotModule.create_penny_chat(slack_client, event)
     return HttpResponse('')
