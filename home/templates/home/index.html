@@ -1,6 +1,16 @@
 {% extends "home/base.html" %}
 {% load static %}
 
+{% block style %}
+    <style>
+        .bg-image {
+            background: url("{% static 'home/images/background.jpg' %}") no-repeat center;
+            background-size: cover;
+            min-height: 600px;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 
 

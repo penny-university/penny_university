@@ -20,13 +20,7 @@
     <!-- Add fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Roboto+Slab&display=swap" rel="stylesheet">
 
-    <style>
-        .bg-image {
-            background: url("{% static 'home/images/background.jpg' %}") no-repeat center;
-            background-size: cover;
-            min-height: 600px;
-        }
-    </style>
+    {% block style %}{% endblock %}
 
     <title>Penny University</title>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-371T9B5LM2"></script>
