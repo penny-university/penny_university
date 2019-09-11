@@ -1,7 +1,18 @@
 {% extends "home/base.html" %}
 {% load static %}
 
+{% block style %}
+    <style>
+        .bg-image {
+            background: url("{% static 'home/images/background.jpg' %}") no-repeat center;
+            background-size: cover;
+            min-height: 600px;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
+
 
     <nav class="navbar navbar-light row">
         <div class="container">
@@ -9,12 +20,12 @@
                 <span class="navbar-brand mb-0 mr-0 h1">Penny University</span>
             </div>
             <div class="col-md-6 d-flex align-items-center justify-content-center justify-content-md-end">
-                <div>
+                <div class="social-icons">
                     <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
                     <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
                     <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
                 </div>
-                <button id="nav-join-btn" type="button" class="btn btn-outline-dark" data-toggle="modal"
+                <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
                         data-target="#formModal">
                     Join Us! <i class="fa fa-slack"></i>
                 </button>
@@ -121,6 +132,18 @@
             </div>
         </div>
     </div>
+
+    <footer class="bg-light d-flex justify-content-center align-items-center p-2">
+        <div class="social-icons">
+            <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
+            <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
+            <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
+        </div>
+        <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
+                data-target="#formModal">
+            Join Us! <i class="fa fa-slack"></i>
+        </button>
+    </footer>
 
     {% include 'home/modal.html' %}
 
