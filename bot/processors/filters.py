@@ -47,7 +47,10 @@ def is_block_interaction_event(event):
 @event_filter_factory
 def has_callback_id(callback_id):
     def filter_func(event):
-        return event['callback_id'] == callback_id
+        if 'callback_id' in event:
+            return event['callback_id'] == callback_id
+        else:
+            return event['view']['callback_id']
 
     return filter_func
 
@@ -55,6 +58,6 @@ def has_callback_id(callback_id):
 @event_filter_factory
 def is_action_id(action_id):
     def filter_func(event):
-        return event['actions'][0]['action_id'] == action_id
+        return 'actions' in event and event['actions'][0]['action_id'] == action_id
 
     return filter_func

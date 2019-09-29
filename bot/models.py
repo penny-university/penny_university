@@ -20,6 +20,9 @@ class User(models.Model):
 class PennyChat(models.Model):
     title = models.TextField()
     description = models.TextField()
+    date = models.DateTimeField()
     invitees = models.TextField()
+    channels = models.TextField()
+    view = models.TextField()
     template_timestamp = models.TextField()
     template_channel = models.TextField()
