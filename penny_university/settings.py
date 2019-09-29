@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '7e@1*$kub8yxjd&pkej#+0k+e9omlz!31$zuq(4$rglm4i(hp1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('PENNY_DEBUG', False)
+DEBUG = os.environ.get('PENNY_DEBUG', '').lower() == "true"
 
 ALLOWED_HOSTS = ['*']  # TODO this is a hack - fix once we have domain name set up
 
