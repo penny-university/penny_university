@@ -47,13 +47,15 @@ class DebugPassthrough:
             return HttpResponse(message)
 
         if host_port(self.host, self.port):
-
             s = Session()
+
+            permitted_headers = ['Content-Type']
+            headers = {k: request.headers[k] for k in permitted_headers if k in request.headers}
 
             req = Request(
                 method=request.method,
                 url=f'http://{host_port(self.host, self.port)}' + request.get_full_path(),
-                headers=request.headers,
+                headers=headers,
                 data=request.body,
                 cookies=request.COOKIES,
             )
@@ -61,11 +63,11 @@ class DebugPassthrough:
             req = req.prepare()
             resp = s.send(req)
 
-            content_type = content_type_re.search(resp.headers.get('Content-Type'))
+            content_type = content_type_re.search(resp.headers.get('Content-Type', ''))
             if content_type:
                 content_type = content_type.group()
 
-            charset = charset_re.search(resp.headers.get('Content-Type'))
+            charset = charset_re.search(resp.headers.get('Content-Type', ''))
             if charset:
                 charset = charset.group(1)
 
