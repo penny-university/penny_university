@@ -1,6 +1,4 @@
 from datetime import datetime, timedelta
-import dateutil.parser
-from pprint import pprint
 
 from bot.models import PennyChat
 from bot.processors.base import (
