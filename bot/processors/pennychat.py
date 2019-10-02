@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import dateutil.parser
 from pprint import pprint
 
 from bot.models import PennyChat
@@ -19,26 +20,11 @@ def datetime_range(start, end, delta):
 
 
 time_options = [{'text': {'type': 'plain_text', 'text': dt.strftime('%-I:%M %p')}, 'value': dt.strftime('%-I:%M %p')}
-       for dt in datetime_range(datetime(2019, 1, 1, 0), datetime(2019, 1, 2, 0), timedelta(minutes=15))]
+                for dt in datetime_range(datetime(2019, 1, 1, 0), datetime(2019, 1, 2, 0), timedelta(minutes=15))]
 
 
-def create_penny_chat_blocks(slack=None, penny_chat=None):
-    share_string = "Shared with: "
-    shares = []
-    if penny_chat and len(penny_chat.invitees) > 0:
-        for user in penny_chat.invitees.split(','):
-            shares.append(slack.users_info(user=user).data['user']['real_name'])
-
-    if penny_chat and len(penny_chat.channels) > 0:
-        for channel in penny_chat.channels.split(','):
-            shares.append(f'<#{channel}>')
-
-    for i in range(len(shares)):
-        share_string += shares[i]
-        if i < len(shares) - 1:
-            share_string += ", "
-
-    message = [
+def create_message_template():
+    create_message = [
         {
             "type": "section",
             "text": {
@@ -51,9 +37,9 @@ def create_penny_chat_blocks(slack=None, penny_chat=None):
             "text": {
                 "type": "mrkdwn",
                 "text": (
-                        "It looks like you want to create a new Penny Chat! Click the button below to add details "
-                        "about your chat such as when it is taking place and who you want to invite."
-                    )
+                    "It looks like you want to create a new Penny Chat! Click the button below to add details "
+                    "about your chat such as when it is taking place and who you want to invite."
+                )
 
             }
         },
@@ -71,13 +57,111 @@ def create_penny_chat_blocks(slack=None, penny_chat=None):
             ]
         }
     ]
+    return create_message
 
-    return message
+
+def save_message_template(slack, penny_chat):
+    share_string = "Shared with: "
+    shares = []
+    if len(penny_chat.invitees) > 0:
+        for user in penny_chat.invitees.split(','):
+            shares.append(slack.users_info(user=user).data['user']['real_name'])
+
+    if len(penny_chat.channels) > 0:
+        for channel in penny_chat.channels.split(','):
+            shares.append(f'<#{channel}>')
+
+    for i in range(len(shares)):
+        share_string += shares[i]
+        if i < len(shares) - 1:
+            share_string += ", "
+
+    date = penny_chat.date.strftime("%A, %B %-d, %Y at %-I:%M %p")
+
+    save_message = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*New Penny Chat: {penny_chat.title}*"
+            },
+            "accessory": {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Edit Details :pencil2:",
+                    "emoji": True
+                },
+                "action_id": "penny_chat_details"
+            }
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*Description*\n{penny_chat.description}"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*Date and Time*\n{date}"
+            },
+            "accessory": {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Add to Google Calendar :calendar:",
+                    "emoji": True
+                },
+                "url": "https://google.com"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*Sharing With*\n{share_string}"
+            }
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Share",
+                        "emoji": True
+                    },
+                    "style": "primary"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Delete",
+                        "emoji": True
+                    },
+                    "style": "danger"
+                }
+            ]
+        }
+    ]
+    return save_message
+
+
+def penny_chat_blocks(slack=None, penny_chat=None):
+    return save_message_template(slack, penny_chat) if penny_chat else create_message_template()
 
 
 def penny_chat_details_modal(penny_chat):
-    date = str(penny_chat.date.date()) if penny_chat else str(datetime.now().date())
-    time_string = datetime.strftime(penny_chat.date, '%-I:%M %p') if penny_chat else time_options[0]
+    date = str(penny_chat.date.date()) if penny_chat.date else str(datetime.now().date())
+    time_string = datetime.strftime(penny_chat.date, '%-I:%M %p') if penny_chat.date else time_options[0]['value']
     time = {'text': {'type': 'plain_text', 'text': time_string}, 'value': time_string}
     users = []
     if penny_chat and len(penny_chat.invitees) > 0:
@@ -137,7 +221,6 @@ def penny_chat_details_modal(penny_chat):
                 }
             },
             {
-                "block_id": "penny_chat_date_time",
                 "type": "actions",
                 "elements": [
                     {
@@ -154,7 +237,6 @@ def penny_chat_details_modal(penny_chat):
                 ]
             },
             {
-                "block_id": "penny_chat_user_select",
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
@@ -171,7 +253,6 @@ def penny_chat_details_modal(penny_chat):
                 }
             },
             {
-                "block_id": "penny_chat_channel_select",
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
@@ -201,7 +282,7 @@ class PennyChatBotModule(BotModule):
     def create_penny_chat(cls, slack, event):
         response = slack.chat_postMessage(channel=event['channel_id'],
                                           user=event['user_id'],
-                                          blocks=create_penny_chat_blocks()
+                                          blocks=penny_chat_blocks()
                                           )
 
         PennyChat.objects.create(template_channel=response.data['channel'], template_timestamp=response.data['ts'])
@@ -224,7 +305,7 @@ class PennyChatBotModule(BotModule):
         penny_chat = PennyChat.objects.get(view=event['view']['id'])
         channels = ''
         for channel in selected_channels:
-            channels = channel + ',' + channel if len(selected_channels) > 0 else channel
+            channels = channel + ',' + channel if len(channels) > 0 else channel
         penny_chat.channels = channels
         penny_chat.save()
 
@@ -265,25 +346,9 @@ class PennyChatBotModule(BotModule):
         penny_chat.title = state['penny_chat_title']['penny_chat_title']['value']
         penny_chat.description = state['penny_chat_description']['penny_chat_description']['value']
 
-        time = state['penny_chat_date_time']['penny_chat_time']['selected_option']['value']
-        date = state['penny_chat_date_time']['penny_chat_date']['selected_date']
-        penny_chat.date = datetime.strptime(date + ' ' + time, '%Y-%m-%d %I:%M %p')
-
-        selected_users = state['penny_chat_user_select']['penny_chat_user_select']['selected_users']
-        users = ''
-        for user in selected_users:
-            users = users + ',' + user if len(users) > 0 else user
-        penny_chat.invitees = users
-
-        selected_channels = state['penny_chat_channel_select']['penny_chat_channel_select']['selected_channels']
-        channels = ''
-        for channel in selected_channels:
-            channels = channel + ',' + channel if len(channels) > 0 else channel
-        penny_chat.channels = channels
-
         penny_chat.save()
 
         self.slack.chat_update(channel=penny_chat.template_channel,
                                ts=penny_chat.template_timestamp,
-                               blocks=create_penny_chat_blocks(self.slack, penny_chat)
+                               blocks=penny_chat_blocks(self.slack, penny_chat)
                                )

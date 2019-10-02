@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class User(models.Model):
@@ -20,7 +21,7 @@ class User(models.Model):
 class PennyChat(models.Model):
     title = models.TextField()
     description = models.TextField()
-    date = models.DateTimeField()
+    date = models.DateTimeField(null=True)
     invitees = models.TextField()
     channels = models.TextField()
     view = models.TextField()
