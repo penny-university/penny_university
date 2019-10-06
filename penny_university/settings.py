@@ -151,6 +151,10 @@ LOGGING = {
     },
 }
 
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 if SLACK_API_KEY is None:
     print('WARNING: SLACK_API_KEY is None')
