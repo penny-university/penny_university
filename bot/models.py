@@ -25,5 +25,7 @@ class PennyChat(models.Model):
     invitees = models.TextField()
     channels = models.TextField()
     view = models.TextField()
+    user = models.TextField()
+    user_tz = models.TextField()
     template_timestamp = models.TextField()
     template_channel = models.TextField()

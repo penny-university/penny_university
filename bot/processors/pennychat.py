@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+from pytz import timezone, utc
+import urllib.parse
 
 from bot.models import PennyChat
 from bot.processors.base import (
@@ -59,7 +61,7 @@ def create_message_template():
 
 
 def save_message_template(slack, penny_chat):
-    share_string = "Shared with: "
+    share_string = ''
     shares = []
     if len(penny_chat.invitees) > 0:
         for user in penny_chat.invitees.split(','):
@@ -74,7 +76,8 @@ def save_message_template(slack, penny_chat):
         if i < len(shares) - 1:
             share_string += ", "
 
-    date = penny_chat.date.strftime("%A, %B %-d, %Y at %-I:%M %p")
+    timestamp = int(penny_chat.date.astimezone(utc).timestamp())
+    date_text = f"*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>"
 
     save_message = [
         {
@@ -107,7 +110,7 @@ def save_message_template(slack, penny_chat):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*Date and Time*\n{date}"
+                "text": date_text
             },
             "accessory": {
                 "type": "button",
@@ -136,6 +139,7 @@ def save_message_template(slack, penny_chat):
                         "text": "Share",
                         "emoji": True
                     },
+                    "action_id": "penny_chat_share",
                     "style": "primary"
                 },
                 {
@@ -153,13 +157,72 @@ def save_message_template(slack, penny_chat):
     return save_message
 
 
+def shared_message_template(penny_chat):
+    timestamp = int(penny_chat.date.astimezone(utc).timestamp())
+    date_text = f"*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>"
+
+    start_date = penny_chat.date.astimezone(utc).strftime("%Y%m%dT%H%M%SZ")
+    end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime("%Y%m%dT%H%M%SZ")
+    google_cal_url = f'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' \
+        f'{urllib.parse.quote(penny_chat.title)}&dates=' \
+        f'{start_date}/{end_date}&details=' \
+        f'{urllib.parse.quote(penny_chat.description)}'
+
+    return [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*A New Penny Chat was created!*"
+            }
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*Title*\n{penny_chat.title}"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*Description*\n{penny_chat.description}"
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": date_text
+            },
+            "accessory": {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Add to Google Calendar :calendar:",
+                    "emoji": True
+                },
+                "url": google_cal_url
+            }
+        }
+    ]
+
+
 def penny_chat_blocks(slack=None, penny_chat=None):
     return save_message_template(slack, penny_chat) if penny_chat else create_message_template()
 
 
 def penny_chat_details_modal(penny_chat):
-    date = str(penny_chat.date.date()) if penny_chat.date else str(datetime.now().date())
-    time_string = datetime.strftime(penny_chat.date, '%-I:%M %p') if penny_chat.date else time_options[0]['value']
+    tz = timezone(penny_chat.user_tz)
+    date = str(penny_chat.date.astimezone(tz).date()) if penny_chat.date else str(datetime.now().date())
+    if penny_chat.date:
+        time_string = datetime.strftime(penny_chat.date.astimezone(tz), '%-I:%M %p')
+    else:
+        time_string = time_options[0]['value']
     time = {'text': {'type': 'plain_text', 'text': time_string}, 'value': time_string}
     users = []
     if penny_chat and len(penny_chat.invitees) > 0:
@@ -278,12 +341,16 @@ class PennyChatBotModule(BotModule):
 
     @classmethod
     def create_penny_chat(cls, slack, event):
+        user = slack.users_info(user=event['user_id']).data['user']
         response = slack.chat_postMessage(channel=event['channel_id'],
                                           user=event['user_id'],
                                           blocks=penny_chat_blocks()
                                           )
 
-        PennyChat.objects.create(template_channel=response.data['channel'], template_timestamp=response.data['ts'])
+        PennyChat.objects.create(user=user['id'],
+                                 user_tz=user['tz'],
+                                 template_channel=response.data['channel'],
+                                 template_timestamp=response.data['ts'])
 
     @is_block_interaction_event
     @is_action_id('penny_chat_user_select')
@@ -312,8 +379,9 @@ class PennyChatBotModule(BotModule):
     def time_select(self, event):
         time = event['actions'][0]['selected_option']['value']
         penny_chat = PennyChat.objects.get(view=event['view']['id'])
-        date = str(penny_chat.date.date())
-        penny_chat.date = datetime.strptime(date + ' ' + time, '%Y-%m-%d %I:%M %p')
+        tz = timezone(penny_chat.user_tz)
+        date = str(penny_chat.date.astimezone(tz).date()) if penny_chat.date else datetime.now().date()
+        penny_chat.date = tz.localize(datetime.strptime(date + ' ' + time, '%Y-%m-%d %I:%M %p'))
         penny_chat.save()
 
     @is_block_interaction_event
@@ -321,8 +389,9 @@ class PennyChatBotModule(BotModule):
     def date_select(self, event):
         date = event['actions'][0]['selected_date']
         penny_chat = PennyChat.objects.get(view=event['view']['id'])
-        time = str(penny_chat.date.time())
-        penny_chat.date = datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S')
+        tz = timezone(penny_chat.user_tz)
+        time = str(penny_chat.date.astimezone(tz).time()) if penny_chat.date else '00:00:00'
+        penny_chat.date = tz.localize(datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S'))
         penny_chat.save()
 
     @is_block_interaction_event
@@ -333,6 +402,14 @@ class PennyChatBotModule(BotModule):
         response = self.slack.views_open(view=modal, trigger_id=event['trigger_id'])
         penny_chat.view = response.data['view']['id']
         penny_chat.save()
+
+    @is_block_interaction_event
+    @is_action_id('penny_chat_share')
+    def share(self, event):
+        penny_chat = PennyChat.objects.get(template_timestamp=event['container']['message_ts'])
+        for share_to in penny_chat.channels.split(',') + penny_chat.invitees.split(','):
+            if share_to != '':
+                self.slack.chat_postMessage(channel=share_to, blocks=shared_message_template(penny_chat))
 
     @is_event_type('view_submission')
     @has_callback_id('penny_chat_details')
