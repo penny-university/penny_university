@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils import timezone
+from enum import Enum
 
 
 class User(models.Model):
@@ -18,6 +18,13 @@ class User(models.Model):
         db_table = 'user'
 
 
+class ChatStatus(Enum):
+    DR = 'Draft'
+    SH = 'Shared'
+    IP = 'In Progress'
+    CO = 'Completed'
+
+
 class PennyChat(models.Model):
     title = models.TextField()
     description = models.TextField()
@@ -27,5 +34,5 @@ class PennyChat(models.Model):
     view = models.TextField()
     user = models.TextField()
     user_tz = models.TextField()
-    template_timestamp = models.TextField()
     template_channel = models.TextField()
+    status = models.CharField(max_length=2, choices=[(tag, tag.value) for tag in ChatStatus])

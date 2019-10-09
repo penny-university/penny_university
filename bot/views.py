@@ -5,7 +5,7 @@ from pprint import pprint
 from django.conf import settings
 import slack
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 
