@@ -25,43 +25,6 @@ time_options = [{'text': {'type': 'plain_text', 'text': dt.strftime('%-I:%M %p')
                 for dt in datetime_range(datetime(2019, 1, 1, 0), datetime(2019, 1, 2, 0), timedelta(minutes=15))]
 
 
-def create_message_template():
-    create_message = [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Create Penny Chat*"
-            }
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": (
-                    "It looks like you want to create a new Penny Chat! Click the button below to add details "
-                    "about your chat such as when it is taking place and who you want to invite."
-                )
-
-            }
-        },
-        {
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Add Details"
-                    },
-                    "action_id": "penny_chat_details"
-                }
-            ]
-        }
-    ]
-    return create_message
-
-
 def save_message_template(slack, penny_chat):
     share_string = ''
     shares = []
@@ -175,7 +138,7 @@ def shared_message_template(penny_chat):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*A New Penny Chat was created!*"
+                "text": f"*<{penny_chat.user}> invited you to a new Penny Chat!*"
             }
         },
         {
@@ -215,7 +178,7 @@ def shared_message_template(penny_chat):
 
 
 def penny_chat_blocks(slack=None, penny_chat=None):
-    return save_message_template(slack, penny_chat) if penny_chat else create_message_template()
+    return save_message_template(slack, penny_chat)
 
 
 def penny_chat_details_modal(penny_chat):
@@ -250,7 +213,7 @@ def penny_chat_details_modal(penny_chat):
                 "text": {
                     "type": "mrkdwn",
                     "text": "It looks like you want to create a new Penny Chat! Click the button below to add details "
-                    "about your chat such as when it is taking place and who you want to invite."
+                            "about your chat such as when it is taking place and who you want to invite."
                 }
             },
             {
@@ -352,17 +315,21 @@ class PennyChatBotModule(BotModule):
     @classmethod
     def create_penny_chat(cls, slack, event):
         user = slack.users_info(user=event['user_id']).data['user']
-        slack.chat_postEphemeral(channel=event['channel_id'],
-                                 user=event['user_id'],
-                                 blocks=penny_chat_blocks())
 
         penny_chat = PennyChat.objects.filter(user=user['id'], status=ChatStatus.DR)
 
         if len(penny_chat) == 0:
-            PennyChat.objects.create(user=user['id'],
-                                     user_tz=user['tz'],
-                                     template_channel=event['channel_id'],
-                                     status=ChatStatus.DR)
+            penny_chat = PennyChat.objects.create(user=user['id'],
+                                                  user_tz=user['tz'],
+                                                  template_channel=event['channel_id'],
+                                                  status=ChatStatus.DR)
+        else:
+            penny_chat = penny_chat[0]
+
+        modal = penny_chat_details_modal(penny_chat)
+        response = slack.views_open(view=modal, trigger_id=event['trigger_id'])
+        penny_chat.view = response.data['view']['id']
+        penny_chat.save()
 
     @is_block_interaction_event
     @is_action_id('penny_chat_user_select')
@@ -405,17 +372,6 @@ class PennyChatBotModule(BotModule):
         time = str(penny_chat.date.astimezone(tz).time()) if penny_chat.date else '00:00:00'
         penny_chat.date = tz.localize(datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S'))
         penny_chat.save()
-
-    @is_block_interaction_event
-    @is_action_id('penny_chat_details')
-    def open_details_view(self, event):
-        penny_chat = PennyChat.objects.get(user=event['user']['id'], status=ChatStatus.DR)
-        modal = penny_chat_details_modal(penny_chat)
-        response = self.slack.views_open(view=modal, trigger_id=event['trigger_id'])
-        penny_chat.view = response.data['view']['id']
-        penny_chat.save()
-
-        requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
     @is_action_id('penny_chat_share')
