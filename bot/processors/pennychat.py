@@ -276,15 +276,6 @@ def penny_chat_details_modal(penny_chat):
                     "type": "mrkdwn",
                     "text": "*Who do you want to invite?*"
                 },
-                "accessory": {
-                    "type": "multi_users_select",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Select Users"
-                    },
-                    "initial_users": users,
-                    "action_id": "penny_chat_user_select",
-                }
             },
             {
                 "type": "section",
@@ -321,6 +312,7 @@ class PennyChatBotModule(BotModule):
         if len(penny_chat) == 0:
             penny_chat = PennyChat.objects.create(user=user['id'],
                                                   user_tz=user['tz'],
+                                                  datetime=datetime.now(),
                                                   template_channel=event['channel_id'],
                                                   status=ChatStatus.DR)
         else:
