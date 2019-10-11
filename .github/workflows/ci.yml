@@ -41,11 +41,4 @@ jobs:
       run: |
         pip install -r dev-requirements.txt
         pytest
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Build Image
-        uses: actions/docker/cli@master
-        with:
-          args: build -t penny_university .
+
