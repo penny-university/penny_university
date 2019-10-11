@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 
 import slack
 
-from bot.models import User
+from users.models import User
 from bot.processors.greeting import greeting_blocks
 
 class Command(BaseCommand):

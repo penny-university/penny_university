@@ -1,6 +1,6 @@
 import pytest
 
-from bot.models import User
+from users.models import User
 from bot.processors.base import Event
 import bot.processors.greeting
 from bot.processors.greeting import GreetingBotModule
