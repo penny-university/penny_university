@@ -42,73 +42,73 @@ def save_message_template(slack, penny_chat):
     for i in range(len(shares)):
         share_string += shares[i]
         if i < len(shares) - 1:
-            share_string += ", "
+            share_string += ', '
 
     timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-    date_text = f"*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>"
+    date_text = f'*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
 
     save_message = [
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*New Penny Chat: {penny_chat.title}*"
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'*New Penny Chat: {penny_chat.title}*'
             },
-            "accessory": {
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Edit Details :pencil2:",
-                    "emoji": True
+            'accessory': {
+                'type': 'button',
+                'text': {
+                    'type': 'plain_text',
+                    'text': 'Edit Details :pencil2:',
+                    'emoji': True
                 },
-                "action_id": "penny_chat_details"
+                'action_id': 'penny_chat_details'
             }
         },
         {
-            "type": "divider"
+            'type': 'divider'
         },
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Description*\n{penny_chat.description}"
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'*Description*\n{penny_chat.description}'
             }
         },
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": date_text
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': date_text
             },
-            "accessory": {
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Add to Google Calendar :calendar:",
-                    "emoji": True
+            'accessory': {
+                'type': 'button',
+                'text': {
+                    'type': 'plain_text',
+                    'text': 'Add to Google Calendar :calendar:',
+                    'emoji': True
                 },
-                "url": "https://google.com"
+                'url': 'https://google.com'
             }
         },
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Sharing With*\n{share_string}"
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'*Sharing With*\n{share_string}'
             }
         },
         {
-            "type": "actions",
-            "elements": [
+            'type': 'actions',
+            'elements': [
                 {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Share",
-                        "emoji": True
+                    'type': 'button',
+                    'text': {
+                        'type': 'plain_text',
+                        'text': 'Share',
+                        'emoji': True
                     },
-                    "action_id": "penny_chat_share",
-                    "style": "primary"
+                    'action_id': 'penny_chat_share',
+                    'style': 'primary'
                 }
             ]
         }
@@ -118,10 +118,10 @@ def save_message_template(slack, penny_chat):
 
 def shared_message_template(penny_chat, user_name):
     timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-    date_text = f"*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>"
+    date_text = f'*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
 
-    start_date = penny_chat.date.astimezone(utc).strftime("%Y%m%dT%H%M%SZ")
-    end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime("%Y%m%dT%H%M%SZ")
+    start_date = penny_chat.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
+    end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
     google_cal_url = 'https://calendar.google.com/calendar/render?' \
         'action=TEMPLATE&text=' \
         f'{urllib.parse.quote(penny_chat.title)}&dates=' \
@@ -130,43 +130,43 @@ def shared_message_template(penny_chat, user_name):
 
     return [
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*{user_name} invited you to a new Penny Chat!*"
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'*{user_name} invited you to a new Penny Chat!*'
             }
         },
         {
-            "type": "divider"
+            'type': 'divider'
         },
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Title*\n{penny_chat.title}"
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'*Title*\n{penny_chat.title}'
             }
         },
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Description*\n{penny_chat.description}"
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'*Description*\n{penny_chat.description}'
             }
         },
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": date_text
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': date_text
             },
-            "accessory": {
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Add to Google Calendar :calendar:",
-                    "emoji": True
+            'accessory': {
+                'type': 'button',
+                'text': {
+                    'type': 'plain_text',
+                    'text': 'Add to Google Calendar :calendar:',
+                    'emoji': True
                 },
-                "url": google_cal_url
+                'url': google_cal_url
             }
         }
     ]
@@ -189,110 +189,110 @@ def penny_chat_details_modal(penny_chat):
         channels = [channel for channel in penny_chat.channels.split(',')]
 
     template = {
-        "type": "modal",
-        "callback_id": "penny_chat_details",
-        "title": {
-            "type": "plain_text",
-            "text": "Penny Chat Details"
+        'type': 'modal',
+        'callback_id': 'penny_chat_details',
+        'title': {
+            'type': 'plain_text',
+            'text': 'Penny Chat Details'
         },
-        "submit": {
-            "type": "plain_text",
-            "text": "Done"
+        'submit': {
+            'type': 'plain_text',
+            'text': 'Done'
         },
-        "blocks": [
+        'blocks': [
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "It looks like you want to create a new Penny Chat! Add a title, details, and date and "
-                            "then choose who you want to invite."
+                'type': 'section',
+                'text': {
+                    'type': 'mrkdwn',
+                    'text': 'It looks like you want to create a new Penny Chat! Add a title, details, and date and '
+                            'then choose who you want to invite.'
                 }
             },
             {
-                "block_id": "penny_chat_title",
-                "type": "input",
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": "penny_chat_title",
-                    "initial_value": penny_chat.title if penny_chat else ''
+                'block_id': 'penny_chat_title',
+                'type': 'input',
+                'element': {
+                    'type': 'plain_text_input',
+                    'action_id': 'penny_chat_title',
+                    'initial_value': penny_chat.title if penny_chat else ''
                 },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Title"
+                'label': {
+                    'type': 'plain_text',
+                    'text': 'Title'
                 }
             },
             {
-                "block_id": "penny_chat_description",
-                "type": "input",
-                "element": {
-                    "type": "plain_text_input",
-                    "action_id": "penny_chat_description",
-                    "multiline": True,
-                    "initial_value": penny_chat.description if penny_chat else ''
+                'block_id': 'penny_chat_description',
+                'type': 'input',
+                'element': {
+                    'type': 'plain_text_input',
+                    'action_id': 'penny_chat_description',
+                    'multiline': True,
+                    'initial_value': penny_chat.description if penny_chat else ''
                 },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Description"
+                'label': {
+                    'type': 'plain_text',
+                    'text': 'Description'
                 },
-                "hint": {
-                    "type": "plain_text",
-                    "text": 'Give people an idea of what this chat will be about. This is a great place to add a link '
+                'hint': {
+                    'type': 'plain_text',
+                    'text': 'Give people an idea of what this chat will be about. This is a great place to add a link '
                             'to a Google hangout or an address for where you will meet.'
                 }
             },
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*Pick a date for the Penny Chat*"
+                'type': 'section',
+                'text': {
+                    'type': 'mrkdwn',
+                    'text': '*Pick a date for the Penny Chat*'
                 }
             },
             {
-                "type": "actions",
-                "elements": [
+                'type': 'actions',
+                'elements': [
                     {
-                        "type": "datepicker",
-                        "action_id": "penny_chat_date",
-                        "initial_date": date,
+                        'type': 'datepicker',
+                        'action_id': 'penny_chat_date',
+                        'initial_date': date,
                     },
                     {
-                        "type": "static_select",
-                        "action_id": "penny_chat_time",
-                        "initial_option": time,
-                        "options": get_time_options()
+                        'type': 'static_select',
+                        'action_id': 'penny_chat_time',
+                        'initial_option': time,
+                        'options': get_time_options()
                     }
                 ]
             },
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*Who do you want to invite?*"
+                'type': 'section',
+                'text': {
+                    'type': 'mrkdwn',
+                    'text': '*Who do you want to invite?*'
                 },
-                "accessory": {
-                    "type": "multi_users_select",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Select Users"
+                'accessory': {
+                    'type': 'multi_users_select',
+                    'placeholder': {
+                        'type': 'plain_text',
+                        'text': 'Select Users'
                     },
-                    "initial_users": users,
-                    "action_id": "penny_chat_user_select",
+                    'initial_users': users,
+                    'action_id': 'penny_chat_user_select',
                 }
             },
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*Which channels should I share this with?*"
+                'type': 'section',
+                'text': {
+                    'type': 'mrkdwn',
+                    'text': '*Which channels should I share this with?*'
                 },
-                "accessory": {
-                    "type": "multi_channels_select",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Select Channels"
+                'accessory': {
+                    'type': 'multi_channels_select',
+                    'placeholder': {
+                        'type': 'plain_text',
+                        'text': 'Select Channels'
                     },
-                    "initial_channels": channels,
-                    "action_id": "penny_chat_channel_select",
+                    'initial_channels': channels,
+                    'action_id': 'penny_chat_channel_select',
                 }
             },
         ]
