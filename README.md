@@ -1,6 +1,6 @@
 # penny_university
 
-Run tests with `SLACK_API_KEY= pytest`
+Run tests with `pytest`
 
 ## Requirements
 * `python >= 3.7` & `pip3`
