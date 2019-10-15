@@ -1,3 +1,8 @@
+"""
+pip install flask
+FLASK_APP=dev/jnbrymn/pennychat.py flask run:wq
+
+"""
 import json
 import os
 
