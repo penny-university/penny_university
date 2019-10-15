@@ -1,15 +1,14 @@
 from django.db import models
-from enum import Enum
-
-
-class ChatStatus(Enum):
-    DR = 'Draft'
-    SH = 'Shared'
-    IP = 'In Progress'
-    CO = 'Completed'
 
 
 class PennyChat(models.Model):
+    DRAFT_STATUS = 1
+    SHARED_STATUS = 2
+    STATUS_CHOICES = (
+        (DRAFT_STATUS, 'Draft'),
+        (SHARED_STATUS, 'Shared')
+    )
+
     title = models.TextField()
     description = models.TextField()
     date = models.DateTimeField(null=True)
@@ -19,4 +18,4 @@ class PennyChat(models.Model):
     user = models.TextField()
     user_tz = models.TextField()
     template_channel = models.TextField()
-    status = models.CharField(max_length=2, choices=[(tag, tag.value) for tag in ChatStatus])
+    status = models.CharField(max_length=2, choices=STATUS_CHOICES, default=DRAFT_STATUS)

@@ -76,9 +76,17 @@ def command(request):
     if command == 'chat':
         PennyChatBotModule.create_penny_chat(slack_client, event)
     elif command == 'help':
-        print('no! I wont help you with ', arguments)
-    elif command == 'search':
-        print('search serch ', arguments)
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "I can help you make a new Penny Chat! Type `/penny chat` to get started.\n"
+                            "_More features coming soon..._"
+                }
+            }
+        ]
+        slack_client.chat_postEphemeral(channel=event['channel_id'], user=event['user_id'], blocks=blocks)
 
     return HttpResponse('')
 
