@@ -2,9 +2,8 @@ from datetime import datetime, timedelta
 from pytz import timezone, utc
 import urllib.parse
 import requests
-import json
 
-from bot.models import PennyChat, ChatStatus
+from pennychat.models import PennyChat, ChatStatus
 from bot.processors.base import (
     BotModule
 )
@@ -106,15 +105,6 @@ def save_message_template(slack, penny_chat):
                     },
                     "action_id": "penny_chat_share",
                     "style": "primary"
-                },
-                {
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Delete",
-                        "emoji": True
-                    },
-                    "style": "danger"
                 }
             ]
         }
@@ -122,7 +112,7 @@ def save_message_template(slack, penny_chat):
     return save_message
 
 
-def shared_message_template(penny_chat):
+def shared_message_template(penny_chat, user_name):
     timestamp = int(penny_chat.date.astimezone(utc).timestamp())
     date_text = f"*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>"
 
@@ -138,7 +128,7 @@ def shared_message_template(penny_chat):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": f"*<{penny_chat.user}> invited you to a new Penny Chat!*"
+                "text": f"*{user_name} invited you to a new Penny Chat!*"
             }
         },
         {
@@ -183,7 +173,7 @@ def penny_chat_blocks(slack=None, penny_chat=None):
 
 def penny_chat_details_modal(penny_chat):
     tz = timezone(penny_chat.user_tz)
-    date = str(penny_chat.date.astimezone(tz).date()) if penny_chat.date else str(datetime.now().date())
+    date = str(penny_chat.date.astimezone(tz).date())
     if penny_chat.date:
         time_string = datetime.strftime(penny_chat.date.astimezone(tz), '%-I:%M %p')
     else:
@@ -212,8 +202,8 @@ def penny_chat_details_modal(penny_chat):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "It looks like you want to create a new Penny Chat! Click the button below to add details "
-                            "about your chat such as when it is taking place and who you want to invite."
+                    "text": "It looks like you want to create a new Penny Chat! Add a title, details, and date and "
+                            "then choose who you want to invite."
                 }
             },
             {
@@ -244,7 +234,8 @@ def penny_chat_details_modal(penny_chat):
                 },
                 "hint": {
                     "type": "plain_text",
-                    "text": 'Give people an idea of what this chat will be about.'
+                    "text": 'Give people an idea of what this chat will be about. This is a great place to add a link '
+                            'to a Google hangout or an address for where you will meet.'
                 }
             },
             {
@@ -319,9 +310,11 @@ class PennyChatBotModule(BotModule):
         penny_chat = PennyChat.objects.filter(user=user['id'], status=ChatStatus.DR)
 
         if len(penny_chat) == 0:
+            date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             penny_chat = PennyChat.objects.create(user=user['id'],
                                                   user_tz=user['tz'],
                                                   template_channel=event['channel_id'],
+                                                  date=date,
                                                   status=ChatStatus.DR)
         else:
             penny_chat = penny_chat[0]
@@ -377,9 +370,11 @@ class PennyChatBotModule(BotModule):
     @is_action_id('penny_chat_share')
     def share(self, event):
         penny_chat = PennyChat.objects.get(user=event['user']['id'], status=ChatStatus.DR)
+        user = self.slack.users_info(user=penny_chat.user)['user']
         for share_to in penny_chat.channels.split(',') + penny_chat.invitees.split(','):
             if share_to != '':
-                self.slack.chat_postMessage(channel=share_to, blocks=shared_message_template(penny_chat))
+                self.slack.chat_postMessage(channel=share_to,
+                                            blocks=shared_message_template(penny_chat, user['real_name']))
         penny_chat.status = ChatStatus.SH
         penny_chat.save()
         requests.post(event['response_url'], json={'delete_original': True})
