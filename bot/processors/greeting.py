@@ -1,6 +1,6 @@
 from common.helpers import notify_admins
 
-from bot.models import User
+from users.models import User
 from bot.processors.base import (
     BotModule,
     event_filter,
