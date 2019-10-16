@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class User(models.Model):
+class UserProfile(models.Model):
     email = models.CharField(max_length=200)
     slack_id = models.CharField(max_length=100, unique=True)
     user_name = models.CharField(max_length=100)

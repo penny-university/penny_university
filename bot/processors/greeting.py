@@ -1,6 +1,6 @@
 from common.helpers import notify_admins
 
-from users.models import User
+from users.models import UserProfile
 from bot.processors.base import (
     BotModule,
     event_filter,
@@ -204,7 +204,7 @@ class GreetingBotModule(BotModule):
     @is_event_type('block_actions')
     def show_interests_dialog(self, event):
         slack_id = event['user']['id']
-        user = User.objects.filter(slack_id=slack_id).first()
+        user = UserProfile.objects.filter(slack_id=slack_id).first()
         template = onboarding_template(user)
         self.slack.dialog_open(dialog=template, trigger_id=event['trigger_id'])
 
@@ -222,7 +222,7 @@ class GreetingBotModule(BotModule):
             topics_to_share=event['submission']['topics_to_share'] or '',
             how_you_learned_about_pennyu=event['submission']['how_you_learned_about_pennyu'] or '',
         )
-        User.objects.update_or_create(defaults=kwargs, slack_id=slack_id)
+        UserProfile.objects.update_or_create(defaults=kwargs, slack_id=slack_id)
 
         message = f"Welcome to Penny University {kwargs['real_name']}!"
         if kwargs['topics_to_learn']:
