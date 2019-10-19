@@ -61,7 +61,7 @@ def save_message_template(slack, penny_chat):
                     'text': 'Edit Details :pencil2:',
                     'emoji': True
                 },
-                'action_id': 'penny_chat_details'
+                'action_id': 'penny_chat_edit'
             }
         },
         {
@@ -123,7 +123,7 @@ def shared_message_template(penny_chat, user_name):
     start_date = penny_chat.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
     end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
     google_cal_url = 'https://calendar.google.com/calendar/render?' \
-        'action=TEMPLATE&text=' \
+                     'action=TEMPLATE&text=' \
         f'{urllib.parse.quote(penny_chat.title)}&dates=' \
         f'{start_date}/{end_date}&details=' \
         f'{urllib.parse.quote(penny_chat.description)}'
@@ -309,13 +309,12 @@ class PennyChatBotModule(BotModule):
     def create_penny_chat(cls, slack, event):
         user = slack.users_info(user=event['user_id']).data['user']
 
-        date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        penny_chat = PennyChat.objects.get_or_create(user=user['id'],
-                                                     status=PennyChat.DRAFT_STATUS,
-                                                     defaults={'user_name': user['id'],
-                                                               'user_tz': user['tz'],
-                                                               'template_channel': event['channel_id'],
-                                                               'date': date})
+        date = datetime.now().replace(minute=0, second=0, microsecond=0, tzinfo=utc)
+        penny_chat, created = PennyChat.objects.get_or_create(user=user['id'],
+                                                              status=PennyChat.DRAFT_STATUS,
+                                                              defaults={'user_tz': user['tz'],
+                                                                        'template_channel': event['channel_id'],
+                                                                        'date': date})
 
         modal = penny_chat_details_modal(penny_chat)
         response = slack.views_open(view=modal, trigger_id=event['trigger_id'])
@@ -380,6 +379,16 @@ class PennyChatBotModule(BotModule):
                                       user=penny_chat.user,
                                       blocks=penny_chat_blocks(self.slack, penny_chat)
                                       )
+
+    @is_block_interaction_event
+    @is_action_id('penny_chat_edit')
+    def edit_chat(self, event):
+        penny_chat = PennyChat.objects.get(user=event['user']['id'], status=PennyChat.DRAFT_STATUS)
+        modal = penny_chat_details_modal(penny_chat)
+        response = self.slack.views_open(view=modal, trigger_id=event['trigger_id'])
+        penny_chat.view = response.data['view']['id']
+        penny_chat.save()
+        requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
     @is_action_id('penny_chat_share')
