@@ -14,9 +14,6 @@ import os
 import dj_database_url
 import django_heroku
 
-# Activate Django-Heroku. Suggested by Heroku for django configurations
-django_heroku.settings(locals())
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -163,3 +160,7 @@ SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 if SLACK_API_KEY is None:
     print('WARNING: SLACK_API_KEY is None')
 PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
+
+
+# Activate Django-Heroku. Suggested by Heroku for django configurations. Keep at the bottom of this file.
+django_heroku.settings(locals())
