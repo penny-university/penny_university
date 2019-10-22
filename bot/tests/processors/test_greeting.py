@@ -67,6 +67,11 @@ def test_show_interests_dialog(mocker):
     event = Event({
         'type': 'block_actions',
         'trigger_id': 'whatevs',
+        'actions': [
+            {
+                'action_id': 'open_interests_dialog'
+            }
+        ],
         'user': {
             'id': 0
         }
@@ -87,6 +92,11 @@ def test_show_interests_dialog_existing_user(mocker):
     event = Event({
         'type': 'block_actions',
         'trigger_id': 'whatevs',
+        'actions': [
+            {
+                'action_id': 'open_interests_dialog'
+            }
+        ],
         'user': {
             'id': 0
         }

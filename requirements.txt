@@ -8,4 +8,3 @@ uwsgi==2.0.18
 # brew install postgres
 # LDFLAGS='-L/usr/local/lib -L/usr/local/opt/openssl/lib -L/usr/local/opt/readline/lib' pip install psycopg2
 psycopg2==2.8.3
-

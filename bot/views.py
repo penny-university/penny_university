@@ -1,25 +1,27 @@
 import json
 import logging
+from pprint import pprint
 
 from django.conf import settings
 import slack
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from bot.processors.greeting import GreetingBotModule
+from bot.processors.pennychat import PennyChatBotModule
 from bot.processors.base import (
     Bot,
     Event,
 )
 
 slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
-bot = Bot(event_processors=[GreetingBotModule(slack_client)])
+bot = Bot(event_processors=[GreetingBotModule(slack_client), PennyChatBotModule(slack_client)])
 
 
 def index(request):
-    return HttpResponse("At least something works.")
+    return HttpResponse("At least something works!!!!")
 
 
 @xframe_options_exempt
@@ -52,3 +54,39 @@ def interactive(request):
     bot(Event(payload))
 
     return HttpResponse('')
+
+
+@csrf_exempt
+def penny_chat(request):
+    event = request.POST
+    PennyChatBotModule.create_penny_chat(slack_client, event)
+    return HttpResponse('')
+
+
+@csrf_exempt
+def command(request):
+    event = request.POST
+    command_and_args = event['text'].split(' ', 1)
+
+    command = command_and_args[0]
+    arguments = ''
+    if len(command_and_args) > 1:
+        arguments = command_and_args[1]
+
+    if command == 'chat':
+        PennyChatBotModule.create_penny_chat(slack_client, event)
+    elif command == 'help':
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "I can help you make a new Penny Chat! Type `/penny chat` to get started.\n"
+                            "_More features coming soon..._"
+                }
+            }
+        ]
+        slack_client.chat_postEphemeral(channel=event['channel_id'], user=event['user_id'], blocks=blocks)
+
+    return HttpResponse('')
+

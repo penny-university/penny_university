@@ -3,28 +3,14 @@ from common.helpers import notify_admins
 from users.models import UserProfile
 from bot.processors.base import (
     BotModule,
-    event_filter,
-    event_filter_factory,
 )
-
-CHANNEL_NAME__ID = {
-    'data': 'C41403LBA',
-    'web': 'C414TFTCH',
-    'random': 'C41DZGE8K',
-    'general': 'C41G02RK4',
-    'deutsch': 'C41Q2A527',
-    'django': 'C41QX2KRS',
-    'python': 'C42D67CNA',
-    'meta-penny': 'C42G2A4LF',
-    'sfpenny': 'C44K5JAR4',
-    'jobs': 'C5WT843FU',
-    'rust': 'C66LPHCLU',
-    'data-nerds-projects': 'C68MH0E8L',
-    'javascript': 'C6GTBL3L5',
-    'job': 'CDM9N259S',
-    'penny-playground': 'CHCM2MFHU',
-    'book-club': 'CHP0FA4J1'
-}
+from bot.processors.filters import (
+    in_room,
+    is_block_interaction_event,
+    has_callback_id,
+    is_event_type,
+    is_action_id
+)
 
 GREETING_CHANNEL = 'general'
 
@@ -92,102 +78,57 @@ def greeting_blocks(user_id):
                         'type': 'plain_text',
                         'text': 'What would you like to learn?',
                     },
-                    'value': 'interests_survey'
+                    'action_id': 'open_interests_dialog'
                 }
             ]
         },
     ]
     return message
 
+
 def onboarding_template(user=None):
     template = {
-            'callback_id': 'interests',
-            'title': 'Let\'s get to know you',
-            'submit_label': 'Submit',
-            'notify_on_cancel': True,
-            'state': 'arbitrary data',
-            'elements': [
-                {
-                    'name': 'topics_to_learn',
-                    'type': 'textarea',
-                    'label': 'What do you want to learn?',
-                    'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
-                    'optional': 'true',
-                    'value': user.topics_to_learn if user else ''
-                },
-                {
-                    'name': 'topics_to_share',
-                    'type': 'textarea',
-                    'label': 'What do you able to share with others?',
-                    'hint': 'Provide a comma separated list of subjects you would be interested in sharing.',
-                    'optional': 'true',
-                    'value': user.topics_to_share if user else ''
-                },
-                {
-                    'name': 'metro_name',
-                    'type': 'text',
-                    'label': 'Where are you from?',
-                    'hint': 'City and state (or country if not the U.S.).',
-                    'optional': 'true',
-                    'value': user.metro_name if user else ''
-                },
-                {
-                    'name': 'how_you_learned_about_pennyu',
-                    'type': 'text',
-                    'label': 'How did you learn about Penny University?',
-                    'hint': 'Who told you? Where did you hear about us?',
-                    'optional': 'true',
-                    'value': user.how_you_learned_about_pennyu if user else ''
-                },
-            ]
-        }
+        'callback_id': 'interests',
+        'title': 'Let\'s get to know you',
+        'submit_label': 'Submit',
+        'notify_on_cancel': True,
+        'state': 'arbitrary data',
+        'elements': [
+            {
+                'name': 'topics_to_learn',
+                'type': 'textarea',
+                'label': 'What do you want to learn?',
+                'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
+                'optional': 'true',
+                'value': user.topics_to_learn if user else ''
+            },
+            {
+                'name': 'topics_to_share',
+                'type': 'textarea',
+                'label': 'What do you able to share with others?',
+                'hint': 'Provide a comma separated list of subjects you would be interested in sharing.',
+                'optional': 'true',
+                'value': user.topics_to_share if user else ''
+            },
+            {
+                'name': 'metro_name',
+                'type': 'text',
+                'label': 'Where are you from?',
+                'hint': 'City and state (or country if not the U.S.).',
+                'optional': 'true',
+                'value': user.metro_name if user else ''
+            },
+            {
+                'name': 'how_you_learned_about_pennyu',
+                'type': 'text',
+                'label': 'How did you learn about Penny University?',
+                'hint': 'Who told you? Where did you hear about us?',
+                'optional': 'true',
+                'value': user.how_you_learned_about_pennyu if user else ''
+            },
+        ]
+    }
     return template
-
-@event_filter_factory
-def in_room(room):
-    def filter_func(event):
-        return 'channel' in event and event['channel'] == CHANNEL_NAME__ID[room]
-
-    return filter_func
-
-
-@event_filter_factory
-def is_event_type(type_string):
-    def filter_func(event):
-        type_arr = type_string.split('.')
-        assert 1 <= len(type_arr) <= 2, 'Format for type_string must be "foo" or "foo.bar" of "*.bar" or "foo.*"'
-        if len(type_arr) == 1:
-            type_arr.append('*')
-        if 'type' not in event:
-            return False
-        if type_arr[0] != '*' and event['type'] != type_arr[0]:
-            return False
-        if 'subtype' in event:
-            if type_arr[1] != '*' and event['subtype'] != type_arr[1]:
-                return False
-        else:
-            if type_arr[1] != '*':
-                return False
-        return True
-
-    return filter_func
-
-
-@event_filter
-def is_block_interaction_event(event):
-    """Detects whether or not the event is a block interaction event
-
-    (such events have a 'trigger_id')
-    """
-    return 'trigger_id' in event
-
-
-@event_filter_factory
-def has_callback_id(callback_id):
-    def filter_func(event):
-        return event['callback_id'] == callback_id
-
-    return filter_func
 
 
 class GreetingBotModule(BotModule):
@@ -201,7 +142,7 @@ class GreetingBotModule(BotModule):
         notify_admins(self.slack, f'<@{event["user"]}> just received a greeting message.')
 
     @is_block_interaction_event
-    @is_event_type('block_actions')
+    @is_action_id('open_interests_dialog')
     def show_interests_dialog(self, event):
         slack_id = event['user']['id']
         user = UserProfile.objects.filter(slack_id=slack_id).first()
