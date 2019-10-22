@@ -1,6 +1,6 @@
 import pytest
 
-from bot.models import User
+from users.models import UserProfile
 from bot.processors.base import Event
 import bot.processors.greeting
 from bot.processors.greeting import GreetingBotModule
@@ -87,7 +87,7 @@ def test_show_interests_dialog_existing_user(mocker):
     slack = mocker.Mock()
     bot_module = GreetingBotModule(slack)
 
-    User.objects.create(slack_id=0, topics_to_learn='django')
+    UserProfile.objects.create(slack_id=0, topics_to_learn='django')
 
     event = Event({
         'type': 'block_actions',
@@ -138,7 +138,7 @@ def test_submit_interests(mocker):
     }
     bot_module(event)
 
-    user = User.objects.get(slack_id='SOME_USER_ID')
+    user = UserProfile.objects.get(slack_id='SOME_USER_ID')
 
     initial_created = user.created
     initial_updated = user.updated
@@ -173,7 +173,7 @@ def test_submit_interests(mocker):
 
     bot_module(event)
 
-    user = User.objects.get(slack_id='SOME_USER_ID')
+    user = UserProfile.objects.get(slack_id='SOME_USER_ID')
 
     assert user.email == 'SOME_EMAIL'
     assert user.slack_id == 'SOME_USER_ID'

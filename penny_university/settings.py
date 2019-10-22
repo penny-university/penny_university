@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '7e@1*$kub8yxjd&pkej#+0k+e9omlz!31$zuq(4$rglm4i(hp1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('PENNY_DEBUG', '').lower() == "true"
 
 ALLOWED_HOSTS = ['*']  # TODO this is a hack - fix once we have domain name set up
 
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'bot.apps.BotConfig',
     'home',
     'pennychat'
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'bot.middleware.DebugPassthrough',
 ]
 
 ROOT_URLCONF = 'penny_university.urls'
@@ -76,12 +79,11 @@ WSGI_APPLICATION = 'penny_university.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+DATABASES = {}
+# in .github/workflows/ci.yml we define a DATABASE_URL corresponding to the test postgres
+# in heroku the production DATABASE_URL is defined (see `heroku config`)
+# if neither is defined then we presume we're in dev and just use sqlite
+DATABASES['default'] = dj_database_url.config(default='sqlite:///db.sqlite3', conn_max_age=600)
 
 
 # Password validation
@@ -119,8 +121,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "penny_university/static")
+]
 
 LOGGING = {
     'version': 1,
@@ -146,6 +152,15 @@ LOGGING = {
         },
     },
 }
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    # Heroku seems to strip HTTP_X_FORWARDED_PROTO and rewrite it correctly  https://help.heroku.com/J2R1S4T8/can-heroku-force-an-application-to-use-ssl-tls
+    # If we move from heroku the following line should be considered insecure b/c anyone could lie about the protocol used.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 
 SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 if SLACK_API_KEY is None:

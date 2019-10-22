@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 
 import slack
 
-from bot.models import User
+from users.models import UserProfile
 from bot.processors.greeting import greeting_blocks
 
 class Command(BaseCommand):
@@ -45,7 +45,7 @@ class Command(BaseCommand):
                 else:
                     not_found_users.add(slack_name)
         else:
-            responded_user_ids = [user.slack_id for user in User.objects.all() if user.slack_id]
+            responded_user_ids = [user.slack_id for user in UserProfile.objects.all() if user.slack_id]
             non_responded_user_ids = set(user_id__slack_name).difference(responded_user_ids)
 
         # notify developer of send status
