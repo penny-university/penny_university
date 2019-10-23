@@ -1,2 +1,2 @@
 release: python manage.py migrate
-web: gunicorn penny_university.wsgi
+web: gunicorn --workers=2 penny_university.wsgi
