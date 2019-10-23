@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bot.apps.BotConfig',
     'home',
-    'pennychat'
+    'pennychat',
     'users',
 ]
 
