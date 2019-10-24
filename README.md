@@ -40,3 +40,20 @@ Example:
 /* styles.scss */
 @import("text_utils");
 ```
+
+## Create A Tunneling Pass Through (Local Development)
+
+*ONLY USE FOR LOCAL DEVELOPMENT*
+
+Steps:
+
+1. deploy app to https://yourapp.herokuapp.com
+2. visit https://yourapp.herokuapp.com/bot and see default response "at least something worked"
+3. modify the bot index endpoint to say "something else"
+4. set up local tunnel (ngrock, etc.)
+5. visit http://yourapp.herokuapp.com/forward?host=yourngrockhost&port=8001 (only use port if needed)
+6. now visit https://yourapp.herokuapp.com/bot and see "something else"
+
+Based upon this you can automatically forward all traffic over the tunnel.
+
+To cancel just visit http://yourapp.herokuapp.com/forward
