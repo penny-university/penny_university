@@ -23,6 +23,7 @@ def interactive():
     print_stuff('/bot/interactive/', request)
     return jsonify({})
 
+
 @app.route('/bot/hook/', methods=['POST'])
 def hook():
     data = request.get_json()
@@ -39,4 +40,9 @@ def command():
 
 
 def print_stuff(path, request):
-    print(f'{path}\nJSON: {json.dumps(request.json, indent=2)}\nARGS: {json.dumps(request.args, indent=2)}\nFORM: {json.dumps(request.form, indent=2)}\n-----------------------------------------\n\n')
+    print(
+        f'{path}\nJSON: {json.dumps(request.json, indent=2)}\n'
+        f'ARGS: {json.dumps(request.args, indent=2)}\n'
+        f'FORM: {json.dumps(request.form, indent=2)}\n'
+        '-----------------------------------------\n\n'
+    )

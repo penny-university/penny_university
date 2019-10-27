@@ -1,5 +1,6 @@
 from functools import wraps
 
+
 class Event(dict):
     """I assume a simple model for a event for now."""
     def __init__(self, *args, **kwargs):

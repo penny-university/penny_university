@@ -8,9 +8,10 @@ import slack
 from users.models import UserProfile
 from bot.processors.greeting import greeting_blocks
 
+
 class Command(BaseCommand):
-    help = """Send out onboarding questionnaire to set of users specified by a list of slack names. If no users 
-    are specified then all users that don't have a row in the database will be contacted. There is a safety switch in 
+    help = """Send out onboarding questionnaire to set of users specified by a list of slack names. If no users
+    are specified then all users that don't have a row in the database will be contacted. There is a safety switch in
     the script requiring you to start the send after it lists who will get the onboarding."""
 
     def add_arguments(self, parser):

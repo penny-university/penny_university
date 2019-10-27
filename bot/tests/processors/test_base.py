@@ -11,7 +11,7 @@ from bot.processors.base import (
 def test_Bot(mocker):
     processor = mocker.Mock()
     bot = Bot(event_processors=[processor])
-    bot(Event({'some':'message'}))
+    bot(Event({'some': 'message'}))
     assert processor.call_args == mocker.call({'some': 'message'})
 
 
@@ -44,8 +44,8 @@ def test_BotModule(mocker):
 
     assert tester1.call_args == mocker.call(event)
     assert tester2.call_args == mocker.call(event)
-    assert tester3.called == False
-    assert tester4.called == False
+    assert not tester3.called
+    assert not tester4.called
 
 
 def test_event_filter(mocker):

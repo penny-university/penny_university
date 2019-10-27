@@ -1,11 +1,10 @@
 import json
 import logging
-from pprint import pprint
 
 from django.conf import settings
 import slack
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 
@@ -66,13 +65,7 @@ def penny_chat(request):
 @csrf_exempt
 def command(request):
     event = request.POST
-    command_and_args = event['text'].split(' ', 1)
-
-    command = command_and_args[0]
-    arguments = ''
-    if len(command_and_args) > 1:
-        arguments = command_and_args[1]
-
+    command = event['text'].split(' ', 1)[0]
     if command == 'chat':
         PennyChatBotModule.create_penny_chat(slack_client, event)
     elif command == 'help':
@@ -89,4 +82,3 @@ def command(request):
         slack_client.chat_postEphemeral(channel=event['channel_id'], user=event['user_id'], blocks=blocks)
 
     return HttpResponse('')
-

@@ -17,7 +17,8 @@ def in_room(room):
 def is_event_type(type_string):
     def filter_func(event):
         type_arr = type_string.split('.')
-        assert 1 <= len(type_arr) <= 2, 'Format for type_string must be "foo" or "foo.bar" of "*.bar" or "foo.*"'
+        assert 1 <= len(type_arr) <= 2, \
+            'Format for type_string must be "foo" or "foo.bar" of "*.bar" or "foo.*"'
         if len(type_arr) == 1:
             type_arr.append('*')
         if 'type' not in event:
