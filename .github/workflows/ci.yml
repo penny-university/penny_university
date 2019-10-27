@@ -41,7 +41,7 @@ jobs:
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
       run: |
         pytest
-    - name: Test with pytest
+    - name: Flake8
       env:
         SLACK_API_TOKEN: ""
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
