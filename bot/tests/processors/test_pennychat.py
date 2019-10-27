@@ -11,13 +11,15 @@ TZ = timezone('America/Chicago')
 
 
 def create_penny_chat():
-    date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    chat = PennyChat.objects.create(user='user',
-                                    status=PennyChat.DRAFT_STATUS,
-                                    user_tz='America/Chicago',
-                                    template_channel='channel',
-                                    date=date,
-                                    view='view')
+    date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=utc)
+    chat = PennyChat.objects.create(
+        user='user',
+        status=PennyChat.DRAFT_STATUS,
+        user_tz='America/Chicago',
+        template_channel='channel',
+        date=date,
+        view='view',
+    )
     return chat.id
 
 
@@ -78,7 +80,6 @@ def test_time_select(mocker):
     })
 
     bot_module(event)
-
     penny_chat = PennyChat.objects.get(id=chat_id)
     test_time = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0).time()
     assert penny_chat.date.astimezone(TZ).time() == test_time
