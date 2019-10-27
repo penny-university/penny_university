@@ -42,8 +42,8 @@ jobs:
       run: |
         pytest
     - name: Test with pytest
-        env:
-          SLACK_API_TOKEN: ""
-          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
-        run: |
-          flake8 `git diff --name-only master`
+      env:
+        SLACK_API_TOKEN: ""
+        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
+      run: |
+        flake8 `git diff --name-only master`
