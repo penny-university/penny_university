@@ -34,11 +34,16 @@ jobs:
         sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install -r dev-requirements.txt
     - name: Test with pytest
       env:
         SLACK_API_TOKEN: ""
         DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
       run: |
-        pip install -r dev-requirements.txt
         pytest
-
+    - name: Test with pytest
+        env:
+          SLACK_API_TOKEN: ""
+          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
+        run: |
+          flake8 `git diff --name-only master`
