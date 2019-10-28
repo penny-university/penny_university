@@ -5,14 +5,15 @@ from bot.processors.base import (
     event_filter,
     event_filter_factory,
     process_all_events,
+    processor_decorator,
 )
 
 
 def test_Bot(mocker):
     processor = mocker.Mock()
     bot = Bot(event_processors=[processor])
-    bot(Event({'some': 'message'}))
-    assert processor.call_args == mocker.call({'some': 'message'})
+    bot(Event({'some': 'event'}))
+    assert processor.call_args == mocker.call({'some': 'event'})
 
 
 def test_BotModule(mocker):
@@ -39,13 +40,143 @@ def test_BotModule(mocker):
             tester4(event)
 
     my_bot_module = MyBotModule()
-    event = {'some': 'message'}
+    event = {'some': 'event'}
     my_bot_module(Event(event))
 
     assert tester1.call_args == mocker.call(event)
     assert tester2.call_args == mocker.call(event)
     assert not tester3.called
     assert not tester4.called
+
+
+def test_processor_decorator__as_filter_for_function(mocker):
+    tester = mocker.Mock()
+
+    @processor_decorator
+    def contains_kitten(event):
+        return 'kitten' in event
+
+    @contains_kitten
+    def event_processor(event):
+        tester()
+        assert 'kitten' in event
+
+    assert contains_kitten.__name__ == 'contains_kitten', 'not correctly @wraps-ing the decorated function'
+    assert event_processor.__name__ == 'event_processor', 'not correctly @wraps-ing the decorated function'
+
+    event_processor('kitten is cool')
+    event_processor('smitten with love')
+    assert tester.call_count == 1
+
+
+def test_processor_decorator__as_filter_for_method(mocker):
+    tester = mocker.Mock()
+
+    @processor_decorator
+    def contains_kitten(event):
+        return 'kitten' in event
+
+    class eventProcessor:
+        @contains_kitten
+        def process(self, event):
+            tester()
+            assert 'kitten' in event
+
+    assert contains_kitten.__name__ == 'contains_kitten', 'not correctly @wraps-ing the decorated function'
+    assert eventProcessor().process.__name__ == 'process', 'not correctly @wraps-ing the decorated function'
+
+    eventProcessor().process('kitten is cool')
+    eventProcessor().process('smitten with love')
+    assert tester.call_count == 1
+
+
+def test_processor_decorator__as_transformer(mocker):
+    tester = mocker.Mock()
+
+    @processor_decorator
+    def from_bob(event):
+        if event['from'] == 'bob':
+            event['extra_data'] = '1234'
+            return event
+
+    @from_bob
+    def event_processor(event):
+        tester()
+        assert event['from'] == 'bob'
+        assert 'extra_data' in event
+
+    event_processor({'from': 'bob'})
+    event_processor({'from': 'jim'})
+    assert tester.call_count == 1
+
+
+def test_processor_decorator__as_filter_maker(mocker):
+    tester = mocker.Mock()
+
+    @processor_decorator
+    def from_user(user_name, event):
+        return event['from'] == user_name
+
+    @from_user('bob')
+    def event_processor(event):
+        tester()
+        assert event['from'] == 'bob'
+
+    event_processor({'from': 'bob'})
+    event_processor({'from': 'jim'})
+
+    # different way of using filter makers
+    from_bob = from_user('bob')
+
+    @from_bob
+    def event_processor2(event):
+        assert event['from'] == 'bob'
+
+    event_processor2({'from': 'bob'})
+    event_processor2({'from': 'jim'})
+    assert tester.call_count == 1
+
+
+def test_processor_decorator__nested(mocker):
+    # I'm testing this because in an earlier implementation there was a bug when nesting deeper into
+    # processor_decorators
+    tester = mocker.Mock()
+
+    @processor_decorator
+    def from_bob(event):
+        return event['from'] == 'bob'
+
+    @from_bob
+    @from_bob
+    @from_bob
+    @from_bob
+    def event_processor(event):
+        tester()
+        assert event['from'] == 'bob'
+
+    event_processor({'from': 'bob'})
+    event_processor({'from': 'jim'})
+    assert tester.call_count == 1
+
+
+def test_processor_decorator__decorating_bot_modules(mocker):
+    tester = mocker.Mock()
+
+    @processor_decorator
+    def from_bob(event):
+        return event['from'] == 'bob'
+
+    class SomeBotModule(BotModule):
+        @process_all_events
+        def processor(self, event):
+            tester()
+            assert event['from'] == 'bob'
+
+    module = from_bob(SomeBotModule())  # since the bot module is just a processor, it will also work like the above
+
+    module({'from': 'bob'})
+    module({'from': 'jim'})
+    assert tester.call_count == 1
 
 
 def test_event_filter(mocker):
