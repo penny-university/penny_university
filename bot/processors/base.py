@@ -1,7 +1,14 @@
-from functools import wraps
+from functools import (
+    partial,
+    wraps,
+)
+
+PROCESSOR_DEFINITION = (
+    'a processor (besides, self or cls) takes only a single argument called "event" which represents the event payload'
+)
 
 
-class Event(dict):
+class Event(dict):  # TODO remove this and just pass around dict events
     """I assume a simple model for a event for now."""
     def __init__(self, *args, **kwargs):
         super(Event, self).__init__(*args, **kwargs)
@@ -14,6 +21,80 @@ def process_all_events(func):
     """
     func.event_processor = True
     return func
+
+
+def processor_decorator(transform_filter_func):
+    """Makes a processor decorator out of the function that it decorates.
+
+    In its most basic form, a transform_filter_func takes an event and returns True if the filter applies to that event.
+    Such a transform_filter_func decorated by processor_decorator becomes a decorator that can modify processors and
+    filter their events. Example:
+
+    ```
+    @processor_filter
+    def contains_kittens(event):
+        return 'kittens' in event.text
+    ```
+
+    Now `contains_kittens` is a processor decorator that can be used to filter out all events except those that
+    contain "kittens".
+
+    ```
+    @contains_kittens
+    def event_processor(event):
+        assert 'kitten' in event['text'], 'this should never fail'
+    ```
+
+    """  # TODO finish
+
+    @wraps(transform_filter_func)
+    def decorator(*dec_args, **dec_kwargs):
+        if dec_args and callable(dec_args[0]):
+            processor = dec_args[0]
+
+            @wraps(processor)
+            def wrapped_processor(*args, **kwargs):
+                if len(args) == 0 and 'event' in kwargs and len(kwargs) == 1:
+                    # by the time you get here, you think you are calling the original proce
+                    args = (kwargs['event'],)
+                    kwargs = {}
+                assert not kwargs, PROCESSOR_DEFINITION
+                assert 1 <= len(args) <= 2, PROCESSOR_DEFINITION
+                try:
+                    if len(args) == 1:
+                        event = args[0]
+                        new_event = transform_filter_func(event=event)
+                        if new_event is True:
+                            return processor(event=event)
+                        elif new_event:
+                            return processor(event=new_event)
+                        else:
+                            return None
+                    else:  # len(args) == 2
+                        event = args[1]
+                        new_event = transform_filter_func(event=event)
+                        if new_event is True:
+                            return processor(args[0], event=event)
+                        elif new_event:
+                            return processor(args[0], event=new_event)
+                        else:
+                            return None
+                except TypeError as e:
+                    if "got an unexpected keyword argument 'event'" in e.args and e.args[0]:
+                        raise TypeError(
+                            'event_processors or transform_filter_func must have an "event" argument '
+                            'which carries the event payload'
+                        )
+
+            return wrapped_processor
+        else:
+            # new_filter_func _kinda_ wraps filter_func but it also changes the signature
+            # so I'm now applying @wraps here - I'm just hoping `partial` does the correct thing
+            # partial has a `func` attribute
+            new_filter_func = partial(transform_filter_func, *dec_args, **dec_kwargs)
+            return processor_decorator(new_filter_func)
+
+    return decorator
 
 
 def event_filter(filter_func):
