@@ -4,7 +4,8 @@ from functools import (
 )
 
 PROCESSOR_DEFINITION = (
-    'a processor (besides, self or cls) takes only a single argument called "event" which represents the event payload'
+    'A processor takes only a single argument (besides, the possibility of `self` or `cls`). This represents the event '
+    'payload. This argument must be named "event".'
 )
 
 
@@ -26,9 +27,13 @@ def process_all_events(func):
 def processor_decorator(transform_filter_func):
     """Makes a processor decorator out of the function that it decorates.
 
+    A processor is a function that takes an event and does something with it. It can be any callable including instance
+    methods and class methods. The only constraint is that it should have a single input representing an event and that
+    input must be name "event". There is no constraint on what an event is at all.
+
     In its most basic form, a transform_filter_func takes an event and returns True if the filter applies to that event.
-    Such a transform_filter_func decorated by processor_decorator becomes a decorator that can modify processors and
-    filter their events. Example:
+    Such a transform_filter_func decorated by processor_decorator itself _becomes_ a decorator that can modify
+    processors and filter their events. Example:
 
     ```
     @processor_filter
@@ -42,10 +47,33 @@ def processor_decorator(transform_filter_func):
     ```
     @contains_kittens
     def event_processor(event):
-        assert 'kitten' in event['text'], 'this should never fail'
+        assert 'kitten' in event.text, 'this should never fail'
     ```
 
-    """  # TODO finish
+    `@contains_kittens` could also be applied to methods of a class.
+
+
+    A transform_filter_func can also act as a transformer that _mutates_ an event to anything else. For example
+
+    ```
+    @processor_filter
+    def frightens_kittens(event):
+        if 'kittens' in event.text:
+            event.text = event.text + " ... BOO!"
+            return event
+    ```
+
+    With this transform_filter_func, the following assertions should hold for any event given to the event processor:
+
+    ```
+    @contains_kittens
+    def event_processor(event):
+        assert 'kitten' in event.text, 'this should never fail'
+        assert 'BOO' in event.text, 'this should never fail'
+    ```
+
+    For more information see the `test_processor_decorator__*` tests.
+    """
 
     @wraps(transform_filter_func)
     def decorator(*dec_args, **dec_kwargs):
@@ -54,31 +82,41 @@ def processor_decorator(transform_filter_func):
 
             @wraps(processor)
             def wrapped_processor(*args, **kwargs):
-                if len(args) == 0 and 'event' in kwargs and len(kwargs) == 1:
-                    # by the time you get here, you think you are calling the original proce
-                    args = (kwargs['event'],)
-                    kwargs = {}
-                assert not kwargs, PROCESSOR_DEFINITION
-                assert 1 <= len(args) <= 2, PROCESSOR_DEFINITION
+                # At this point, you think you are calling the original processor which can only have a
+                # single argument called "event". But, A) "event" can be passed in as an argument or a key word
+                # argument, and B) the processor can be a method or classmethod, in which case a hidden "self" or "cls"
+                # argument will be passed in first. This forms a matrix of 4 valid possibilities.
+                self_or_class = None
+                event = None
+                if kwargs:
+                    assert len(kwargs) == 1, PROCESSOR_DEFINITION
+                    assert 'event' in kwargs, PROCESSOR_DEFINITION
+                    event = kwargs['event']
+                if args:
+                    if event:
+                        assert len(args) <= 1, PROCESSOR_DEFINITION
+                        if len(args) == 1:
+                            self_or_class = args[0]
+                    else:
+                        assert len(args) <= 2, PROCESSOR_DEFINITION
+                        if len(args) == 2:
+                            self_or_class = args[0]
+                        event = args[-1]  # last argument is the "event"
+
                 try:
-                    if len(args) == 1:
-                        event = args[0]
-                        new_event = transform_filter_func(event=event)
-                        if new_event is True:
+                    new_event = transform_filter_func(event=event)
+                    if new_event is True:
+                        if self_or_class:
+                            return processor(self_or_class, event=event)
+                        else:
                             return processor(event=event)
-                        elif new_event:
+                    elif new_event:
+                        if self_or_class:
+                            return processor(self_or_class, event=new_event)
+                        else:
                             return processor(event=new_event)
-                        else:
-                            return None
-                    else:  # len(args) == 2
-                        event = args[1]
-                        new_event = transform_filter_func(event=event)
-                        if new_event is True:
-                            return processor(args[0], event=event)
-                        elif new_event:
-                            return processor(args[0], event=new_event)
-                        else:
-                            return None
+                    else:
+                        return None
                 except TypeError as e:
                     if "got an unexpected keyword argument 'event'" in e.args and e.args[0]:
                         raise TypeError(
@@ -90,7 +128,7 @@ def processor_decorator(transform_filter_func):
         else:
             # new_filter_func _kinda_ wraps filter_func but it also changes the signature
             # so I'm now applying @wraps here - I'm just hoping `partial` does the correct thing
-            # partial has a `func` attribute
+            # partial has a `func` attribute that points to the function that was partially applied
             new_filter_func = partial(transform_filter_func, *dec_args, **dec_kwargs)
             return processor_decorator(new_filter_func)
 
