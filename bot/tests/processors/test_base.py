@@ -76,21 +76,21 @@ def test_processor_decorator__as_filter_for_method(mocker):
     def contains_kitten(event):
         return 'kitten' in event
 
-    class eventProcessor:
+    class EventProcessor:
         @contains_kitten
         def process(self, event):
             tester()
             assert 'kitten' in event
 
     assert contains_kitten.__name__ == 'contains_kitten', 'not correctly @wraps-ing the decorated function'
-    assert eventProcessor().process.__name__ == 'process', 'not correctly @wraps-ing the decorated function'
+    assert EventProcessor().process.__name__ == 'process', 'not correctly @wraps-ing the decorated function'
 
-    eventProcessor().process('kitten is cool')
-    eventProcessor().process('smitten with love')
+    EventProcessor().process('kitten is cool')
+    EventProcessor().process('smitten with love')
     assert tester.call_count == 1
 
 
-def test_processor_decorator__as_transformer(mocker):
+def test_processor_decorator__as_transformer_for_function(mocker):
     tester = mocker.Mock()
 
     @processor_decorator
@@ -107,6 +107,27 @@ def test_processor_decorator__as_transformer(mocker):
 
     event_processor({'from': 'bob'})
     event_processor({'from': 'jim'})
+    assert tester.call_count == 1
+
+
+def test_processor_decorator__as_transformer_for_method(mocker):
+    tester = mocker.Mock()
+
+    @processor_decorator
+    def from_bob(event):
+        if event['from'] == 'bob':
+            event['extra_data'] = '1234'
+            return event
+
+    class EventProcessor:
+        @from_bob
+        def process(self, event):
+            tester()
+            assert event['from'] == 'bob'
+            assert 'extra_data' in event
+
+    EventProcessor().process({'from': 'bob'})
+    EventProcessor().process({'from': 'jim'})
     assert tester.call_count == 1
 
 
@@ -136,10 +157,21 @@ def test_processor_decorator__as_filter_maker(mocker):
     event_processor2({'from': 'jim'})
     assert tester.call_count == 1
 
+    # trying with named args (this had a bug at one point)
+    from_bob = from_user('bob')
 
-def test_processor_decorator__nested(mocker):
+    @from_bob
+    def event_processor2(event):
+        assert event['from'] == 'bob'
+
+    event_processor2({'from': 'bob'})
+    event_processor2({'from': 'jim'})
+    assert tester.call_count == 1
+
+
+def test_processor_decorator__nested_function(mocker):
     # I'm testing this because in an earlier implementation there was a bug when nesting deeper into
-    # processor_decorators
+    # processor_decorators. Multiple redundant decorators should work the same as a single decorator
     tester = mocker.Mock()
 
     @processor_decorator
@@ -156,6 +188,29 @@ def test_processor_decorator__nested(mocker):
 
     event_processor({'from': 'bob'})
     event_processor({'from': 'jim'})
+    assert tester.call_count == 1
+
+
+def test_processor_decorator__nested_method(mocker):
+    # Ref test_processor_decorator__nested_function, there was a related, but different bug with applying nested
+    # decorators to methods
+    tester = mocker.Mock()
+
+    @processor_decorator
+    def from_bob(event):
+        return event['from'] == 'bob'
+
+    class EventProcessor:
+        @from_bob
+        @from_bob
+        @from_bob
+        @from_bob
+        def process(self, event):
+            tester()
+            assert event['from'] == 'bob'
+
+    EventProcessor().process({'from': 'bob'})
+    EventProcessor().process({'from': 'jim'})
     assert tester.call_count == 1
 
 
