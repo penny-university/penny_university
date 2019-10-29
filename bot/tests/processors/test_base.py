@@ -5,7 +5,7 @@ from bot.processors.base import (
     event_filter,
     event_filter_factory,
     process_all_events,
-    processor_decorator,
+    event_processor_decorator,
 )
 
 
@@ -49,10 +49,10 @@ def test_BotModule(mocker):
     assert not tester4.called
 
 
-def test_processor_decorator__as_filter_for_function(mocker):
+def test_event_processor_decorator__as_filter_for_function(mocker):
     tester = mocker.Mock()
 
-    @processor_decorator
+    @event_processor_decorator
     def contains_kitten(event):
         return 'kitten' in event
 
@@ -69,10 +69,10 @@ def test_processor_decorator__as_filter_for_function(mocker):
     assert tester.call_count == 1
 
 
-def test_processor_decorator__as_filter_for_method(mocker):
+def test_event_processor_decorator__as_filter_for_method(mocker):
     tester = mocker.Mock()
 
-    @processor_decorator
+    @event_processor_decorator
     def contains_kitten(event):
         return 'kitten' in event
 
@@ -90,10 +90,10 @@ def test_processor_decorator__as_filter_for_method(mocker):
     assert tester.call_count == 1
 
 
-def test_processor_decorator__as_transformer_for_function(mocker):
+def test_event_processor_decorator__as_transformer_for_function(mocker):
     tester = mocker.Mock()
 
-    @processor_decorator
+    @event_processor_decorator
     def from_bob(event):
         if event['from'] == 'bob':
             event['extra_data'] = '1234'
@@ -110,10 +110,10 @@ def test_processor_decorator__as_transformer_for_function(mocker):
     assert tester.call_count == 1
 
 
-def test_processor_decorator__as_transformer_for_method(mocker):
+def test_event_processor_decorator__as_transformer_for_method(mocker):
     tester = mocker.Mock()
 
-    @processor_decorator
+    @event_processor_decorator
     def from_bob(event):
         if event['from'] == 'bob':
             event['extra_data'] = '1234'
@@ -131,10 +131,10 @@ def test_processor_decorator__as_transformer_for_method(mocker):
     assert tester.call_count == 1
 
 
-def test_processor_decorator__as_filter_maker(mocker):
+def test_event_processor_decorator__as_filter_maker(mocker):
     tester = mocker.Mock()
 
-    @processor_decorator
+    @event_processor_decorator
     def from_user(user_name, event):
         return event['from'] == user_name
 
@@ -169,12 +169,12 @@ def test_processor_decorator__as_filter_maker(mocker):
     assert tester.call_count == 1
 
 
-def test_processor_decorator__nested_function(mocker):
+def test_event_processor_decorator__nested_function(mocker):
     # I'm testing this because in an earlier implementation there was a bug when nesting deeper into
-    # processor_decorators. Multiple redundant decorators should work the same as a single decorator
+    # event_processor_decorators. Multiple redundant decorators should work the same as a single decorator
     tester = mocker.Mock()
 
-    @processor_decorator
+    @event_processor_decorator
     def from_bob(event):
         return event['from'] == 'bob'
 
@@ -191,12 +191,12 @@ def test_processor_decorator__nested_function(mocker):
     assert tester.call_count == 1
 
 
-def test_processor_decorator__nested_method(mocker):
-    # Ref test_processor_decorator__nested_function, there was a related, but different bug with applying nested
+def test_event_processor_decorator__nested_method(mocker):
+    # Ref test_event_processor_decorator__nested_function, there was a related, but different bug with applying nested
     # decorators to methods
     tester = mocker.Mock()
 
-    @processor_decorator
+    @event_processor_decorator
     def from_bob(event):
         return event['from'] == 'bob'
 
@@ -214,10 +214,10 @@ def test_processor_decorator__nested_method(mocker):
     assert tester.call_count == 1
 
 
-def test_processor_decorator__decorating_bot_modules(mocker):
+def test_event_processor_decorator__decorating_bot_modules(mocker):
     tester = mocker.Mock()
 
-    @processor_decorator
+    @event_processor_decorator
     def from_bob(event):
         return event['from'] == 'bob'
 

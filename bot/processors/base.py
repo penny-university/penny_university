@@ -24,15 +24,15 @@ def process_all_events(func):
     return func
 
 
-def processor_decorator(transform_filter_func):
-    """Makes a processor decorator out of the function that it decorates.
+def event_processor_decorator(transform_filter_func):
+    """Makes an event processor decorator out of the function that it decorates.
 
-    A processor is a function that takes an event and does something with it. It can be any callable including instance
-    methods and class methods. The only constraint is that it should have a single input representing an event and that
-    input must be name "event". There is no constraint on what an event is at all.
+    An event processor is a function that takes an event and does something with it. It can be any callable including
+    instance methods and class methods. The only constraint is that it should have a single input representing an event
+    and that input must be name "event". There is no constraint on what an event is at all.
 
     In its most basic form, a transform_filter_func takes an event and returns True if the filter applies to that event.
-    Such a transform_filter_func decorated by processor_decorator itself _becomes_ a decorator that can modify
+    Such a transform_filter_func decorated by event_processor_decorator itself _becomes_ a decorator that can modify
     processors and filter their events. Example:
 
     ```
@@ -72,7 +72,7 @@ def processor_decorator(transform_filter_func):
         assert 'BOO' in event.text, 'this should never fail'
     ```
 
-    For more information see the `test_processor_decorator__*` tests.
+    For more information see the `test_event_processor_decorator__*` tests.
     """
 
     @wraps(transform_filter_func)
@@ -130,7 +130,7 @@ def processor_decorator(transform_filter_func):
             # so I'm now applying @wraps here - I'm just hoping `partial` does the correct thing
             # partial has a `func` attribute that points to the function that was partially applied
             new_filter_func = partial(transform_filter_func, *dec_args, **dec_kwargs)
-            return processor_decorator(new_filter_func)
+            return event_processor_decorator(new_filter_func)
 
     return decorator
 
