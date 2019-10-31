@@ -1,10 +1,6 @@
 from bot.processors.base import (
     Bot,
-    Event,
     BotModule,
-    event_filter,
-    event_filter_factory,
-    process_all_events,
     event_processor_decorator,
 )
 
@@ -12,41 +8,33 @@ from bot.processors.base import (
 def test_Bot(mocker):
     processor = mocker.Mock()
     bot = Bot(event_processors=[processor])
-    bot(Event({'some': 'event'}))
+    bot({'some': 'event'})
     assert processor.call_args == mocker.call({'some': 'event'})
 
 
 def test_BotModule(mocker):
     tester1 = mocker.Mock()
     tester2 = mocker.Mock()
-    tester3 = mocker.Mock()
-    tester4 = mocker.Mock()
 
     class MyBotModule(BotModule):
+        processors = [
+            'process_events',
+        ]
+
         some_var = 'make sure we don\'t try to call this'
 
-        @event_filter(lambda e: True)  # pass through all events
-        def process_events_1(self, event):
+        def process_events(self, event):
             tester1(event)
 
-        @process_all_events
-        def process_events_2(self, event):
+        def not_a_processor(self, event):
             tester2(event)
-
-        def not_a_processor_3(self, event):
-            tester3(event)
-
-        def not_a_processor_4(self, event):
-            tester4(event)
 
     my_bot_module = MyBotModule()
     event = {'some': 'event'}
-    my_bot_module(Event(event))
+    my_bot_module(event)
 
     assert tester1.call_args == mocker.call(event)
-    assert tester2.call_args == mocker.call(event)
-    assert not tester3.called
-    assert not tester4.called
+    assert not tester2.called
 
 
 def test_event_processor_decorator__as_filter_for_function(mocker):
@@ -222,7 +210,8 @@ def test_event_processor_decorator__decorating_bot_modules(mocker):
         return event['from'] == 'bob'
 
     class SomeBotModule(BotModule):
-        @process_all_events
+        processors = ['processor']
+
         def processor(self, event):
             tester()
             assert event['from'] == 'bob'
@@ -232,43 +221,3 @@ def test_event_processor_decorator__decorating_bot_modules(mocker):
     module({'from': 'bob'})
     module({'from': 'jim'})
     assert tester.call_count == 1
-
-
-def test_event_filter(mocker):
-    tester = mocker.Mock()
-
-    @event_filter(lambda e: e['call_me'])
-    def my_func(event):
-        tester(event)
-
-    assert my_func.__name__ == 'my_func'  # otherwise we're not transferring the function properties correctly
-
-    my_func(Event({'call_me': False}))
-    assert tester.called is False
-
-    my_func(Event({'call_me': True}))
-    assert tester.call_args == mocker.call({'call_me': True})
-
-
-def test_event_filter_factory(mocker):
-    tester = mocker.Mock()
-
-    @event_filter_factory
-    def is_color(color):
-        def filter_func(event):
-            return event['color'] == color
-        return filter_func
-
-    assert is_color.__name__ == 'is_color'  # otherwise we're not transferring the function properties correctly
-
-    @is_color('green')
-    def my_func(event):
-        tester(event)
-
-    assert my_func.__name__ == 'my_func'
-
-    my_func(Event({'color': 'red'}))
-    assert tester.called is False
-
-    my_func(Event({'color': 'green'}))
-    assert tester.call_args == mocker.call({'color': 'green'})

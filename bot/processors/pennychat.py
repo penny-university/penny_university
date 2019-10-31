@@ -302,6 +302,16 @@ def penny_chat_details_modal(penny_chat):
 
 
 class PennyChatBotModule(BotModule):
+    processors = [
+        'date_select',
+        'time_select',
+        'user_select',
+        'channel_select',
+        'submit_details',
+        'edit_chat',
+        'share',
+    ]
+
     def __init__(self, slack):
         self.slack = slack
 
