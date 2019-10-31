@@ -132,6 +132,12 @@ def onboarding_template(user=None):
 
 
 class GreetingBotModule(BotModule):
+    processors = [
+        'welcome_user',
+        'show_interests_dialog',
+        'submit_interests',
+    ]
+
     def __init__(self, slack):
         self.slack = slack
 

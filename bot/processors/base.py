@@ -9,21 +9,6 @@ PROCESSOR_DEFINITION = (
 )
 
 
-class Event(dict):  # TODO remove this and just pass around dict events
-    """I assume a simple model for a event for now."""
-    def __init__(self, *args, **kwargs):
-        super(Event, self).__init__(*args, **kwargs)
-
-
-def process_all_events(func):
-    """Decorator for marking a function as an event processor.
-
-    Functions decorated by this will receive all messages unfiltered.
-    """
-    func.event_processor = True
-    return func
-
-
 def event_processor_decorator(transform_filter_func):
     """Makes an event processor decorator out of the function that it decorates.
 
@@ -33,30 +18,48 @@ def event_processor_decorator(transform_filter_func):
 
     In its most basic form, a transform_filter_func takes an event and returns True if the filter applies to that event.
     Such a transform_filter_func decorated by event_processor_decorator itself _becomes_ a decorator that can modify
-    processors and filter their events. Example:
+    processors and filter their events. Examples:
 
     ```
-    @processor_filter
-    def contains_kittens(event):
-        return 'kittens' in event.text
+    @event_processor_decorator
+    def contains_kitten(event):
+        return 'kitten' in event.text
     ```
 
     Now `contains_kittens` is a processor decorator that can be used to filter out all events except those that
-    contain "kittens".
+    contain "kitten".
 
     ```
-    @contains_kittens
+    @contains_kitten
     def event_processor(event):
         assert 'kitten' in event.text, 'this should never fail'
     ```
 
-    `@contains_kittens` could also be applied to methods of a class.
+    `@contains_kitten` could also be applied to methods of a class.
 
-
-    A transform_filter_func can also act as a transformer that _mutates_ an event to anything else. For example
+    You can also make parameterized event_processor_decorators like this:
 
     ```
-    @processor_filter
+    @event_processor_decorator
+    def contains_string(string, event):
+        return string in event.text
+    ```
+
+    This can be applied to processors more generically because of the parameterization.
+
+    ```
+    @contains_string('kitten')
+    def event_processor(event):
+        assert 'kitten' in event.text, 'this should never fail'
+    ```
+
+    This would have the same effect as `@contains_kitten` above.
+
+
+    Finally, a transform_filter_func can also act as a transformer that _mutates_ an event to anything else. For example
+
+    ```
+    @event_processor_decorator
     def frightens_kittens(event):
         if 'kittens' in event.text:
             event.text = event.text + " ... BOO!"
@@ -118,11 +121,13 @@ def event_processor_decorator(transform_filter_func):
                     else:
                         return None
                 except TypeError as e:
-                    if "got an unexpected keyword argument 'event'" in e.args and e.args[0]:
+                    if e.args and "got an unexpected keyword argument 'event'" in e.args[0]:
                         raise TypeError(
                             'event_processors or transform_filter_func must have an "event" argument '
                             'which carries the event payload'
                         )
+                    else:
+                        raise
 
             return wrapped_processor
         else:
@@ -135,83 +140,7 @@ def event_processor_decorator(transform_filter_func):
     return decorator
 
 
-def event_filter(filter_func):
-    """Decorator for turning a function into an event processor decorator.
-
-
-    The decorated function takes an event and returns True if the event should be processed and False otherwise.
-
-    Ex:
-
-    ```
-    @event_filter
-    def is_happy_event(event):
-        return event.get('mood','not_happy') == 'happy'
-    ```
-
-    Given this you can decorate event processors with it:
-
-    ```
-    @is_happy_event
-    def process_only_happy_events(event):
-        print("I'm glad you're so happy.")
-    ```
-    """
-    def decorator(func):
-        func.event_processor = True
-        @wraps(func)
-        def wrapper(*args):
-            event = args[0] if isinstance(args[0], Event) else args[1]  # b/c 0 arg is `self`
-            if filter_func(event):
-                return func(*args)
-        return wrapper
-    return decorator
-
-
-def event_filter_factory(filter_func_maker):
-    """Decorator for turning a function factory into and event processor decorator.
-
-    The decorated function takes any parameters needed to create an event filter and returns that event filter
-
-    Ex:
-
-    ```
-    @event_filter_factory
-    def is_event_with_mood(mood):
-        def filter_func(event):
-            return event.get('mood') == mood
-        return filter_func
-    ```
-
-    Given this you can decorate event processors with it:
-    ```
-    @is_event_with_mood('happy')
-    def process_only_happy_events(event):
-        print("I'm glad you're so happy.")
-
-    @is_event_with_mood('sad')
-    def process_only_happy_events(event):
-        print("I'm sorry you're so sad.")
-    ```
-    """
-    @wraps(filter_func_maker)
-    def decorator_creator(*args, **kwargs):
-        filter_func = filter_func_maker(*args, **kwargs)
-        return event_filter(filter_func)
-    return decorator_creator
-
-
-class EventProcessor:
-    """Base class for all event processors.
-
-    All event processors must be callable.
-    """
-    def __call__(self, event):
-        # got to have a call method
-        raise RuntimeError('Event Processor must be a callable.')
-
-
-class Bot(EventProcessor):
+class Bot:
     """Base class for all Bots.
 
     Bots are initialized with a list of event_processors and for each event passed to the bot it passes it on to the
@@ -225,12 +154,10 @@ class Bot(EventProcessor):
             event_processor(event)
 
 
-class BotModule(EventProcessor):
+class BotModule:
     """Base class for all BotModules.
 
-    Given an event, the BotModule will pass the event to all functions where func.event_processor is True. (This is
-    true for any function decorated with `process_all_events` or with any decorator created using `event_filter` and
-    `event_filter_factory`.) It is the responsibility of the BotModule designer to create appropriate filter decorators.
+    Given an event, the BotModule will pass the event to all methods specified in the `processors` class variable.
 
     Ex:
     ```
@@ -241,8 +168,22 @@ class BotModule(EventProcessor):
     ```
     """
     def __call__(self, event):
-        member_names = [member_name for member_name in dir(self)]
-        members = [getattr(self, member_name) for member_name in member_names]
-        methods = [member for member in members if hasattr(member, 'event_processor')]
-        for method in methods:
-            method(event)
+        assert hasattr(self, 'processors') and isinstance(self.processors, list), (
+            'BotModules should define `processors`, a list of the processors to run and the order to run them in.'
+        )
+        for processor in self.processors:
+            assert hasattr(self, processor), (
+                f'Processor `{processor}` expected in BotModule {self.__class__.__module__}.{self.__class__.__name__} '
+                'but not found.'
+            )
+            try:
+                getattr(self, processor)(event)
+            except TypeError as e:
+                if e.args and "missing 1 required positional argument: 'event'" in e.args[0]:
+                    raise TypeError(
+                        'Processors require a single argument named "event". '
+                        f'{self.__class__.__module__}.{self.__class__.__name__}.{processor} does not have an "event" '
+                        'argument.'
+                    )
+                else:
+                    raise
