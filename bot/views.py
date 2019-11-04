@@ -28,6 +28,7 @@ def index(request):
 def hook(request):
     blob = json.loads(request.body)
     logging.info(blob)
+    1/0
 
     if 'challenge' in blob:
         return HttpResponse(json.loads(request.body)['challenge'])
