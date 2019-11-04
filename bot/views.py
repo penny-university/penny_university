@@ -27,13 +27,11 @@ def index(request):
 @csrf_exempt
 def hook(request):
     blob = json.loads(request.body)
-    message_logger = logging.getLogger('messages')
-    message_logger.info(request.body)
+    logging.info(blob)
 
     if 'challenge' in blob:
         return HttpResponse(json.loads(request.body)['challenge'])
     else:
-        print(blob)
         event = blob['event']
         is_bot = False
         if 'subtype' in event and event['subtype'] == 'bot_message':
