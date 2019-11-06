@@ -1,10 +1,10 @@
 from bot.processors.base import event_processor_decorator
-from common.helpers import CHANNEL_NAME__ID
+from bot.utils import channel_lookup
 
 
 @event_processor_decorator
 def in_room(room, event):
-    return 'channel' in event and event['channel'] == CHANNEL_NAME__ID[room]
+    return 'channel' in event and event['channel'] == channel_lookup(room)
 
 
 @event_processor_decorator

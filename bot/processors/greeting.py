@@ -1,4 +1,4 @@
-from common.helpers import notify_admins
+from bot.utils import notify_admins
 
 from users.models import UserProfile
 from bot.processors.base import (

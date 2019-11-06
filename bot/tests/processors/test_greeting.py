@@ -14,13 +14,15 @@ def test_greeting(mocker):
         'subtype': 'channel_join',
         'ts': '1557281569.001300',
         'text': '<@U42HCBFEF> has joined the channel',
-        'channel': 'C41G02RK4',  # general
+        'channel': 'GENERAL',
         'event_ts': '1557281569.001300',
         'channel_type': 'channel'
     }
-    with mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome'):
-        with mocker.patch('bot.processors.greeting.notify_admins'):
-            greeter(event)
+    with mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome'), \
+            mocker.patch('bot.processors.greeting.notify_admins'), \
+            mocker.patch('bot.processors.filters.channel_lookup', return_value='GENERAL'):
+
+        greeter(event)
     assert slack.chat_postMessage.call_args == mocker.call(channel='U42HCBFEF', blocks='welcome')
 
 
@@ -37,7 +39,8 @@ def test_greeting_wrong_channel(mocker):
         'event_ts': '1557281569.001300',
         'channel_type': 'channel'
     }
-    greeter(event)
+    with mocker.patch('bot.processors.filters.channel_lookup', return_value='SOME_WRONG_CHANNEL'):
+        greeter(event)
     assert not slack.chat.post_message.called
 
 
@@ -54,7 +57,8 @@ def test_greeting_wrong_type(mocker):
         'event_ts': '1557281569.001300',
         'channel_type': 'channel'
     }
-    greeter(event)
+    with mocker.patch('bot.processors.filters.channel_lookup', return_value='SOME_WRONG_CHANNEL'):
+        greeter(event)
     assert not slack.chat.post_message.called
 
 
