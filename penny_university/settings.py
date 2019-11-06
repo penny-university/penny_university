@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import platform
+import sys
+
 import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -24,6 +27,7 @@ SECRET_KEY = '7e@1*$kub8yxjd&pkej#+0k+e9omlz!31$zuq(4$rglm4i(hp1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('PENNY_DEBUG', '').lower() == "true"
+print(f'DEBUG = {DEBUG}')
 
 ALLOWED_HOSTS = ['*']  # TODO this is a hack - fix once we have domain name set up
 
@@ -126,29 +130,23 @@ STATICFILES_DIRS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': ('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
-        },
-    },
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'messages.log',
-            'formatter': 'standard',
+        'console': {
+            'class': 'logging.StreamHandler',
+            # NOTE this is probably stupid, but I'm redirecting every log message to the console including errors
+            'stream': sys.stdout,
         },
     },
     'loggers': {
-        'messages': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
         },
     },
 }
 
-if not DEBUG:
+if not DEBUG and not platform.system() == 'Darwin':
+    print("FORWARDING SSL")
     SECURE_SSL_REDIRECT = True
     # Heroku seems to strip HTTP_X_FORWARDED_PROTO and rewrite it correctly
     # https://help.heroku.com/J2R1S4T8/can-heroku-force-an-application-to-use-ssl-tls
