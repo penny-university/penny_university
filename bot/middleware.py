@@ -18,6 +18,14 @@ def host_port(host, port):
 
 
 class DebugPassthrough:
+    """If DEBUG=True then proxy all traffic to specified host.
+
+    This is a hack, but a useful one.
+
+    Start dev application locally and then set up a tunnel to it (ex. using ngrok). Then visit
+    /forward?host=<tunnel_host_and_port> on the QA server and all traffic will be proxied through the dev server and the
+    responses returned to the QA server. To stop this behavior then go to /forward?host=
+    """
 
     def __init__(self, get_response):
         self.get_response = get_response

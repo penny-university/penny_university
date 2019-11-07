@@ -2,7 +2,6 @@ import pytest
 from datetime import datetime
 from pytz import timezone, utc
 
-from bot.processors.base import Event
 from bot.processors.pennychat import PennyChatBotModule
 
 from pennychat.models import PennyChat
@@ -30,7 +29,7 @@ def test_date_select(mocker):
 
     chat_id = create_penny_chat()
 
-    event = Event({
+    event = {
         'type': 'block_actions',
         'trigger_id': 'trigger',
         'view': {
@@ -45,7 +44,7 @@ def test_date_select(mocker):
         'user': {
             'id': 'user'
         }
-    })
+    }
 
     bot_module(event)
 
@@ -60,7 +59,7 @@ def test_time_select(mocker):
 
     chat_id = create_penny_chat()
 
-    event = Event({
+    event = {
         'type': 'block_actions',
         'trigger_id': 'trigger',
         'view': {
@@ -77,7 +76,7 @@ def test_time_select(mocker):
         'user': {
             'id': 'user'
         }
-    })
+    }
 
     bot_module(event)
     penny_chat = PennyChat.objects.get(id=chat_id)

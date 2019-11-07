@@ -1,4 +1,4 @@
-from common.helpers import notify_admins
+from bot.utils import notify_admins
 
 from users.models import UserProfile
 from bot.processors.base import (
@@ -132,6 +132,12 @@ def onboarding_template(user=None):
 
 
 class GreetingBotModule(BotModule):
+    processors = [
+        'welcome_user',
+        'show_interests_dialog',
+        'submit_interests',
+    ]
+
     def __init__(self, slack):
         self.slack = slack
 

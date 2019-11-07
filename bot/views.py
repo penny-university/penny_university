@@ -10,10 +10,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from bot.processors.greeting import GreetingBotModule
 from bot.processors.pennychat import PennyChatBotModule
-from bot.processors.base import (
-    Bot,
-    Event,
-)
+from bot.processors.base import Bot
 
 slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
 bot = Bot(event_processors=[GreetingBotModule(slack_client), PennyChatBotModule(slack_client)])
@@ -37,7 +34,7 @@ def hook(request):
         if 'subtype' in event and event['subtype'] == 'bot_message':
             is_bot = True
         if not is_bot:
-            bot(Event(event))
+            bot(event)
         return HttpResponse('')
 
 
@@ -48,7 +45,7 @@ def interactive(request):
     message_logger = logging.getLogger('messages')
     message_logger.info(request.POST['payload'])
 
-    bot(Event(payload))
+    bot(payload)
 
     return HttpResponse('')
 

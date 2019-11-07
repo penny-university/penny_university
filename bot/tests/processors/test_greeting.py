@@ -1,7 +1,6 @@
 import pytest
 
 from users.models import UserProfile
-from bot.processors.base import Event
 from bot.processors.greeting import GreetingBotModule
 
 
@@ -9,26 +8,28 @@ def test_greeting(mocker):
     slack = mocker.Mock()
     greeter = GreetingBotModule(slack)
     GreetingBotModule.GREETING_MESSAGE = 'welcome'
-    event = Event({
+    event = {
         'user': 'U42HCBFEF',
         'type': 'message',
         'subtype': 'channel_join',
         'ts': '1557281569.001300',
         'text': '<@U42HCBFEF> has joined the channel',
-        'channel': 'C41G02RK4',  # general
+        'channel': 'GENERAL',
         'event_ts': '1557281569.001300',
         'channel_type': 'channel'
-    })
-    with mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome'):
-        with mocker.patch('bot.processors.greeting.notify_admins'):
-            greeter(event)
+    }
+    with mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome'), \
+            mocker.patch('bot.processors.greeting.notify_admins'), \
+            mocker.patch('bot.processors.filters.channel_lookup', return_value='GENERAL'):
+
+        greeter(event)
     assert slack.chat_postMessage.call_args == mocker.call(channel='U42HCBFEF', blocks='welcome')
 
 
 def test_greeting_wrong_channel(mocker):
     slack = mocker.Mock()
     greeter = GreetingBotModule(slack)
-    event = Event({
+    event = {
         'user': 'U42HCBFEF',
         'type': 'message',
         'subtype': 'channel_join',
@@ -37,15 +38,16 @@ def test_greeting_wrong_channel(mocker):
         'channel': 'WRONGCHANNELHERE',
         'event_ts': '1557281569.001300',
         'channel_type': 'channel'
-    })
-    greeter(event)
+    }
+    with mocker.patch('bot.processors.filters.channel_lookup', return_value='SOME_WRONG_CHANNEL'):
+        greeter(event)
     assert not slack.chat.post_message.called
 
 
 def test_greeting_wrong_type(mocker):
     slack = mocker.Mock()
     greeter = GreetingBotModule(slack)
-    event = Event({
+    event = {
         'user': 'U42HCBFEF',
         'type': 'message',
         'subtype': 'wrong_type',
@@ -54,8 +56,9 @@ def test_greeting_wrong_type(mocker):
         'channel': 'CHCM2MFHU',
         'event_ts': '1557281569.001300',
         'channel_type': 'channel'
-    })
-    greeter(event)
+    }
+    with mocker.patch('bot.processors.filters.channel_lookup', return_value='SOME_WRONG_CHANNEL'):
+        greeter(event)
     assert not slack.chat.post_message.called
 
 
@@ -63,7 +66,7 @@ def test_greeting_wrong_type(mocker):
 def test_show_interests_dialog(mocker):
     slack = mocker.Mock()
     bot_module = GreetingBotModule(slack)
-    event = Event({
+    event = {
         'type': 'block_actions',
         'trigger_id': 'whatevs',
         'actions': [
@@ -74,7 +77,7 @@ def test_show_interests_dialog(mocker):
         'user': {
             'id': 0
         }
-    })
+    }
 
     with mocker.patch('bot.processors.greeting.onboarding_template', return_value='welcome'):
         bot_module(event)
@@ -88,7 +91,7 @@ def test_show_interests_dialog_existing_user(mocker):
 
     UserProfile.objects.create(slack_id=0, topics_to_learn='django')
 
-    event = Event({
+    event = {
         'type': 'block_actions',
         'trigger_id': 'whatevs',
         'actions': [
@@ -99,7 +102,7 @@ def test_show_interests_dialog_existing_user(mocker):
         'user': {
             'id': 0
         }
-    })
+    }
 
     bot_module(event)
     assert slack.dialog_open.call_args[1]['dialog']['elements'][0]['name'] == 'topics_to_learn'
@@ -114,7 +117,7 @@ def test_submit_interests(mocker):
     bot_module = GreetingBotModule(slack)
 
     # Create initial response
-    event = Event({
+    event = {
         'type': 'dialog_submission',
         'callback_id': 'interests',
         'user': {'id': 'SOME_USER_ID'},
@@ -124,7 +127,7 @@ def test_submit_interests(mocker):
             'topics_to_share': '',  # user omitted answer
             'how_you_learned_about_pennyu': 'SOME_REFERER',
         }
-    })
+    }
 
     slack_resp = mocker.Mock()
     slack.users_info.return_value = slack_resp
@@ -158,7 +161,7 @@ def test_submit_interests(mocker):
     assert 'knows a thing' not in slack.chat_postMessage.call_args_list[0][1]['text']
 
     # create updated response
-    event = Event({
+    event = {
         'type': 'dialog_submission',
         'callback_id': 'interests',
         'user': {'id': 'SOME_USER_ID'},
@@ -168,7 +171,7 @@ def test_submit_interests(mocker):
             'topics_to_share': 'SOME_OTHER_TEACHINGS',
             'how_you_learned_about_pennyu': 'SOME_OTHER_REFERER',
         }
-    })
+    }
 
     bot_module(event)
 

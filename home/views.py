@@ -3,7 +3,7 @@ from django.conf import settings
 from .forms import InviteForm
 import slack
 
-from common.helpers import notify_admins
+from bot.utils import notify_admins
 
 # Create your views here.
 slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
