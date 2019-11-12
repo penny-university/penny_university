@@ -24,7 +24,7 @@ def index(request):
 @csrf_exempt
 def hook(request):
     blob = json.loads(request.body)
-    logging.info(blob)
+    logging.info(f'HOOK> {request.body.decode("utf-8")}')
 
     if 'challenge' in blob:
         return HttpResponse(json.loads(request.body)['challenge'])
@@ -41,25 +41,16 @@ def hook(request):
 @xframe_options_exempt
 @csrf_exempt
 def interactive(request):
-    payload = json.loads(request.POST['payload'])
-    message_logger = logging.getLogger('messages')
-    message_logger.info(request.POST['payload'])
-
-    bot(payload)
-
-    return HttpResponse('')
-
-
-@csrf_exempt
-def penny_chat(request):
-    event = request.POST
-    PennyChatBotModule.create_penny_chat(slack_client, event)
+    event = json.loads(request.POST['payload'])
+    logging.info(f'INTERACTIVE> {request.POST["payload"]}')
+    bot(event)
     return HttpResponse('')
 
 
 @csrf_exempt
 def command(request):
     event = request.POST
+    logging.info(f'COMMAND> {request.POST}')
     command = event['text'].split(' ', 1)[0]
     if command == 'chat':
         PennyChatBotModule.create_penny_chat(slack_client, event)
