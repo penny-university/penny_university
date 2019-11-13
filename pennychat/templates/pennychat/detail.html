@@ -1,0 +1,60 @@
+{% extends "home/base.html" %}
+{% load custom_filters %}
+{% load static %}
+
+{% block content %}
+    <div class="bg-dark min-vh-100 pt-4 pb-4">
+        <div class="container">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">{{ chat.title }}</h3>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#formModal">
+                            Add a Follow Up <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                    <h6 class="card-subtitle mb-2 mt-0 text-secondary">
+                        {{ chat.date|date:"n/j/y" }}
+                    </h6>
+                    <p>
+                        {{ chat.description }}
+                    </p>
+                    <button class="btn btn-outline-danger mb-3">
+                        <i class="fa fa-heart"></i> 3
+                    </button>
+                    <h5>{{ chat.followup_set.count }} Follow Ups</h5>
+                    <hr/>
+                    {% for follow_up in chat.followup_set.all %}
+                        <div class="media">
+                            <div class="mr-2 p-2 bg-secondary rounded">
+                                {{ follow_up.user|user_initials }}
+                            </div>
+                            <div class="media-body">
+                                <h5 class="mt-0">{{ follow_up.user }}</h5>
+                                <h6 class="card-subtitle mb-2 text-secondary">
+                                    {# https://docs.djangoproject.com/en/2.2/ref/templates/builtins/#date #}
+                                    {{ follow_up.date|date:"n/j/y" }}
+                                </h6>
+                            </div>
+                        </div>
+                        <p class="card-text">
+                            {{ follow_up.content }}
+                        </p>
+                        <div class="d-flex justify-content-start align-items-center">
+                            <button class="btn btn-sm btn-outline-danger mr-2">
+                                <i class="fa fa-heart"></i> 2
+                            </button>
+                        </div>
+                        {% if not forloop.last %}
+                            <hr/>
+                        {% endif %}
+                    {% endfor %}
+                    <button class="btn btn-block btn-primary mt-2" data-toggle="modal" data-target="#formModal">
+                        Add a Follow Up <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'pennychat/modal.html' %}
+{% endblock %}

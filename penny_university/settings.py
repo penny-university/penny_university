@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bot.apps.BotConfig',
+    'common',  # added to allow filters to be loaded
     'home',
     'pennychat',
     'users',

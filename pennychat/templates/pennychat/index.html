@@ -1,95 +1,70 @@
 {% extends "home/base.html" %}
 {% load static %}
 
-{% block style %}
-    <style>
-        .bg-image {
-            background: url("{% static 'home/images/background.jpg' %}") no-repeat center;
-            background-size: cover;
-            min-height: 600px;
-        }
-    </style>
-{% endblock %}
-
 {% block content %}
 
-    <nav class="navbar navbar-light row">
-        <div class="container">
-            <div class="col-md-6 d-flex justify-content-center justify-content-md-start">
-                <span class="navbar-brand mb-0 mr-0 h1">Penny University</span>
-            </div>
-            <div class="col-md-6 d-flex align-items-center justify-content-center justify-content-md-end">
-                <a href="#" class="mb-0 mr-2">My Profile</a>
-                <a href="#" class="mb-0">Log Out</a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="jumbotron jumbotron-fluid bg-dark min-vh-100">
+    <div class="bg-dark min-vh-100 pt-4 pb-4">
         <div class="container">
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-8 d-flex flex-column">
                     <h2 class="text-light">Recent Penny Chats</h2>
                     <div class="card mb-3">
                         <div class="card-body">
-                            <h5 class="card-title">Technical Leadership w/ Scott Burns</h5>
-                            <h6 class="card-subtitle mb-2 text-secondary">9/18/19</h6>
-                            <p class="card-text">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nisi ligula, placerat et
-                                enim vitae, imperdiet gravida elit. Sed velit tellus, fringilla vel dolor a, gravida
-                                luctus sapien.
-                            </p>
-                            <div class="d-flex justify-content-start align-items-center">
-                                <button class="btn btn-sm btn-outline-danger mr-2">
-                                    <i class="fa fa-heart"></i> 3
-                                </button>
-                                <a href="#" class="card-link">5 Follow Ups</a>
-                            </div>
+
+                            {% for chat in chats %}
+                                <a class="text-dark" href={% url 'detail' chat.id %}>
+                                    <h5 class="card-title">{{ chat.title }}</h5>
+                                </a>
+                                <h6 class="card-subtitle mb-2 text-secondary">
+                                    {# https://docs.djangoproject.com/en/2.2/ref/templates/builtins/#date #}
+                                    {{ chat.date|date:"n/j/y" }}
+                                </h6>
+                                <p class="card-text">
+                                    {# https://docs.djangoproject.com/en/2.2/ref/templates/builtins/#truncatechars #}
+                                    {{ chat.description|truncatechars:200 }}
+                                </p>
+                                <div class="d-flex justify-content-start align-items-center">
+                                    <button class="btn btn-sm btn-outline-danger mr-2">
+                                        <i class="fa fa-heart"></i> 3
+                                    </button>
+                                    <a href={% url 'detail' chat.id %} class="card-link">
+                                        {{ chat.followup_set.count }} Follow Ups
+                                    </a>
+                                </div>
+                                {% if not forloop.last %}
+                                    <hr/>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                     </div>
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h5 class="card-title">GraphQL crash course with Nick Chouard</h5>
-                            <h6 class="card-subtitle mb-2 text-secondary">9/16/19</h6>
-                            <p class="card-text">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec nisi ligula, placerat et
-                                enim vitae, imperdiet gravida elit. Sed velit tellus, fringilla vel dolor a, gravida
-                                luctus sapien.
-                            </p>
-                            <div class="d-flex justify-content-start align-items-center">
-                                <button class="btn btn-sm btn-outline-danger mr-2">
-                                    <i class="fa fa-heart"></i> 1
-                                </button>
-                                <a href="#" class="card-link">2 Follow Ups</a>
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'pennychat/paginator.html' with items=chats %}
                 </div>
                 <div class="col-md-4 h-75">
                     <h2 class="text-light">Upcoming</h2>
                     <div class="card mb-3 h-100">
                         <div class="card-body">
-                            <div class="row">
-                            </div>
-                            <hr/>
+                            <table class="table table-borderless">
+                                <tbody>
+                                <tr class="border-bottom">
+                                    <th scope="row">Oct 31</th>
+                                    <td>Otto</td>
+                                </tr>
+                                <tr class="border-bottom">
+                                    <th scope="row">Nov. 2</th>
+                                    <td>Jacob</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Dec. 3</th>
+                                    <td>Larry</td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <footer class="bg-light d-flex justify-content-center align-items-center p-2">
-        <div class="social-icons">
-            <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
-            <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
-            <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
-        </div>
-        <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
-                data-target="#formModal">
-            Join Us! <i class="fa fa-slack"></i>
-        </button>
-    </footer>
 
     {% include 'home/modal.html' %}
 
