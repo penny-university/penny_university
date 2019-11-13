@@ -41,7 +41,7 @@ def has_callback_id(callback_id, event):
     if 'callback_id' in event:
         return event['callback_id'] == callback_id
     else:
-        return event['view']['callback_id']
+        return event.get('view', {}).get('callback_id') == callback_id
 
 
 @event_processor_decorator

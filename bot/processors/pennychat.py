@@ -172,10 +172,6 @@ def shared_message_template(penny_chat, user_name):
     ]
 
 
-def penny_chat_blocks(slack=None, penny_chat=None):
-    return save_message_template(slack, penny_chat)
-
-
 def penny_chat_details_modal(penny_chat):
     tz = timezone(penny_chat.user_tz)
     date = str(penny_chat.date.astimezone(tz).date())
@@ -320,11 +316,15 @@ class PennyChatBotModule(BotModule):
         user = slack.users_info(user=event['user_id']).data['user']
 
         date = datetime.now().replace(minute=0, second=0, microsecond=0, tzinfo=utc)
-        penny_chat, created = PennyChat.objects.get_or_create(user=user['id'],
-                                                              status=PennyChat.DRAFT_STATUS,
-                                                              defaults={'user_tz': user['tz'],
-                                                                        'template_channel': event['channel_id'],
-                                                                        'date': date})
+        penny_chat, created = PennyChat.objects.get_or_create(
+            user=user['id'],
+            status=PennyChat.DRAFT_STATUS,
+            defaults={
+                'user_tz': user['tz'],
+                'template_channel': event['channel_id'],
+                'date': date,
+            },
+        )
 
         modal = penny_chat_details_modal(penny_chat)
         response = slack.views_open(view=modal, trigger_id=event['trigger_id'])
@@ -385,10 +385,11 @@ class PennyChatBotModule(BotModule):
 
         penny_chat.save()
 
-        self.slack.chat_postEphemeral(channel=penny_chat.template_channel,
-                                      user=penny_chat.user,
-                                      blocks=penny_chat_blocks(self.slack, penny_chat)
-                                      )
+        self.slack.chat_postEphemeral(
+            channel=penny_chat.template_channel,
+            user=penny_chat.user,
+            blocks=save_message_template(self.slack, penny_chat),
+        )
 
     @is_block_interaction_event
     @is_action_id('penny_chat_edit')
@@ -407,8 +408,10 @@ class PennyChatBotModule(BotModule):
         user = self.slack.users_info(user=penny_chat.user)['user']
         for share_to in penny_chat.channels.split(',') + penny_chat.invitees.split(','):
             if share_to != '':
-                self.slack.chat_postMessage(channel=share_to,
-                                            blocks=shared_message_template(penny_chat, user['real_name']))
+                self.slack.chat_postMessage(
+                    channel=share_to,
+                    blocks=shared_message_template(penny_chat, user['real_name']),
+                )
         penny_chat.status = PennyChat.SHARED_STATUS
         penny_chat.save()
         requests.post(event['response_url'], json={'delete_original': True})
