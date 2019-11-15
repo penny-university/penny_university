@@ -39,10 +39,7 @@ def save_message_template(slack, penny_chat):
         for channel in penny_chat.channels.split(','):
             shares.append(f'<#{channel}>')
 
-    for i in range(len(shares)):
-        share_string += shares[i]
-        if i < len(shares) - 1:
-            share_string += ', '
+    share_string = ', '.join(shares)
 
     timestamp = int(penny_chat.date.astimezone(utc).timestamp())
     date_text = f'*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
@@ -356,10 +353,7 @@ class PennyChatBotModule(BotModule):
     def user_select(self, event):
         users = event['actions'][0]['selected_users']
         penny_chat = PennyChat.objects.get(view=event['view']['id'])
-        invitees = ''
-        for invitee in users:
-            invitees = invitees + ',' + invitee if len(invitees) > 0 else invitee
-        penny_chat.invitees = invitees
+        penny_chat.invitees = ','.join(users)
         penny_chat.save()
 
     @is_block_interaction_event
@@ -367,10 +361,7 @@ class PennyChatBotModule(BotModule):
     def channel_select(self, event):
         selected_channels = event['actions'][0]['selected_channels']
         penny_chat = PennyChat.objects.get(view=event['view']['id'])
-        channels = ''
-        for channel in selected_channels:
-            channels = channel + ',' + channel if len(channels) > 0 else channel
-        penny_chat.channels = channels
+        penny_chat.channels = ','.join(selected_channels)
         penny_chat.save()
 
     @is_event_type('view_submission')
