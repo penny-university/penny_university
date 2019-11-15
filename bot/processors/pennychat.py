@@ -373,14 +373,22 @@ class PennyChatBotModule(BotModule):
 
         penny_chat.title = state['penny_chat_title']['penny_chat_title']['value']
         penny_chat.description = state['penny_chat_description']['penny_chat_description']['value']
-
         penny_chat.save()
 
-        self.slack.chat_postEphemeral(
-            channel=penny_chat.template_channel,
-            user=penny_chat.user,
-            blocks=save_message_template(self.slack, penny_chat),
-        )
+        if len(penny_chat.invitees.strip()) == 0 and len(penny_chat.channels.strip()) == 0:
+            return {
+                "response_action": "errors",
+                "errors": {
+                    "penny_chat_description": "One is a lonely number for a Penny Chat. "
+                                              "Invite at least one channel or user below."
+                }
+            }
+        else:
+            self.slack.chat_postEphemeral(
+                channel=penny_chat.template_channel,
+                user=penny_chat.user,
+                blocks=save_message_template(self.slack, penny_chat),
+            )
 
     @is_block_interaction_event
     @is_action_id('penny_chat_edit')
