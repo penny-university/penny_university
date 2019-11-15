@@ -150,7 +150,7 @@ class Bot:
         self.event_processors = event_processors
 
     def __call__(self, event):
-        """Sends event to all modules and returns response to caller.
+        """Sends event to all modules and optionally returns response to caller.
 
         Errors if there is more than on response from a module.
         :param event:
@@ -184,6 +184,12 @@ class BotModule:
     ```
     """
     def __call__(self, event):
+        """Sends event to all event processors optionally returns response to caller.
+
+        Errors if there is more than on response from a event processors.
+        :param event:
+        :return:
+        """
         assert hasattr(self, 'processors') and isinstance(self.processors, list), (
             'BotModules should define `processors`, a list of the processors to run and the order to run them in.'
         )
