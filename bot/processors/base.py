@@ -150,8 +150,24 @@ class Bot:
         self.event_processors = event_processors
 
     def __call__(self, event):
+        """Sends event to all modules and optionally returns response to caller.
+
+        Errors if there is more than on response from a module.
+        :param event:
+        :return:
+        """
+        responses = []
         for event_processor in self.event_processors:
-            event_processor(event)
+            resp = event_processor(event)
+            if resp:
+                responses.append(resp)
+
+        if len(responses) > 1:
+            raise RuntimeError(
+                "Only one response allowed for Bot. More than one response is ambiguous. Which one do we send?"
+            )
+        if responses:
+            return responses[0]
 
 
 class BotModule:
@@ -168,16 +184,25 @@ class BotModule:
     ```
     """
     def __call__(self, event):
+        """Sends event to all event processors optionally returns response to caller.
+
+        Errors if there is more than on response from a event processors.
+        :param event:
+        :return:
+        """
         assert hasattr(self, 'processors') and isinstance(self.processors, list), (
             'BotModules should define `processors`, a list of the processors to run and the order to run them in.'
         )
+        responses = []
         for processor in self.processors:
             assert hasattr(self, processor), (
                 f'Processor `{processor}` expected in BotModule {self.__class__.__module__}.{self.__class__.__name__} '
                 'but not found.'
             )
             try:
-                getattr(self, processor)(event)
+                resp = getattr(self, processor)(event)
+                if resp:
+                    responses.append(resp)
             except TypeError as e:
                 if e.args and "missing 1 required positional argument: 'event'" in e.args[0]:
                     raise TypeError(
@@ -187,3 +212,11 @@ class BotModule:
                     )
                 else:
                     raise
+
+            if len(responses) > 1:
+                raise RuntimeError(
+                    "Only one response allowed for BotModule. More than one response is ambiguous. "
+                    "Which one do we send?"
+                )
+            if responses:
+                return responses[0]

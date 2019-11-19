@@ -4,7 +4,10 @@ import logging
 from django.conf import settings
 import slack
 
-from django.http import HttpResponse
+from django.http import (
+    HttpResponse,
+    JsonResponse,
+)
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
 
@@ -43,8 +46,11 @@ def hook(request):
 def interactive(request):
     event = json.loads(request.POST['payload'])
     logging.info(f'INTERACTIVE> {request.POST["payload"]}')
-    bot(event)
-    return HttpResponse('')
+    resp = bot(event)
+    if resp:
+        return JsonResponse(resp)
+
+    return HttpResponse()
 
 
 @csrf_exempt
