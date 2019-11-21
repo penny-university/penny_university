@@ -1,4 +1,5 @@
 import re
+import logging
 
 from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
@@ -34,6 +35,7 @@ class DebugPassthrough:
 
         self.host = None
         self.port = None
+        logging.info(f'MIDDLEWARE:DebugPassthrough> initializing DebugPassthrough')
         # One-time configuration and initialization.
 
     def __call__(self, request):
@@ -53,9 +55,11 @@ class DebugPassthrough:
                 if not message:
                     message = 'Not forwarding.'
 
+            logging.info(f'MIDDLEWARE:DebugPassthrough> {message}')
             return HttpResponse(message)
 
         if host_port(self.host, self.port):
+            logging.info(f'MIDDLEWARE:DebugPassthrough> forwarding to {host_port(self.host, self.port)}')
             s = Session()
 
             permitted_headers = ['Content-Type']

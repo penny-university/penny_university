@@ -55,7 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'bot.middleware.DebugPassthrough',
+    'penny_university.middleware.DebugPassthrough',
 ]
 
 ROOT_URLCONF = 'penny_university.urls'
