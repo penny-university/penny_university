@@ -59,7 +59,7 @@ class DebugPassthrough:
             return HttpResponse(message)
 
         if host_port(self.host, self.port):
-            logging.info(f'MIDDLEWARE:DebugPassthrough> forwarding to {host_port(self.host, self.port)}')
+            logging.info(f'MIDDLEWARE:DebugPassthrough> Forwarding a request to {host_port(self.host, self.port)}')
             s = Session()
 
             permitted_headers = ['Content-Type']
