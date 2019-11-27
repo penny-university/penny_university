@@ -1,13 +1,18 @@
 from django.urls import path
-from rest_framework.urlpatterns import format_suffix_patterns
 
 from . import views
 
 urlpatterns = [
-    # path('<int:pennychat_id>/', views.detail, name='detail'),
-    # path('', views.index, name='index')
-    path('<int:pk>', views.PennyChatDetail.as_view()),
-    path('', views.PennyChatList.as_view()),
+    path('',
+         views.PennyChatList.as_view(),
+         name='chats-list'),
+    path('<int:pk>/',
+         views.PennyChatDetail.as_view(),
+         name='chats-detail'),
+    path('follow-ups/',
+         views.FollowUpList.as_view(),
+         name='follow-ups-list'),
+    path('follow-ups/<int:pk>/',
+         views.FollowUpDetail.as_view(),
+         name='follow-ups-detail')
 ]
-
-urlpatterns = format_suffix_patterns(urlpatterns)

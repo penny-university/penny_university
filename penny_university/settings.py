@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bot.apps.BotConfig',
     'rest_framework',
+    'api',
     'common',  # added to allow filters to be loaded
     'home',
     'pennychat',

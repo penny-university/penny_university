@@ -23,7 +23,7 @@ class PennyChat(models.Model):
 
 
 class FollowUp(models.Model):
-    penny_chat = models.ForeignKey('PennyChat', on_delete=models.CASCADE)
+    penny_chat = models.ForeignKey('PennyChat', related_name='follow_ups', on_delete=models.CASCADE)
     content = models.TextField()
     date = models.DateTimeField(default=timezone.now)
     user = models.TextField()
