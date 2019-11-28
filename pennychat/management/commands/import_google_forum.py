@@ -1,11 +1,54 @@
 #!/usr/bin/env python3
-import argparse
 import ast
 from dateutil.parser import parse
+import pdb
 import json
 import mailbox
 import os
 import re
+
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
+
+from pennychat.models import PennyChat, FollowUp
+
+
+class Command(BaseCommand):
+    help = (
+        'Extract and normalize content from penny university google forum. '
+        'Requires that you retrieve forum content here: https://takeout.google.com'
+    )
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--data_dump_path', dest='data_dump_path', action='store', help='unzipped google data dump path',
+            required=True,
+        )
+        parser.add_argument(
+            '--output_file', dest='output_file', action='store', help='where to dump the output', required=False,
+        )
+        parser.add_argument(
+            '--to_database', dest='to_database', action='store_true', help='where to dump the output', required=False,
+        )
+
+    def handle(self, *args, **options):
+        if not options['to_database'] and not options['output_file']:
+            raise CommandError('Either `to_database` or `output_file` must be specified.')
+
+        mbox_path = os.path.join(options['data_dump_path'], 'topics.mbox')
+        mbox = mailbox.mbox(mbox_path)
+        messages = get_messages(mbox)
+        messages = special_case(messages)
+        raw_chats = get_chats(messages)
+        formated_chats = format_chats(raw_chats)
+
+        if options['output_file']:
+            with open(options['output_file'], 'w') as f:
+                f.write(json.dumps(formated_chats))
+
+        if options['to_database']:
+            import_to_database(formated_chats)
+
 
 codepoint_re = re.compile(r'=([0-9A-Fa-f]{2})')
 equal_then_space_re = re.compile(r'=\s+')
@@ -89,9 +132,9 @@ def special_case(messages):
 
         # misordered
         if message['message_id'] == '<138b584a-28ef-46da-ba35-a913cd620c16@googlegroups.com>':
-            message['date'] = 'Wed, 2 Nov 2017 14:36:37 -0800'
+            message['date'] = parse('Wed, 2 Nov 2017 14:36:37 -0800').isoformat()
         if message['message_id'] == '<9d13d7dc-0611-43ca-9a0c-418be8469b5c@googlegroups.com>':
-            message['date'] = 'Wed, 1 Dec 2017 12:34:56 -0700'
+            message['date'] = parse('Wed, 1 Dec 2017 12:34:56 -0700').isoformat()
 
         # posted forum message with different email than used in slack
         if message['from'] == 'scott@stratasan.com':
@@ -141,24 +184,53 @@ def get_chats(messages):
     return sorted(unsorted_chat_list, key=lambda c: c['date'])
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Extract and normalize content from penny university google forum. '
-                    'Requires that you retrieve forum content here: https://takeout.google.com'
-    )
-    parser.add_argument(
-        '--data_dump_path', dest='data_dump_path', action='store', help='unzipped google data dump path', required=True,
-    )
-    parser.add_argument(
-        '--output_file', dest='output_file', action='store', help='where to dump the output', required=True,
-    )
-    args = parser.parse_args()
+def format_chats(raw_chats):
+    formated_chats = []
+    for chat in raw_chats:
+        followups = []
+        for message in chat['messages']:
+            followups.append({
+                'content': message['body'],
+                'date': message['date'],
+                'user': message['from'],
+            })
+        formated_chats.append({
+            'title': chat['subject'],
+            'description': '',
+            'date': chat['date'],
+            'user': chat['from'],
+            'followups': followups,
+        })
+    return formated_chats
 
-    mbox_path = os.path.join(args.data_dump_path, 'topics.mbox')
-    print(mbox_path)
-    mbox = mailbox.mbox(mbox_path)
-    messages = get_messages(mbox)
-    messages = special_case(messages)
-    chats = get_chats(messages)
-    with open(args.output_file, 'w') as f:
-        f.write(json.dumps(chats))
+
+def import_to_database(formated_chats):
+    penny_chat_ids = []
+    followup_ids = []
+    with transaction.atomic():
+        for chat in formated_chats:
+            penny_chat = PennyChat.objects.create(
+                title=chat['title'],
+                description=chat['description'],
+                user=chat['user'],
+            )
+            penny_chat_ids.append(penny_chat.id)
+            for followup in chat['followups']:
+                fup = FollowUp.objects.create(
+                    content=followup['content'],
+                    date=followup['date'],
+                    user=followup['user'],
+                    penny_chat=penny_chat,
+                )
+                followup_ids.append(fup.id)
+        print(
+            "This debug line is left here INTENTIONALLY.\n"
+            "Play with PennyChat and FollowUp and make sure that the results are as expected. "
+            "For instance, try `len(FollowUp.objects.all())`."
+            "Then continue past the debugger and the transaction will be committed to the database."
+        )
+        pdb.set_trace()
+        print(
+            f'Committed PennyChat ids {min(penny_chat_ids)} through {max(penny_chat_ids)} (inclusive) and '
+            f'FollowUp ids {min(followup_ids)} through {max(followup_ids)} (inclusive).'
+        )
