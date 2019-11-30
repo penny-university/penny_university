@@ -13,21 +13,19 @@ function App() {
   return (
     <Router>
       <Navigation/>
-      <div className='main'>
-        <Container fluid>
-          <Switch>
-            <Route path='/chats/:id'>
-              <ChatDetail/>
-            </Route>
-            <Route path='/chats'>
-              <ChatList/>
-            </Route>
-            <Route path='/'>
-              <Redirect to='/chats'/>
-            </Route>
-          </Switch>
-        </Container>
-      </div>
+      <Container className='mt-3' fluid>
+        <Switch>
+          <Route path='/chats/:id'>
+            <ChatDetail/>
+          </Route>
+          <Route path='/chats'>
+            <ChatList/>
+          </Route>
+          <Route path='/'>
+            <Redirect to='/chats'/>
+          </Route>
+        </Switch>
+      </Container>
     </Router>
   );
 }

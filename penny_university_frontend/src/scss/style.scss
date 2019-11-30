@@ -7,8 +7,10 @@ body {
   height: 100%;
 }
 
-.main {
-  margin-top: 4rem;
+pre {
+  background: $light;
+  border-radius: $border-radius;
+  padding: .5rem;
 }
 
 .overlay-text {

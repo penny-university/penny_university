@@ -6,7 +6,7 @@ import {
 
 const Navigation = (props) => {
   return (
-    <Navbar className='h2 bg-white shadow-sm' light fixed='top'>
+    <Navbar className='h2 bg-white shadow-sm' light sticky='top'>
       <NavbarBrand href='/'>Penny University</NavbarBrand>
     </Navbar>
   );

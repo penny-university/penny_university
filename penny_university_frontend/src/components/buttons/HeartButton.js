@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeart } from '@fortawesome/free-solid-svg-icons'
 import { Button } from 'reactstrap';
 import PropTypes from 'prop-types';
-import CreateButton from "./CreateButton";
 
 const HeartButton = ({className, count, size}) => {
   return (

@@ -6,7 +6,7 @@ const FollowUpCard = ({followUp}) => {
   return (
     <div className='pt-2'>
       <FollowUpUserInfo user={followUp.user} date={followUp.date}/>
-      <Content content={followUp.content}/>
+      <Content className='ml-4 border-left pl-3' content={followUp.content}/>
     </div>
   )
 };

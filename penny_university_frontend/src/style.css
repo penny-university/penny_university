@@ -7142,8 +7142,10 @@ body {
   background: #f8f9fa;
   height: 100%; }
 
-.main {
-  margin-top: 4rem; }
+pre {
+  background: #f8f9fa;
+  border-radius: 0.25rem;
+  padding: .5rem; }
 
 .overlay-text {
   position: relative;

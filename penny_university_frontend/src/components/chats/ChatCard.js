@@ -2,8 +2,7 @@ import React from 'react';
 import {Link} from 'react-router-dom';
 import {
   Card,
-  CardTitle,
-  CardText
+  CardTitle
 } from 'reactstrap';
 import Date from "../Date";
 import Content from "../Content";
@@ -16,7 +15,7 @@ const ChatCard = ({chat}) => {
       </CardTitle>
       <Date date={chat.date}/>
       {chat.description ?
-        <Content>{chat.description}</Content> : null
+        <Content source={chat.description}/> : null
       }
       <Link to={`/chats/${chat.id}`}>
         {chat.followups.length} Follow Ups
