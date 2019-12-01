@@ -29,7 +29,6 @@ def get_time_options():
 
 
 def save_message_template(slack, penny_chat):
-    share_string = ''
     shares = []
     if len(penny_chat.invitees) > 0:
         for user in penny_chat.invitees.split(','):
@@ -237,8 +236,8 @@ def penny_chat_details_modal(penny_chat):
                 'type': 'section',
                 'text': {
                     'type': 'mrkdwn',
-                    'text': '*Pick a date for the Penny Chat*'
-                }
+                    'text': '*Pick a date for the Penny Chat* (All times are localized.)'
+                },
             },
             {
                 'type': 'actions',
