@@ -1,0 +1,89 @@
+@import 'theme';
+@import '../../node_modules/bootstrap/scss/bootstrap';
+
+html,
+body {
+  background: $light;
+  height: 100%;
+}
+
+pre {
+  background: $light;
+  border-radius: $border-radius;
+  padding: .5rem;
+}
+
+.overlay-text {
+  position: relative;
+  z-index: 1;
+}
+
+.postion-relative {
+  position: relative;
+}
+
+.overlay {
+  background: #141515;
+  bottom: 0;
+  height: auto;
+  left: 0;
+  opacity: 0.4;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.btn {
+  font-family: $headings-font-family;
+}
+
+h1, h2, h3, .navbar-brand {
+  text-transform: capitalize;
+}
+
+/* Style all font awesome icons */
+.social-icons {
+  .fa {
+    border-radius: 50%;
+    font-size: 20px;
+    height: 40px;
+    margin: 0 5px;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    width: 40px;
+
+    &:hover {
+      color: $white;
+      opacity: 0.7;
+      text-decoration: none;
+    }
+  }
+}
+
+/* Set a specific color for each brand */
+.fa-facebook {
+  background: #3b5998;
+  color: #fff;
+}
+
+.fa-instagram {
+  background: #d30f62;
+  color: #fff;
+}
+
+.fa-twitter {
+  background: #55acee;
+  color: #fff;
+}
+
+.icon__user {
+  align-items: center;
+  border-radius: 50%;
+  display: flex;
+  font-size: 1rem;
+  height: 3rem;
+  justify-content: center;
+  text-align: center;
+  width: 3rem;
+}
