@@ -28,8 +28,7 @@ const ChatDetail = () => {
         <HeartButton className='mr-2' count={chat.followups.length}/>
         <CreateButton type='Follow Up'/>
       </div>
-      <h5>{chat.followups.length} Follow Ups</h5>
-      <hr/>
+      <h5 class="mb-3">{chat.followups.length} Follow Ups</h5>
       {chat.followups.map((followUp, i) => <FollowUpCard key={i} followUp={followUp}/>)}
     </Card>
   )
