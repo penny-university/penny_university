@@ -41,9 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bot.apps.BotConfig',
-    'home',
-    'pennychat',
-    'users',
+    'home.apps.HomeConfig',
+    'pennychat.apps.PennychatConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [

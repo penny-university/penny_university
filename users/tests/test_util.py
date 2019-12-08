@@ -6,7 +6,7 @@ import pytest
 from users.models import UserProfile
 from users.utils import (
     update_user_profile_from_slack_user,
-    update_user_profile_from_slack_user_list,
+    update_user_profile_from_slack,
 )
 
 
@@ -140,7 +140,7 @@ def test_update_user_profile_from_slack_user__raises_error_for_duplicate_users()
 
 
 @pytest.mark.django_db
-def test_update_user_profile_from_slack_user_list():
+def test_update_user_profile_from_slack(mocker):
     slack_users = []
     for i in range(3):
         slack_users.append(deepcopy(slack_user))
@@ -148,7 +148,13 @@ def test_update_user_profile_from_slack_user_list():
         slack_users[i]['profile']['email'] = email
         slack_users[i]['id'] = str(i)
 
-    update_user_profile_from_slack_user_list(slack_users)
+    slack_client = mocker.Mock()
+    slack_client.users_list().data = {
+        'members': slack_users,
+    }
+
+    with mocker.patch('users.utils.slack.WebClient', return_value=slack_client):
+        update_user_profile_from_slack()
 
     for i in range(3):
         UserProfile.objects.get(slack_id=str(i))

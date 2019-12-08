@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import ast
 from dateutil.parser import parse
 import pdb
