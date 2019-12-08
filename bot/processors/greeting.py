@@ -1,5 +1,6 @@
-from bot.utils import notify_admins
+from django.conf import settings
 
+from bot.utils import notify_admins
 from users.models import UserProfile
 from bot.processors.base import (
     BotModule,
@@ -162,7 +163,8 @@ class GreetingBotModule(BotModule):
         user_data = self.slack.users_info(user=slack_id).data['user']
         kwargs = dict(
             email=user_data['profile']['email'],
-            user_name=user_data['name'],
+            slack_team_id=settings.SLACK_TEAM_ID,
+            display_name=user_data['name'],
             real_name=user_data['real_name'],
             metro_name=event['submission']['metro_name'] or '',
             topics_to_learn=event['submission']['topics_to_learn'] or '',

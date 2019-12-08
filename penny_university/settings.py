@@ -160,3 +160,5 @@ SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 if SLACK_API_KEY is None:
     print('WARNING: SLACK_API_KEY is None')
 PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
+
+SLACK_TEAM_ID = 'T41DZFW4T'
