@@ -1,15 +1,17 @@
 import ast
 from dateutil.parser import parse
+from functools import lru_cache
 import pdb
 import json
 import mailbox
-import os
 import re
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from pennychat.models import PennyChat, FollowUp
+from users.models import UserProfile
 
 
 class Command(BaseCommand):
@@ -20,7 +22,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--data_dump_path', dest='data_dump_path', action='store', help='unzipped google data dump path',
+            '--data_dump_path', dest='data_dump_path', action='store', help='unzipped google data dump path to topics.mbox',
             required=True,
         )
         parser.add_argument(
@@ -34,7 +36,7 @@ class Command(BaseCommand):
         if not options['to_database'] and not options['output_file']:
             raise CommandError('Either `to_database` or `output_file` must be specified.')
 
-        mbox_path = os.path.join(options['data_dump_path'], 'topics.mbox')
+        mbox_path = options['data_dump_path']
         mbox = mailbox.mbox(mbox_path)
         messages = get_messages(mbox)
         messages = special_case(messages)
@@ -206,20 +208,48 @@ def format_chats(raw_chats):
 def import_to_database(formated_chats):
     penny_chat_ids = []
     followup_ids = []
+
+    emails = set()
+    for chat in formated_chats:
+        emails.add(chat['user'])
+        for followup in chat['followups']:
+            emails.add(followup['user'])
+
+    found_emails = set(UserProfile.objects.filter(email__in=emails).values_list('email', flat=True))
+
+    unfound_emails = emails - found_emails
+    if unfound_emails:
+        print(f'missing these emails:\n{", ".join(unfound_emails)}\n')
+        print('We recommend running `./manage.py import_users_from_slack` before continuing.\n')
+        answer = input('continue anyway (will create anonymous users)? (N/y) > ')
+        if answer.lower() != 'y':
+            print('Aborting')
+            exit(0)
+        print('Continuing')
+
     with transaction.atomic():
         for chat in formated_chats:
-            penny_chat = PennyChat.objects.create(
-                title=chat['title'],
-                description=chat['description'],
-                user=chat['user'],
+            penny_chat, created = PennyChat.objects.update_or_create(
+                user=get_or_create_anonymous_user(chat['user']),
+                date=chat['date'],
+                defaults=dict(
+                    title=chat['title'],
+                    description=chat['description'],
+                    user=get_or_create_anonymous_user(chat['user']),
+                    date=chat['date'],
+                )
             )
             penny_chat_ids.append(penny_chat.id)
             for followup in chat['followups']:
-                fup = FollowUp.objects.create(
-                    content=followup['content'],
+                fup, created = FollowUp.objects.update_or_create(
                     date=followup['date'],
-                    user=followup['user'],
-                    penny_chat=penny_chat,
+                    user=get_or_create_anonymous_user(followup['user']),
+                    defaults=dict(
+                        content=followup['content'],
+                        date=followup['date'],
+                        user=get_or_create_anonymous_user(followup['user']),
+                        penny_chat=penny_chat,
+                    )
                 )
                 followup_ids.append(fup.id)
         print(
@@ -233,3 +263,15 @@ def import_to_database(formated_chats):
             f'Committed PennyChat ids {min(penny_chat_ids)} through {max(penny_chat_ids)} (inclusive) and '
             f'FollowUp ids {min(followup_ids)} through {max(followup_ids)} (inclusive).'
         )
+
+
+@lru_cache(maxsize=None)
+def get_or_create_anonymous_user(email):
+    user, created = UserProfile.objects.get_or_create(
+        email=email,
+        slack_team_id=settings.SLACK_TEAM_ID,
+        defaults={
+            'real_name': 'anonymous',
+            'slack_team_id': settings.SLACK_TEAM_ID,
+        })
+    return user
