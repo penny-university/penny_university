@@ -1,7 +1,5 @@
 import ast
 from dateutil.parser import parse
-from functools import lru_cache
-import pdb
 import json
 import mailbox
 import re
@@ -22,14 +20,25 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--data_dump_path', dest='data_dump_path', action='store', help='unzipped google data dump path to topics.mbox',
+            '--data_dump_path',
+            dest='data_dump_path',
+            action='store',
+            help='unzipped google data dump path to topics.mbox',
             required=True,
         )
         parser.add_argument(
-            '--output_file', dest='output_file', action='store', help='where to dump the output', required=False,
+            '--output_file',
+            dest='output_file',
+            action='store',
+            help='where to dump the output',
+            required=False,
         )
         parser.add_argument(
-            '--to_database', dest='to_database', action='store_true', help='where to dump the output', required=False,
+            '--to_database',
+            dest='to_database',
+            action='store_true',
+            help='where to dump the output',
+            required=False,
         )
 
     def handle(self, *args, **options):
@@ -206,66 +215,76 @@ def format_chats(raw_chats):
 
 
 def import_to_database(formated_chats):
-    penny_chat_ids = []
-    followup_ids = []
 
-    emails = set()
-    for chat in formated_chats:
-        emails.add(chat['user'])
-        for followup in chat['followups']:
-            emails.add(followup['user'])
+    new_users = []
+    new_chats = []
+    new_follow_ups = []
 
-    found_emails = set(UserProfile.objects.filter(email__in=emails).values_list('email', flat=True))
+    try:
+        with transaction.atomic():
+            for dump_chat in formated_chats:
 
-    unfound_emails = emails - found_emails
-    if unfound_emails:
-        print(f'missing these emails:\n{", ".join(unfound_emails)}\n')
-        print('We recommend running `./manage.py import_users_from_slack` before continuing.\n')
-        answer = input('continue anyway (will create anonymous users)? (N/y) > ')
-        if answer.lower() != 'y':
-            print('Aborting')
-            exit(0)
-        print('Continuing')
+                user, created = get_or_create_anonymous_user(dump_chat['user'])
+                if created:
+                    new_users.append(user)
 
-    with transaction.atomic():
-        for chat in formated_chats:
-            penny_chat, created = PennyChat.objects.update_or_create(
-                user=get_or_create_anonymous_user(chat['user']),
-                date=chat['date'],
-                defaults=dict(
-                    title=chat['title'],
-                    description=chat['description'],
-                    user=get_or_create_anonymous_user(chat['user']),
-                    date=chat['date'],
-                )
-            )
-            penny_chat_ids.append(penny_chat.id)
-            for followup in chat['followups']:
-                fup, created = FollowUp.objects.update_or_create(
-                    date=followup['date'],
-                    user=get_or_create_anonymous_user(followup['user']),
+                db_chat, created = PennyChat.objects.update_or_create(
+                    user=user,
+                    date=dump_chat['date'],
                     defaults=dict(
-                        content=followup['content'],
-                        date=followup['date'],
-                        user=get_or_create_anonymous_user(followup['user']),
-                        penny_chat=penny_chat,
+                        title=dump_chat['title'],
+                        description=dump_chat['description'],
+                        user=user,
+                        date=dump_chat['date'],
                     )
                 )
-                followup_ids.append(fup.id)
-        print(
-            "This debug line is left here INTENTIONALLY.\n"
-            "Play with PennyChat and FollowUp and make sure that the results are as expected. "
-            "For instance, try `len(FollowUp.objects.all())`."
-            "Then continue past the debugger and the transaction will be committed to the database."
-        )
-        pdb.set_trace()
-        print(
-            f'Committed PennyChat ids {min(penny_chat_ids)} through {max(penny_chat_ids)} (inclusive) and '
-            f'FollowUp ids {min(followup_ids)} through {max(followup_ids)} (inclusive).'
-        )
+
+                if created:
+                    new_chats.append(db_chat)
+
+                for dump_follow_up in dump_chat['followups']:
+
+                    user, created = get_or_create_anonymous_user(dump_follow_up['user'])
+                    if created:
+                        new_users.append(user)
+
+                    db_follow_up, created = FollowUp.objects.update_or_create(
+                        date=dump_follow_up['date'],
+                        user=user,
+                        defaults=dict(
+                            content=dump_follow_up['content'],
+                            date=dump_follow_up['date'],
+                            user=user,
+                            penny_chat=db_chat,
+                        )
+                    )
+
+                    if created:
+                        new_follow_ups.append(db_follow_up)
+
+            print(f'\n\nNEW USERS:\n {new_users}')
+            print(f'\n\nNEW CHATS:\n {new_chats}')
+            print(f'\n\nNEW FOLLOW UPS:\n {new_follow_ups}')
+            print(
+                f'\n\nCreated\n'
+                f'- {len(new_users)} new users\n'
+                f'- {len(new_chats)} new chats\n'
+                f'- {len(new_follow_ups)} new follow ups\n'
+            )
+            if sum([len(new_users), len(new_chats), len(new_follow_ups)]) == 0:
+                print('nothing to do here')
+                raise RuntimeError('not committing')
+            answer = input('\ncommit transaction? (n/Y) > ')
+            if answer.lower() != 'y':
+                raise RuntimeError('not committing')
+            print('committed')
+    except Exception as e:
+        if str(e) == 'not committing':
+            print('abandoned')
+        else:
+            raise
 
 
-@lru_cache(maxsize=None)
 def get_or_create_anonymous_user(email):
     user, created = UserProfile.objects.get_or_create(
         email=email,
@@ -274,4 +293,4 @@ def get_or_create_anonymous_user(email):
             'real_name': 'anonymous',
             'slack_team_id': settings.SLACK_TEAM_ID,
         })
-    return user
+    return user, created
