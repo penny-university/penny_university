@@ -40,10 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bot.apps.BotConfig',
-    'home.apps.HomeConfig',
-    'pennychat.apps.PennychatConfig',
-    'users.apps.UsersConfig',
+    'bot',
+    'rest_framework',
+    'api',
+    'home',
+    'pennychat',
+    'users',
 ]
 
 MIDDLEWARE = [
