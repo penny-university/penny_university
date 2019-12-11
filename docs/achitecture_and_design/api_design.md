@@ -16,7 +16,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
     "title": "...",
     "description": "...",
     "date": "...",
-    "follow_ups_url": "api/chats/<id>/followups",
+    "follow_ups_url": "http://pennyuniversity.org/api/chats/<id>/followups",
     "follow_up_count": 5
 }
 ```
@@ -38,7 +38,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
             "title": "...",
             "description": "...",
             "date": "...",
-            "follow_ups_url": "api/chats/<id>/followups",
+            "follow_ups_url": "http://pennyuniversity.org/api/chats/<id>/followups",
             "follow_up_count": 5
         },
         ...
@@ -46,9 +46,9 @@ The following are the RESTful endpoints needed to support basic chat and follow-
 }
 ```
 
-### Retrive all chats
+### Retrieve all chats
 `GET /api/chats`
-(Same data returned as User's Chats)
+(Same data representation as used in user's chats above.)
 
 
 ### Create a new chat
@@ -86,7 +86,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
             },
             "date": "...",
             "content": "...",
-            "penny_chat": "api/chats/<id>"
+            "penny_chat": "http://pennyuniversity.org/api/chats/<id>"
         },
         ...
     ]
@@ -114,7 +114,7 @@ Same payload as POST
 ## For later discussion:
 
 ### Chat search
-`GET /api/chats/search?user=2`
+`GET /api/chats/?user=2`
 The response format is TBD but will be a list of chats and some other metadata and possibly aggregation data (e.g. the number of chats within each tag).
 
 ### User Profile
