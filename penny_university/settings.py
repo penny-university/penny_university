@@ -41,9 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bot.apps.BotConfig',
-    'home',
-    'pennychat',
-    'users',
+    'home.apps.HomeConfig',
+    'pennychat.apps.PennychatConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -160,3 +160,5 @@ SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 if SLACK_API_KEY is None:
     print('WARNING: SLACK_API_KEY is None')
 PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
+
+SLACK_TEAM_ID = 'T41DZFW4T'

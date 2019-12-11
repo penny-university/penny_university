@@ -2,6 +2,9 @@ staticfiles/*
 
 !staticfiles/.gitignore
 
+credentials.json
+token.pickle
+
 messages.log
 __pycache__
 *.pyc

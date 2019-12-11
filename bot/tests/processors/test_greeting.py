@@ -147,7 +147,7 @@ def test_submit_interests(mocker):
 
     assert user.email == 'SOME_EMAIL'
     assert user.slack_id == 'SOME_USER_ID'
-    assert user.user_name == 'SOME_SLACK_NAME'
+    assert user.display_name == 'SOME_SLACK_NAME'
     assert user.real_name == 'SOME_REAL_NAME'
     assert user.metro_name == 'SOME_METRO'
     assert user.topics_to_learn == 'SOME_LEARNINGS'
@@ -179,7 +179,7 @@ def test_submit_interests(mocker):
 
     assert user.email == 'SOME_EMAIL'
     assert user.slack_id == 'SOME_USER_ID'
-    assert user.user_name == 'SOME_SLACK_NAME'
+    assert user.display_name == 'SOME_SLACK_NAME'
     assert user.real_name == 'SOME_REAL_NAME'
     assert user.metro_name == 'SOME_OTHER_METRO'
     assert user.topics_to_learn == 'SOME_OTHER_LEARNINGS'
