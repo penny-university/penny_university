@@ -9,10 +9,24 @@ The following are the RESTful endpoints needed to support basic chat and follow-
 ```json
 {
     "id": 2,
-    "user": {
-        "id": 1,
-        "name": "..."
-    },
+    "participants": [
+        {
+            "user": {
+                "id": 1
+                "url": "http://pennyuniversity.org/api/users/1",
+                "name": "Joe"
+            },
+            "type": "organizer"
+        },
+        {
+            "user": {
+                "id": 2
+                "url": "http://pennyuniversity.org/api/users/2",
+                "name": "Jenny"
+            },
+            "type": "attendee"
+        }
+    ],
     "title": "...",
     "description": "...",
     "date": "...",
@@ -31,10 +45,24 @@ The following are the RESTful endpoints needed to support basic chat and follow-
     "chats": [
         {
             "id": 1,
-            "user": {
-                "id": 1,
-                "name": "..."
-            },
+            "participants": [
+                {
+                    "user": {
+                        "id": 1
+                        "url": "http://pennyuniversity.org/api/users/1",
+                        "name": "Joe"
+                    },
+                    "type": "organizer"
+                },
+                {
+                    "user": {
+                        "id": 2
+                        "url": "http://pennyuniversity.org/api/users/2",
+                        "name": "Jenny"
+                    },
+                    "type": "attendee"
+                }
+            ],
             "title": "...",
             "description": "...",
             "date": "...",
