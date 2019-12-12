@@ -12,7 +12,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
     "participants": [
         {
             "user": {
-                "id": 1
+                "id": 1,
                 "url": "http://pennyuniversity.org/api/users/1",
                 "name": "Joe"
             },
@@ -20,7 +20,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
         },
         {
             "user": {
-                "id": 2
+                "id": 2,
                 "url": "http://pennyuniversity.org/api/users/2",
                 "name": "Jenny"
             },
@@ -48,7 +48,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
             "participants": [
                 {
                     "user": {
-                        "id": 1
+                        "id": 1,
                         "url": "http://pennyuniversity.org/api/users/1",
                         "name": "Joe"
                     },
@@ -56,7 +56,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
                 },
                 {
                     "user": {
-                        "id": 2
+                        "id": 2,
                         "url": "http://pennyuniversity.org/api/users/2",
                         "name": "Jenny"
                     },
