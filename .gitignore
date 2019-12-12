@@ -18,4 +18,8 @@ venv
 node_modules
 package-lock.json
 
+credentials.json
+
+*.pickle
+
 NOT_COMMITTED
