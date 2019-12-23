@@ -26,6 +26,7 @@ class PennyChat(models.Model):
 
     # these fields are in PennyChat because this model is doing double duty, serving as a record of both the invitation
     # and the chat itself - we might want to create a formal PennyChatInvitation eventually
+    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='chats')  # used to retrieve draft penny_chat invitation  # noqa
     invitees = models.TextField()
     channels = models.TextField()
 
