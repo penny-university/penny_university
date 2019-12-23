@@ -5,10 +5,17 @@ import mailbox
 import re
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import (
+    BaseCommand,
+    CommandError,
+)
 from django.db import transaction
 
-from pennychat.models import PennyChat, FollowUp
+from pennychat.models import (
+    PennyChat,
+    FollowUp,
+    Participant,
+)
 from users.models import UserProfile
 
 
@@ -214,70 +221,101 @@ def format_chats(raw_chats):
     return formated_chats
 
 
-def import_to_database(formated_chats):
+def import_to_database(formated_chats, _test=False):
 
     new_users = []
     new_chats = []
     new_follow_ups = []
+    new_participants = []
 
     try:
         with transaction.atomic():
             for dump_chat in formated_chats:
-
-                user, created = get_or_create_anonymous_user(dump_chat['user'])
+                attendees = set()
+                organizer, created = get_or_create_anonymous_user(dump_chat['user'])
                 if created:
-                    new_users.append(user)
+                    new_users.append(organizer)
 
                 db_chat, created = PennyChat.objects.update_or_create(
-                    user=user,
+                    title=dump_chat['title'],
                     date=dump_chat['date'],
                     defaults=dict(
                         title=dump_chat['title'],
-                        description=dump_chat['description'],
-                        user=user,
                         date=dump_chat['date'],
+                        description=dump_chat['description'],
                     )
                 )
-
                 if created:
                     new_chats.append(db_chat)
 
                 for dump_follow_up in dump_chat['followups']:
 
-                    user, created = get_or_create_anonymous_user(dump_follow_up['user'])
+                    attendee, created = get_or_create_anonymous_user(dump_follow_up['user'])
                     if created:
-                        new_users.append(user)
+                        new_users.append(attendee)
+
+                    attendees.add(attendee)
 
                     db_follow_up, created = FollowUp.objects.update_or_create(
                         date=dump_follow_up['date'],
-                        user=user,
+                        user=attendee,
                         defaults=dict(
                             content=dump_follow_up['content'],
                             date=dump_follow_up['date'],
-                            user=user,
+                            user=attendee,
                             penny_chat=db_chat,
                         )
                     )
-
                     if created:
                         new_follow_ups.append(db_follow_up)
 
-            print(f'\n\nNEW USERS:\n {new_users}')
-            print(f'\n\nNEW CHATS:\n {new_chats}')
-            print(f'\n\nNEW FOLLOW UPS:\n {new_follow_ups}')
-            print(
-                f'\n\nCreated\n'
-                f'- {len(new_users)} new users\n'
-                f'- {len(new_chats)} new chats\n'
-                f'- {len(new_follow_ups)} new follow ups\n'
-            )
-            if sum([len(new_users), len(new_chats), len(new_follow_ups)]) == 0:
-                print('nothing to do here')
-                raise RuntimeError('not committing')
-            answer = input('\ncommit transaction? (n/Y) > ')
-            if answer.lower() != 'y':
-                raise RuntimeError('not committing')
-            print('committed')
+                # we don't want to create the participant row twice for an organizer who also had a follow-up
+                attendees.discard(organizer)
+                for attendee in attendees:
+                    db_participant, created = Participant.objects.update_or_create(
+                        user=attendee,
+                        penny_chat=db_chat,
+                        defaults=dict(
+                            user=attendee,
+                            penny_chat=db_chat,
+                            type=Participant.ATTENDEE,
+                        )
+                    )
+                    if created:
+                        new_participants.append(db_participant)
+
+                db_participant, created = Participant.objects.update_or_create(
+                    user=organizer,
+                    penny_chat=db_chat,
+                    defaults=dict(
+                        user=organizer,
+                        penny_chat=db_chat,
+                        type=Participant.ORGANIZER,
+                    )
+                )
+                if created:
+                    new_participants.append(db_participant)
+
+            if not _test:
+                print(f'\n\nNEW USERS:\n {new_users}')
+                print(f'\n\nNEW CHATS:\n {new_chats}')
+                print(f'\n\nNEW FOLLOW UPS:\n {new_follow_ups}')
+                print(f'\n\nNEW PARTICIPANTS:\n {new_participants}')
+                print(
+                    f'\n\nCreated\n'
+                    f'- {len(new_users)} new users\n'
+                    f'- {len(new_chats)} new chats\n'
+                    f'- {len(new_follow_ups)} new follow ups\n'
+                    f'- {len(new_participants)} new participants\n'
+                )
+
+                if sum([len(new_users), len(new_chats), len(new_follow_ups), len(new_participants)]) == 0:
+                    print('nothing to do here')
+                    raise RuntimeError('not committing')
+                answer = input('\ncommit transaction? (n/Y) > ')
+                if answer.lower() != 'y':
+                    raise RuntimeError('not committing')
+                print('committed')
     except Exception as e:
         if str(e) == 'not committing':
             print('abandoned')
