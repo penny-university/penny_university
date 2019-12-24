@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
+from common.utils import pprint_obj
 from users.models import UserProfile
 
 
@@ -15,27 +16,22 @@ class PennyChat(models.Model):
     title = models.TextField()
     description = models.TextField()
     date = models.DateTimeField(null=True)
-    invitees = models.TextField()
-    channels = models.TextField()
-    view = models.TextField()
-    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='chats')
-    user_tz = models.TextField()
-    template_channel = models.TextField()
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default=DRAFT_STATUS)
 
+    # these two are only used during PennyChat creation from the bot command  why? because the slack API is horrible
+    # and we're compensating - TODO revisit once they fire and rehire their product managers.
+    user_tz = models.TextField()
+    template_channel = models.TextField()
+    view = models.TextField()
+
+    # these fields are in PennyChat because this model is doing double duty, serving as a record of both the invitation
+    # and the chat itself - we might want to create a formal PennyChatInvitation eventually
+    user = models.TextField(null=True)
+    invitees = models.TextField()
+    channels = models.TextField()
+
     def __repr__(self):
-        return f'PennyChat:\n' \
-            f'  id: {self.id}\n' \
-            f'  title: {self.title}\n' \
-            f'  description: {self.description}\n' \
-            f'  date: {self.date}\n' \
-            f'  invitees: {self.invitees}\n' \
-            f'  channels: {self.channels}\n' \
-            f'  view: {self.view}\n' \
-            f'  user: {self.user}\n' \
-            f'  user_tz: {self.user_tz}\n' \
-            f'  template_channel: {self.template_channel}\n' \
-            f'  status: {self.status}\n'
+        return pprint_obj(self)
 
 
 class FollowUp(models.Model):
@@ -45,9 +41,25 @@ class FollowUp(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='follow_ups')
 
     def __repr__(self):
-        return f'FollowUp:\n' \
-            f'  id: {self.id}\n' \
-            f'  penny_chat: {self.penny_chat}\n' \
-            f'  content: {self.content}\n' \
-            f'  date: {self.date}\n' \
-            f'  user: {self.user}\n'
+        return pprint_obj(self)
+
+
+class Participant(models.Model):
+    ORGANIZER = 1
+    ATTENDEE = 2
+    INVITEE = 3
+    TYPE_CHOICES = (
+        (ORGANIZER, 'Organizer'),
+        (ATTENDEE, 'Attendee'),
+        (INVITEE, 'Invitee'),
+    )
+
+    penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='participations')
+    type = models.IntegerField(choices=TYPE_CHOICES, default=INVITEE)
+
+    class Meta:
+        unique_together = ('penny_chat', 'user',)
+
+    def __repr__(self):
+        return pprint_obj(self)

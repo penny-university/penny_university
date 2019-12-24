@@ -67,3 +67,4 @@ To cancel just visit http://yourapp.herokuapp.com/forward
 ## Pull in data from forum or slack
 * Pull chats and follow ups from Google Group by getting a dump of the data from https://takeout.google.com, unzipping it, and then running `./manage.py import_google_forum --data_dump_path <somewhere>/Takeout/Groups/penny-university\@googlegroups.com/topics.mbox  --to_database`
 * Pull users from slack (most importantly their real_name) using `./manage.py import_users_from_slack`
+

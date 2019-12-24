@@ -4,16 +4,13 @@ from pytz import timezone, utc
 
 from bot.processors.pennychat import PennyChatBotModule
 from pennychat.models import PennyChat
-from users.models import UserProfile
 
 TZ = timezone('America/Chicago')
 
 
 def create_penny_chat():
     date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=utc)
-    user, created = UserProfile.objects.get_or_create(id=1)
     chat = PennyChat.objects.create(
-        user=user,
         status=PennyChat.DRAFT_STATUS,
         user_tz='America/Chicago',
         template_channel='channel',
