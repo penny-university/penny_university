@@ -1,18 +1,12 @@
 from rest_framework import serializers
 
 from .models import PennyChat, FollowUp
-from users.models import UserProfile
 from users.serializers import UserProfileSerializer
 
 
 class PennyChatSerializer(serializers.HyperlinkedModelSerializer):
     follow_ups = serializers.HyperlinkedIdentityField(view_name='followup-list')
     user = UserProfileSerializer(read_only=True)
-
-    def perform_create(self, serializer):
-        # this will eventually be replaced by user = self.request.user
-        user = UserProfile.objects.get(id=56)
-        serializer.save(user=user)
 
     class Meta:
         model = PennyChat
