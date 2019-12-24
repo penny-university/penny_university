@@ -1,8 +1,9 @@
 from rest_framework import viewsets, views, mixins, generics
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
+from users.models import UserProfile
 from .models import PennyChat, FollowUp
 from .serializers import PennyChatSerializer, FollowUpSerializer
 
@@ -13,6 +14,11 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     """
     queryset = PennyChat.objects.all().order_by('-date')
     serializer_class = PennyChatSerializer
+
+    def perform_create(self, serializer):
+        # this will eventually be replaced by user = self.request.user
+        user = UserProfile.objects.get(id=56)
+        serializer.save(user=user)
 
 
 class ListCreateFollowUps(views.APIView):
@@ -30,10 +36,10 @@ class ListCreateFollowUps(views.APIView):
         follow_up_data = request.data
         penny_chat_url = reverse('pennychat-detail', args=[pk], request=request)
         follow_up_data['penny_chat'] = penny_chat_url
-        follow_up_data['user'] = 'Anonymous'
         serializer = FollowUpSerializer(data=follow_up_data, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            user = UserProfile.objects.get(id=56)
+            serializer.save(user=user)
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -43,12 +49,10 @@ class UpdateDeleteFollowUp(mixins.UpdateModelMixin, mixins.DestroyModelMixin, ge
     serializer_class = FollowUpSerializer
 
     def put(self, request, *args, **kwargs):
-        follow_up = self.get_object()
-        follow_up.content = request.data['content']
-        if request.data['content']:
-            follow_up.save()
-            return Response(status=HTTP_204_NO_CONTENT)
-        return Response({'content': 'This field is required.'}, status=HTTP_400_BAD_REQUEST)
+        return self.update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        self.destroy(self, request, *args, **kwargs)
+        return self.destroy(request, *args, **kwargs)
