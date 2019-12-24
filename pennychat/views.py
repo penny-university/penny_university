@@ -1,7 +1,7 @@
-from rest_framework import viewsets, views
+from rest_framework import viewsets, views, mixins, generics
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 from .models import PennyChat, FollowUp
 from .serializers import PennyChatSerializer, FollowUpSerializer
@@ -36,3 +36,19 @@ class ListCreateFollowUps(views.APIView):
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class UpdateDeleteFollowUp(mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+    queryset = FollowUp.objects.all()
+    serializer_class = FollowUpSerializer
+
+    def put(self, request, *args, **kwargs):
+        follow_up = self.get_object()
+        follow_up.content = request.data['content']
+        if request.data['content']:
+            follow_up.save()
+            return Response(status=HTTP_204_NO_CONTENT)
+        return Response({'content': 'This field is required.'}, status=HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        self.destroy(self, request, *args, **kwargs)
