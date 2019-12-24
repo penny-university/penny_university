@@ -64,8 +64,6 @@ formatted_forum_dump = [
 
 @pytest.mark.django_db
 def test_import_to_database():
-    import_to_database(formatted_forum_dump, _test=True)
-
     def assert_db_in_proper_state():
         chats = [p.title for p in PennyChat.objects.all()]
         assert len(chats) == 3
@@ -95,6 +93,7 @@ def test_import_to_database():
         for user in ['A0@gmail.com', 'A1@gmail.com', 'A2@gmail.com', 'B0@gmail.com', 'C0@gmail.com']:
             assert user in users
 
+    import_to_database(formatted_forum_dump, _test=True)
     assert_db_in_proper_state()
 
     # idempotency check
