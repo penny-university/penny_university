@@ -45,6 +45,9 @@ class ListCreateFollowUps(views.APIView):
 
 
 class UpdateDeleteFollowUp(mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+    """
+    API endpoint that allows follow ups to be updated or deleted.
+    """
     queryset = FollowUp.objects.all()
     serializer_class = FollowUpSerializer
 
