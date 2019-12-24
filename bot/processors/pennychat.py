@@ -310,7 +310,6 @@ class PennyChatBotModule(BotModule):
     @classmethod
     def create_penny_chat(cls, slack, event):
         user = slack.users_info(user=event['user_id']).data['user']
-
         date = datetime.now().replace(minute=0, second=0, microsecond=0, tzinfo=utc)
         penny_chat, created = PennyChat.objects.get_or_create(
             user=user['id'],
