@@ -164,3 +164,9 @@ if SLACK_API_KEY is None:
 PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
 
 SLACK_TEAM_ID = 'T41DZFW4T'
+
+# Django Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
+}
