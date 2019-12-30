@@ -21,8 +21,6 @@ def client():
 
 @pytest.mark.django_db
 def test_penny_chat_list(chats_setup, client):
-    chats = PennyChat.objects.all()
-    logger.info(f'Chats: {chats}')
     response = client.get('/api/chats/')
     assert response.status_code == 200
     assert response.data['count'] == 3
@@ -33,6 +31,8 @@ def test_penny_chat_list(chats_setup, client):
 
 @pytest.mark.django_db
 def test_penny_chat_detail(chats_setup, client):
+    chats = PennyChat.objects.all()
+    logger.info(f'Chats: {chats}')
     response = client.get('/api/chats/1/')
     assert response.status_code == 200
     assert response.data['title'] == 'Chat 1'
