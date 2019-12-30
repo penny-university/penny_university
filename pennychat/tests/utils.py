@@ -1,12 +1,9 @@
 from datetime import timedelta
-import logging
 
 from django.utils import timezone
 
 from pennychat.models import PennyChat, FollowUp
 from users.models import UserProfile
-
-logger = logging.getLogger(__name__)
 
 
 def generate_user():
@@ -24,7 +21,6 @@ def generate_follow_ups(chat):
     follow_up_2 = FollowUp.objects.create(penny_chat=chat,
                                           content='The second follow up',
                                           user=generate_user())
-    logger.info(f'Follow ups: {follow_up_1}, {follow_up_2}')
     return [follow_up_1, follow_up_2]
 
 
@@ -45,6 +41,4 @@ def generate_chats(with_follow_ups=False):
     if with_follow_ups:
         for chat in chats:
             generate_follow_ups(chat)
-
-    logger.info(f'Chats: {chat_1}, {chat_2}, {chat_3}')
     return chats

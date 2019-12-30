@@ -3,11 +3,12 @@ import pytest
 from rest_framework.test import APIClient
 
 from pennychat.tests import utils
+from pennychat.models import FollowUp
 
 
 @pytest.fixture
 def chats_setup():
-    utils.generate_chats(with_follow_ups=True)
+    return utils.generate_chats(with_follow_ups=True)
 
 
 @pytest.fixture
@@ -17,58 +18,72 @@ def client():
 
 @pytest.mark.django_db
 def test_follow_up_list(chats_setup, client):
-    response = client.get('/api/chats/1/follow-ups/')
+    penny_chat = chats_setup[0]
+    response = client.get(f'/api/chats/{penny_chat.id}/follow-ups/')
     assert response.status_code == 200
     assert response.data['count'] == 2
     follow_ups = response.data['results']
     # first follow up should be the first follow up created
     assert follow_ups[0]['content'] == 'The first follow up'
+    assert FollowUp.objects.get(pk=follow_ups[0]['id']).content == 'The first follow up'
 
 
 @pytest.mark.django_db
 def test_create_follow_up(chats_setup, client):
+    penny_chat = chats_setup[0]
+    content = 'Create new follow up'
     data = {
-        'content': 'Create new follow up'
+        'content': content
     }
-    response = client.post('/api/chats/1/follow-ups/', data=data, format='json')
+    response = client.post(f'/api/chats/{penny_chat.id}/follow-ups/', data=data, format='json')
     assert response.status_code == 201
-    response = client.get(f'/api/chats/1/follow-ups/')
+    response = client.get(f'/api/chats/{penny_chat.id}/follow-ups/')
     assert response.data['count'] == 3
-    assert response.data['results'][2]['content'] == 'Create new follow up'
+    follow_ups = response.data['results']
+    assert follow_ups[2]['content'] == content
+    assert FollowUp.objects.get(pk=follow_ups[2]['id']).content == content
 
 
 @pytest.mark.django_db
 def test_update_follow_up(chats_setup, client):
-    chat = client.get('/api/chats/2/').data
+    first_penny_chat = chats_setup[0]
+    second_penny_chat = chats_setup[1]
+    chat_data = client.get(f'/api/chats/{first_penny_chat.id}/').data
     data = {
         'content': 'Update follow up',
-        'penny_chat': chat['url'],
+        'penny_chat': chat_data['url'],
     }
-    response = client.put('/api/follow-ups/1/', data=data, format='json')
+    follow_up = second_penny_chat.follow_ups.first()
+    response = client.put(f'/api/follow-ups/{follow_up.id}/', data=data, format='json')
     assert response.status_code == 200
-    response = client.get('/api/chats/1/follow-ups/')
+    # check that follow up was removed from original chat
+    response = client.get(f'/api/chats/{second_penny_chat.id}/follow-ups/')
     assert response.data['count'] == 1
-    response = client.get('/api/chats/2/follow-ups/')
+    response = client.get(f'/api/chats/{first_penny_chat.id}/follow-ups/')
     assert response.data['count'] == 3
     follow_ups = response.data['results']
-    assert follow_ups[0]['content'] == 'Update follow up'
+    assert follow_ups[2]['content'] == 'Update follow up'
+    assert FollowUp.objects.get(pk=follow_ups[2]['id']).content == 'Update follow up'
 
 
 @pytest.mark.django_db
 def test_partial_update_follow_up(chats_setup, client):
+    follow_up = chats_setup[0].follow_ups.first()
     data = {
         'content': 'Update follow up'
     }
-    response = client.patch('/api/follow-ups/1/', data=data, format='json')
+    response = client.patch(f'/api/follow-ups/{follow_up.id}/', data=data, format='json')
     assert response.status_code == 200
-    follow_ups = client.get('/api/chats/1/follow-ups/').data['results']
+    follow_ups = client.get(f'/api/chats/{chats_setup[0].id}/follow-ups/').data['results']
     assert follow_ups[0]['content'] == 'Update follow up'
+    assert FollowUp.objects.get(pk=follow_ups[0]['id']).content == 'Update follow up'
 
 
 @pytest.mark.django_db
 def test_delete_follow_up(chats_setup, client):
-    response = client.delete('/api/follow-ups/1/')
+    follow_up = chats_setup[0].follow_ups.first()
+    response = client.delete(f'/api/follow-ups/{follow_up.id}/')
     assert response.status_code == 204
-    response = client.get('/api/chats/1/follow-ups/')
+    response = client.get(f'/api/chats/{chats_setup[0].id}/follow-ups/')
     assert response.data['count'] == 1
-    assert response.data['results'][0]['id'] != 1
+    assert response.data['results'][0]['id'] != follow_up.id
