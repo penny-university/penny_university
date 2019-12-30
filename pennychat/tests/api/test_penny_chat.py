@@ -1,8 +1,12 @@
 import pytest
+import logging
 
 from rest_framework.test import APIClient
 
 from pennychat.tests import utils
+from pennychat.models import PennyChat
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -17,6 +21,8 @@ def client():
 
 @pytest.mark.django_db
 def test_penny_chat_list(chats_setup, client):
+    chats = PennyChat.objects.all()
+    logger.info(f'Chats: {chats}')
     response = client.get('/api/chats/')
     assert response.status_code == 200
     assert response.data['count'] == 3
