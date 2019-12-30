@@ -7,8 +7,10 @@ from users.models import UserProfile
 
 
 def generate_user():
-    user, created = UserProfile.objects.get_or_create(real_name='Anonymous Profile',
-                                                      defaults={'email': 'anonymous@profile.com'})
+    user, created = UserProfile.objects.get_or_create(
+        real_name='Anonymous Profile',
+        defaults={'email': 'anonymous@profile.com'}
+    )
     return user
 
 
