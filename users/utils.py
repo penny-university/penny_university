@@ -29,8 +29,7 @@ def update_user_profile_from_slack_user(slack_user):
     user = None
 
     users = UserProfile.objects.filter(
-        Q(slack_id=slack_user['id']) |
-        Q(email=slack_user['profile']['email'], slack_team_id=slack_user['team_id'])
+        Q(slack_id=slack_user['id']) | Q(email=slack_user['profile']['email'], slack_team_id=slack_user['team_id'])
     )
     if len(users) == 0:
         created = True

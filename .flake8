@@ -3,4 +3,5 @@ exclude =
     .git,
     __pycache__
 max-line-length = 121
-
+ignore =
+    F401,F403 penny_university/settings/

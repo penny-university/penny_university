@@ -11,23 +11,20 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import platform
 import sys
 
 import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7e@1*$kub8yxjd&pkej#+0k+e9omlz!31$zuq(4$rglm4i(hp1'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('PENNY_DEBUG', '').lower() == "true"
-print(f'DEBUG = {DEBUG}')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if SECRET_KEY is None:
+    raise EnvironmentError('Secret key is not set!')
 
 ALLOWED_HOSTS = ['*']  # TODO this is a hack - fix once we have domain name set up
 
@@ -40,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'bot.apps.BotConfig',
+    'api.apps.ApiConfig',
     'home.apps.HomeConfig',
     'pennychat.apps.PennychatConfig',
     'users.apps.UsersConfig',
@@ -145,20 +144,15 @@ LOGGING = {
     },
 }
 
-if not DEBUG and not platform.system() == 'Darwin':
-    print("FORWARDING SSL")
-    SECURE_SSL_REDIRECT = True
-    # Heroku seems to strip HTTP_X_FORWARDED_PROTO and rewrite it correctly
-    # https://help.heroku.com/J2R1S4T8/can-heroku-force-an-application-to-use-ssl-tls
-    # If we move from heroku the following line should be considered insecure b/c
-    # anyone could lie about the protocol used.
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-
 SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 if SLACK_API_KEY is None:
     print('WARNING: SLACK_API_KEY is None')
 PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
 
 SLACK_TEAM_ID = 'T41DZFW4T'
+
+# Django Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
+}
