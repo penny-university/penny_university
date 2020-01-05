@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from common.utils import pprint_obj
@@ -26,3 +27,13 @@ class UserProfile(models.Model):
 
     def __repr__(self):
         return pprint_obj(self)
+
+    def clean(self):
+        super(UserProfile, self).clean()
+        email_team_identification = self.email and self.slack_team_id
+        if not (email_team_identification or self.slack_id):
+            raise ValidationError('UserProfile must be created with either 1) slack_id or 2) email AND slack_team_id')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(UserProfile, self).save(*args, **kwargs)
