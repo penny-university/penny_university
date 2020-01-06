@@ -30,6 +30,7 @@ class UserProfile(models.Model):
 
     def clean(self):
         super(UserProfile, self).clean()
+
         email_team_identification = self.email and self.slack_team_id
         if not (email_team_identification or self.slack_id):
             raise ValidationError('UserProfile must be created with either 1) slack_id or 2) email AND slack_team_id')
