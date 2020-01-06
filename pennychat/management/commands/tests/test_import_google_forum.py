@@ -82,10 +82,10 @@ def test_import_to_database():
         for participant in participants:
             if participant.penny_chat.title == 'titleA' and participant.user.email == 'A0@gmail.com':
                 found_count += 1
-                assert participant.type == Participant.ORGANIZER
+                assert participant.role == Participant.ORGANIZER
             if participant.penny_chat.title == 'titleA' and participant.user.email == 'A1@gmail.com':
                 found_count += 1
-                assert participant.type == Participant.ATTENDEE
+                assert participant.role == Participant.ATTENDEE
         assert found_count == 2
 
         users = [u.email for u in UserProfile.objects.all()]

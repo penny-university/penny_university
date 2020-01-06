@@ -48,7 +48,7 @@ class Participant(models.Model):
     ORGANIZER = 1
     ATTENDEE = 2
     INVITEE = 3
-    TYPE_CHOICES = (
+    ROLE_CHOICES = (
         (ORGANIZER, 'Organizer'),
         (ATTENDEE, 'Attendee'),
         (INVITEE, 'Invitee'),
@@ -56,7 +56,7 @@ class Participant(models.Model):
 
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='participations')
-    type = models.IntegerField(choices=TYPE_CHOICES, default=INVITEE)
+    role = models.IntegerField(choices=ROLE_CHOICES, default=INVITEE)
 
     class Meta:
         unique_together = ('penny_chat', 'user',)
