@@ -278,7 +278,7 @@ def import_to_database(formated_chats, _test=False):
                         defaults=dict(
                             user=attendee,
                             penny_chat=db_chat,
-                            type=Participant.ATTENDEE,
+                            role=Participant.ATTENDEE,
                         )
                     )
                     if created:
@@ -290,7 +290,7 @@ def import_to_database(formated_chats, _test=False):
                     defaults=dict(
                         user=organizer,
                         penny_chat=db_chat,
-                        type=Participant.ORGANIZER,
+                        role=Participant.ORGANIZER,
                     )
                 )
                 if created:

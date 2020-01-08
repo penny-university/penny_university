@@ -6,11 +6,10 @@ from users.serializers import UserProfileSerializer
 
 class PennyChatSerializer(serializers.HyperlinkedModelSerializer):
     follow_ups = serializers.HyperlinkedIdentityField(view_name='followup-list')
-    user = UserProfileSerializer(read_only=True)
 
     class Meta:
         model = PennyChat
-        fields = ['id', 'url', 'title', 'description', 'date', 'user', 'follow_ups']
+        fields = ['id', 'url', 'title', 'description', 'date', 'follow_ups']
 
 
 class FollowUpSerializer(serializers.HyperlinkedModelSerializer):
