@@ -2,16 +2,19 @@ from copy import deepcopy
 
 from django.db import IntegrityError
 import pytest
+from slack.errors import SlackApiError
 
-from users.models import UserProfile
-from users.utils import (
-    update_user_profile_from_slack_user,
+from users.models import (
+    UserProfile,
     update_user_profile_from_slack,
+    update_user_profile_from_slack_user,
+    get_or_create_user_profile_from_slack_ids,
 )
 
 
+bill_user_id = 'U4102EFU1'
 slack_user = {
-    'id': 'U4102EFU1',
+    'id': bill_user_id,
     'team_id': 'T41DZFW4T',
     'name': 'bill',
     'deleted': False,
@@ -53,6 +56,22 @@ slack_user = {
     'is_app_user': False,
     'updated': 1569058551,
 }
+
+
+@pytest.fixture
+def mock_slack_client(mocker):
+    slack_client = mocker.Mock()
+
+    def mock_users_info(user):
+        if user == bill_user_id:
+            resp = mocker.Mock()
+            resp.data = {'user': slack_user}
+            return resp
+        else:
+            raise SlackApiError('bla bla bla', "'error': 'user_not_found'")
+
+    slack_client.users_info.side_effect = mock_users_info
+    return slack_client
 
 
 @pytest.mark.django_db
@@ -153,8 +172,19 @@ def test_update_user_profile_from_slack(mocker):
         'members': slack_users,
     }
 
-    with mocker.patch('users.utils.slack.WebClient', return_value=slack_client):
+    with mocker.patch('users.models.slack.WebClient', return_value=slack_client):
         update_user_profile_from_slack()
 
     for i in range(3):
         UserProfile.objects.get(slack_id=str(i))
+
+
+@pytest.mark.django_db
+def test_get_or_create_by_slack_ids(mock_slack_client):
+    resp = get_or_create_user_profile_from_slack_ids(
+        slack_user_ids=[bill_user_id, bill_user_id, 'some_silly_id'],
+        slack_client=mock_slack_client,
+    )
+    bill_user = UserProfile.objects.get(slack_id=bill_user_id)
+
+    assert resp == {bill_user_id: bill_user}

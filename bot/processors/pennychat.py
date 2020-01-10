@@ -11,7 +11,7 @@ from bot.processors.filters import (
     is_action_id,
     is_block_interaction_event,
     is_event_type, has_callback_id)
-from users.utils import get_or_create_by_slack_ids
+from users.models import get_or_create_user_profile_from_slack_ids
 
 
 def datetime_range(start, end, delta):
@@ -33,7 +33,7 @@ def shared_message_preview_template(slack_client, penny_chat):
     shares = []
     if len(penny_chat.invitees) > 0:
         for slack_user_id in penny_chat.invitees.split(','):
-            users = get_or_create_by_slack_ids(penny_chat.invitees.split(','), slack_client=slack_client)
+            users = get_or_create_user_profile_from_slack_ids(penny_chat.invitees.split(','), slack_client=slack_client)
             for user in users.values():
                 Participant.objects.update_or_create(
                     penny_chat=penny_chat,
@@ -42,11 +42,14 @@ def shared_message_preview_template(slack_client, penny_chat):
                 )
             shares.append(users[slack_user_id].real_name)
 
-    organizer = get_or_create_by_slack_ids([penny_chat.user], slack_client=slack_client).get(penny_chat.user)
+    organizer = get_or_create_user_profile_from_slack_ids(
+        [penny_chat.user],
+        slack_client=slack_client,
+    ).get(penny_chat.user)
     if organizer:
         Participant.objects.update_or_create(
             penny_chat=penny_chat,
-            user=user,
+            user=organizer,
             defaults=dict(role=Participant.ORGANIZER),
         )
 

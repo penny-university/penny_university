@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from users.utils import update_user_profile_from_slack
+from users.models import update_user_profile_from_slack
 
 
 class Command(BaseCommand):
