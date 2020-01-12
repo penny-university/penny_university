@@ -3,7 +3,7 @@ from pytz import timezone, utc
 import urllib.parse
 import requests
 
-from pennychat.models import PennyChat
+from pennychat.models import PennyChat, Participant
 from bot.processors.base import (
     BotModule
 )
@@ -11,6 +11,7 @@ from bot.processors.filters import (
     is_action_id,
     is_block_interaction_event,
     is_event_type, has_callback_id)
+from users.models import get_or_create_user_profile_from_slack_ids
 
 
 def datetime_range(start, end, delta):
@@ -28,38 +29,58 @@ def get_time_options():
     return time_options
 
 
-def save_message_template(slack, penny_chat):
+def shared_message_preview_template(slack_client, penny_chat):
     shares = []
     if len(penny_chat.invitees) > 0:
-        for user in penny_chat.invitees.split(','):
-            shares.append(slack.users_info(user=user).data['user']['real_name'])
+        for slack_user_id in penny_chat.invitees.split(','):
+            users = get_or_create_user_profile_from_slack_ids(penny_chat.invitees.split(','), slack_client=slack_client)
+            for user in users.values():
+                Participant.objects.update_or_create(
+                    penny_chat=penny_chat,
+                    user=user,
+                    defaults=dict(role=Participant.INVITEE),
+                )
+            shares.append(users[slack_user_id].real_name)
+
+    organizer = get_or_create_user_profile_from_slack_ids(
+        [penny_chat.user],
+        slack_client=slack_client,
+    ).get(penny_chat.user)
+    if organizer:
+        Participant.objects.update_or_create(
+            penny_chat=penny_chat,
+            user=organizer,
+            defaults=dict(role=Participant.ORGANIZER),
+        )
 
     if len(penny_chat.channels) > 0:
         for channel in penny_chat.channels.split(','):
             shares.append(f'<#{channel}>')
 
-    share_string = ', '.join(shares)
+    if len(shares) == 1:
+        share_string = shares[0]
+    elif len(shares) == 2:
+        share_string = ' and '.join(shares)
+    elif len(shares) > 2:
+        shares[-1] = f'and {shares[-1]}'
+        share_string = ', '.join(shares)
 
-    timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-    date_text = f'*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
-
-    save_message = [
+    shared_message_preview_blocks = [
         {
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'*New Penny Chat: {penny_chat.title}*'
+                'text': (
+                    '*Almost Done*\n'
+                    'Below is the Penny Chat invitation as it will be seen by others. '
+                    'Please review it and then either click *Share* or *Edit Details*.'
+                )
             },
-            'accessory': {
-                'type': 'button',
-                'text': {
-                    'type': 'plain_text',
-                    'text': 'Edit Details :pencil2:',
-                    'emoji': True
-                },
-                'action_id': 'penny_chat_edit'
-            }
         },
+        {
+            'type': 'divider'
+        },
+    ] + shared_message_template(penny_chat, organizer.real_name) + [
         {
             'type': 'divider'
         },
@@ -67,30 +88,7 @@ def save_message_template(slack, penny_chat):
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'*Description*\n{penny_chat.description}'
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': date_text
-            },
-            'accessory': {
-                'type': 'button',
-                'text': {
-                    'type': 'plain_text',
-                    'text': 'Add to Google Calendar :calendar:',
-                    'emoji': True
-                },
-                'url': 'https://google.com'
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': f'*Sharing With*\n{share_string}'
+                'text': f'*This will be shared with:* {share_string}'
             }
         },
         {
@@ -100,16 +98,28 @@ def save_message_template(slack, penny_chat):
                     'type': 'button',
                     'text': {
                         'type': 'plain_text',
-                        'text': 'Share',
-                        'emoji': True
+                        'text': 'Share :the_horns:',
+                        'emoji': True,
                     },
                     'action_id': 'penny_chat_share',
-                    'style': 'primary'
+                    'style': 'primary',
+                },
+                {
+                    'type': 'button',
+                    'text': {
+                        'type': 'plain_text',
+                        'text': 'Edit Details :pencil2:',
+                        'emoji': True,
+                    },
+                    'action_id': 'penny_chat_edit',
+                    'style': 'primary',
                 }
+
             ]
-        }
+        },
     ]
-    return save_message
+
+    return shared_message_preview_blocks
 
 
 def shared_message_template(penny_chat, user_name):
@@ -129,11 +139,8 @@ def shared_message_template(penny_chat, user_name):
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'*{user_name} invited you to a new Penny Chat!*'
+                'text': f'_*{user_name}* invited you to a new Penny Chat!_'
             }
-        },
-        {
-            'type': 'divider'
         },
         {
             'type': 'section',
@@ -385,13 +392,25 @@ class PennyChatBotModule(BotModule):
             self.slack.chat_postEphemeral(
                 channel=penny_chat.template_channel,
                 user=penny_chat.user,
-                blocks=save_message_template(self.slack, penny_chat),
+                blocks=shared_message_preview_template(self.slack, penny_chat),
             )
 
     @is_block_interaction_event
     @is_action_id('penny_chat_edit')
     def edit_chat(self, event):
-        penny_chat = PennyChat.objects.get(user=event['user']['id'], status=PennyChat.DRAFT_STATUS)
+        try:
+            penny_chat = PennyChat.objects.get(user=event['user']['id'], status=PennyChat.DRAFT_STATUS)
+        except:  # noqa
+            requests.post(event['response_url'], json={'delete_original': True})
+            self.slack.chat_postEphemeral(
+                channel=event['channel']['id'],
+                user=event['user']['id'],
+                text=(
+                    "We are sorry, but an error has occurred and the Penny "
+                    "Chat you are trying to edit is no longer available."
+                ),
+            )
+            return
         modal = penny_chat_details_modal(penny_chat)
         response = self.slack.views_open(view=modal, trigger_id=event['trigger_id'])
         penny_chat.view = response.data['view']['id']
@@ -401,7 +420,19 @@ class PennyChatBotModule(BotModule):
     @is_block_interaction_event
     @is_action_id('penny_chat_share')
     def share(self, event):
-        penny_chat = PennyChat.objects.get(user=event['user']['id'], status=PennyChat.DRAFT_STATUS)
+        try:
+            penny_chat = PennyChat.objects.get(user=event['user']['id'], status=PennyChat.DRAFT_STATUS)
+        except:  # noqa
+            requests.post(event['response_url'], json={'delete_original': True})
+            self.slack.chat_postEphemeral(
+                channel=event['channel']['id'],
+                user=event['user']['id'],
+                text=(
+                    "We are sorry, but an error has occurred and the Penny "
+                    "Chat you are trying to share is no longer available."
+                ),
+            )
+            return
         user = self.slack.users_info(user=penny_chat.user)['user']
         for share_to in penny_chat.channels.split(',') + penny_chat.invitees.split(','):
             if share_to != '':

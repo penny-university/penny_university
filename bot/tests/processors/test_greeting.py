@@ -89,7 +89,7 @@ def test_show_interests_dialog_existing_user(mocker):
     slack = mocker.Mock()
     bot_module = GreetingBotModule(slack)
 
-    UserProfile.objects.create(slack_id=0, topics_to_learn='django')
+    UserProfile.objects.create(slack_id='0', topics_to_learn='django')
 
     event = {
         'type': 'block_actions',

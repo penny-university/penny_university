@@ -8,6 +8,7 @@ from users.models import UserProfile
 
 def generate_user():
     user, created = UserProfile.objects.get_or_create(
+        slack_id='required_id',
         real_name='Anonymous Profile',
         defaults={'email': 'anonymous@profile.com'}
     )
