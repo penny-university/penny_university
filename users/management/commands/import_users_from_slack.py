@@ -9,6 +9,15 @@ class Command(BaseCommand):
         'Import user information from slack.'
     )
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--live_run',
+            dest='live_run',
+            action='store_true',
+            help='opposite of dry run - will actually write data to the database',
+            required=False,
+        )
+
     def handle(self, *args, **options):
         try:
             with transaction.atomic():
@@ -24,8 +33,9 @@ class Command(BaseCommand):
                 if sum([len(new_users), len(updated_users)]) == 0:
                     print('nothing to do here')
                     raise RuntimeError('not committing')
-                answer = input('\ncommit transaction? (n/Y) > ')
-                if answer.lower() != 'y':
+                if not options['live_run']:
+                    print('THIS IS A DRY RUN ONLY - NOT COMMITTING')
+                    print('Run with --live_run to actually commit.')
                     raise RuntimeError('not committing')
                 print('committed')
         except Exception as e:
