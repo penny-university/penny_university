@@ -37,9 +37,9 @@ class Command(BaseCommand):
                     print('THIS IS A DRY RUN ONLY - NOT COMMITTING')
                     print('Run with --live_run to actually commit.')
                     raise RuntimeError('not committing')
-                print('committed')
+                print('COMMITTED')
         except Exception as e:
             if str(e) == 'not committing':
-                print('abandoned')
+                pass
             else:
                 raise

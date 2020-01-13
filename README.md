@@ -65,6 +65,7 @@ To cancel just visit http://yourapp.herokuapp.com/forward
 
 
 ## Pull in data from forum or slack
-* Pull chats and follow ups from Google Group by getting a dump of the data from https://takeout.google.com, unzipping it, and then running `./manage.py import_google_forum --data_dump_path <somewhere>/Takeout/Groups/penny-university\@googlegroups.com/topics.mbox  --to_database`
+* Pull chats and follow ups from Google Group by getting a dump of the data from https://takeout.google.com, unzipping it, and then running `cat /wherever/topics.mbox | ./manage.py import_google_forum --to_database`. To run it remotely against our Heroku app run `cat /wherever/topics.mbox | heroku run --no-tty -a <your-app> ./manage.py import_google_forum --to_database`.
 * Pull users from slack (most importantly their real_name) using `./manage.py import_users_from_slack`
+* As stated above, these will only run dry runs. To actually commit the data to the database, add the `--live_run` parameter.
 

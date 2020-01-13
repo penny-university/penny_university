@@ -23,7 +23,10 @@ from users.models import UserProfile
 class Command(BaseCommand):
     help = (
         'Extract and normalize content from penny university google forum. '
-        'Requires that you retrieve forum content here: https://takeout.google.com'
+        'Requires that you retrieve forum content here: https://takeout.google.com. '
+        'Run remotely with `cat /wherever/topics.mbox | heroku run --no-tty -a <your-app> ./manage.py import_google_'
+        'forum --to_database`. When doing --live_run, if you have problems then make the --live_run argument NOT the '
+        'last argument. ¯\\_(ツ)_/¯'
     )
 
     def add_arguments(self, parser):
@@ -325,7 +328,7 @@ def import_to_database(formated_chats, live_run=False):
                 print('THIS IS A DRY RUN ONLY - NOT COMMITTING')
                 print('Run with --live_run to actually commit.')
                 raise RuntimeError('not committing')
-            print('committed')
+            print('COMMITTED')
     except Exception as e:
         if str(e) == 'not committing':
             pass
