@@ -74,7 +74,7 @@ class DebugPassthrough:
             )
 
             req = req.prepare()
-            resp = s.send(req)
+            resp = s.send(req, timeout=25)
 
             content_type = content_type_re.search(resp.headers.get('Content-Type', ''))
             if content_type:
