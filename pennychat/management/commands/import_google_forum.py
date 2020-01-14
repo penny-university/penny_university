@@ -3,6 +3,7 @@ from dateutil.parser import parse
 import json
 import mailbox
 import re
+import sys
 
 from django.conf import settings
 from django.core.management.base import (
@@ -22,17 +23,13 @@ from users.models import UserProfile
 class Command(BaseCommand):
     help = (
         'Extract and normalize content from penny university google forum. '
-        'Requires that you retrieve forum content here: https://takeout.google.com'
+        'Requires that you retrieve forum content here: https://takeout.google.com. '
+        'Run remotely with `cat /wherever/topics.mbox | heroku run --no-tty -a <your-app> ./manage.py import_google_'
+        'forum --to_database`. When doing --live_run, if you have problems then make the --live_run argument NOT the '
+        'last argument. ¯\\_(ツ)_/¯'
     )
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            '--data_dump_path',
-            dest='data_dump_path',
-            action='store',
-            help='unzipped google data dump path to topics.mbox',
-            required=True,
-        )
         parser.add_argument(
             '--output_file',
             dest='output_file',
@@ -47,12 +44,28 @@ class Command(BaseCommand):
             help='where to dump the output',
             required=False,
         )
+        parser.add_argument(
+            '--live_run',
+            dest='live_run',
+            action='store_true',
+            help='opposite of dry run - will actually write data to the database',
+            required=False,
+        )
 
     def handle(self, *args, **options):
+        print('Waiting to receive piped in .mbox file')
+        mbox_path = '/tmp/mbox_dump.txt'
+        with open(mbox_path, 'w') as f:
+            charcount = f.write(sys.stdin.read())
+
+        if charcount == 0:
+            raise RuntimeError('Unable to write .mbox to file')
+        else:
+            print('Wrote .mbox file to disk')
+
         if not options['to_database'] and not options['output_file']:
             raise CommandError('Either `to_database` or `output_file` must be specified.')
 
-        mbox_path = options['data_dump_path']
         mbox = mailbox.mbox(mbox_path)
         messages = get_messages(mbox)
         messages = special_case(messages)
@@ -64,7 +77,7 @@ class Command(BaseCommand):
                 f.write(json.dumps(formated_chats))
 
         if options['to_database']:
-            import_to_database(formated_chats)
+            import_to_database(formated_chats, options['live_run'])
 
 
 codepoint_re = re.compile(r'=([0-9A-Fa-f]{2})')
@@ -221,7 +234,7 @@ def format_chats(raw_chats):
     return formated_chats
 
 
-def import_to_database(formated_chats, _test=False):
+def import_to_database(formated_chats, live_run=False):
 
     new_users = []
     new_chats = []
@@ -296,29 +309,29 @@ def import_to_database(formated_chats, _test=False):
                 if created:
                     new_participants.append(db_participant)
 
-            if not _test:
-                print(f'\n\nNEW USERS:\n {new_users}')
-                print(f'\n\nNEW CHATS:\n {new_chats}')
-                print(f'\n\nNEW FOLLOW UPS:\n {new_follow_ups}')
-                print(f'\n\nNEW PARTICIPANTS:\n {new_participants}')
-                print(
-                    f'\n\nCreated\n'
-                    f'- {len(new_users)} new users\n'
-                    f'- {len(new_chats)} new chats\n'
-                    f'- {len(new_follow_ups)} new follow ups\n'
-                    f'- {len(new_participants)} new participants\n'
-                )
+            print(f'\n\nNEW USERS:\n {new_users}')
+            print(f'\n\nNEW CHATS:\n {new_chats}')
+            print(f'\n\nNEW FOLLOW UPS:\n {new_follow_ups}')
+            print(f'\n\nNEW PARTICIPANTS:\n {new_participants}')
+            print(
+                f'\n\nCreated\n'
+                f'- {len(new_users)} new users\n'
+                f'- {len(new_chats)} new chats\n'
+                f'- {len(new_follow_ups)} new follow ups\n'
+                f'- {len(new_participants)} new participants\n'
+            )
 
-                if sum([len(new_users), len(new_chats), len(new_follow_ups), len(new_participants)]) == 0:
-                    print('nothing to do here')
-                    raise RuntimeError('not committing')
-                answer = input('\ncommit transaction? (n/Y) > ')
-                if answer.lower() != 'y':
-                    raise RuntimeError('not committing')
-                print('committed')
+            if sum([len(new_users), len(new_chats), len(new_follow_ups), len(new_participants)]) == 0:
+                print('nothing to do here')
+                raise RuntimeError('not committing')
+            if not live_run:
+                print('THIS IS A DRY RUN ONLY - NOT COMMITTING')
+                print('Run with --live_run to actually commit.')
+                raise RuntimeError('not committing')
+            print('COMMITTED')
     except Exception as e:
         if str(e) == 'not committing':
-            print('abandoned')
+            pass
         else:
             raise
 

@@ -93,9 +93,9 @@ def test_import_to_database():
         for user in ['A0@gmail.com', 'A1@gmail.com', 'A2@gmail.com', 'B0@gmail.com', 'C0@gmail.com']:
             assert user in users
 
-    import_to_database(formatted_forum_dump, _test=True)
+    import_to_database(formatted_forum_dump, live_run=True)
     assert_db_in_proper_state()
 
     # idempotency check
-    import_to_database(formatted_forum_dump, _test=True)
+    import_to_database(formatted_forum_dump)
     assert_db_in_proper_state()
