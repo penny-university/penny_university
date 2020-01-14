@@ -1,7 +1,8 @@
 # Redux State Design
 
 The following describes the shape of our state as it will be kept in Redux.
-[The Redux docs suggest](https://redux.js.org/basics/reducers#designing-the-state-shape) keeping the data normalized.
+[The Redux docs suggest](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape/#normalizing-state-shape) 
+keeping the data normalized.
 
 ```javascript
 state = {
