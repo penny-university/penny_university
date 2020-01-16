@@ -1,23 +1,23 @@
-import React, {useEffect} from 'react';
-import {useParams} from 'react-router-dom';
-import chats from '../../mock_data/chats';
-import {FollowUpCard} from '../followups';
-import {HeartButton, CreateButton} from '../buttons';
-import {Card} from 'reactstrap';
-import Date from '../Date';
-import Content from '../Content';
+import React, {useEffect} from 'react'
+import {useParams} from 'react-router-dom'
+import chats from '../../mock_data/chats'
+import {FollowUpCard} from '../followups'
+import {HeartButton, CreateButton} from '../buttons'
+import {Card} from 'reactstrap'
+import Date from '../Date'
+import Content from '../Content'
 
 const ChatDetail = () => {
-  let {id} = useParams();
-  const chat = chats.find(c => c.id == id);
+  let {id} = useParams()
+  const chat = chats.find(c => c.id == id)
 
   /*
    * Scrolls to the top of the page when the component is mounted. Sticky navbar causes a bug that keeps the scroll
    * position when navigating to the chat detail.
    */
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    window.scrollTo(0, 0)
+  }, [])
 
   return (
     <Card body className='mb-3 border-0 shadow-sm'>
@@ -32,6 +32,6 @@ const ChatDetail = () => {
       {chat.followups.map((followUp, i) => <FollowUpCard key={i} followUp={followUp}/>)}
     </Card>
   )
-};
+}
 
-export default ChatDetail;
+export default ChatDetail

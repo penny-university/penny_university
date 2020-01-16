@@ -1,11 +1,11 @@
-import React from 'react';
-import {Link} from 'react-router-dom';
+import React from 'react'
+import {Link} from 'react-router-dom'
 import {
   Card,
   CardTitle
-} from 'reactstrap';
-import Date from "../Date";
-import Content from "../Content";
+} from 'reactstrap'
+import Date from '../Date'
+import Content from '../Content'
 
 const ChatCard = ({chat}) => {
   return (
@@ -22,6 +22,6 @@ const ChatCard = ({chat}) => {
       </Link>
     </Card>
   )
-};
+}
 
-export default ChatCard;
+export default ChatCard

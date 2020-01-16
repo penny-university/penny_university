@@ -1,5 +1,5 @@
-import React from 'react';
-import Date from '../Date';
+import React from 'react'
+import Date from '../Date'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faUser} from '@fortawesome/free-solid-svg-icons'
 
@@ -13,6 +13,6 @@ const FollowUpUserInfo = ({user, date}) => (
       <Date date={date}/>
     </div>
   </div>
-);
+)
 
-export default FollowUpUserInfo;
+export default FollowUpUserInfo

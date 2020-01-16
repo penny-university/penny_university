@@ -1,6 +1,6 @@
-import React from 'react';
-import Content from '../Content';
-import FollowUpUserInfo from "./FollowUpUserInfo";
+import React from 'react'
+import Content from '../Content'
+import FollowUpUserInfo from "./FollowUpUserInfo"
 
 const FollowUpCard = ({followUp}) => {
   return (
@@ -9,6 +9,6 @@ const FollowUpCard = ({followUp}) => {
       <Content className='ml-4 border-left pl-3' content={followUp.content}/>
     </div>
   )
-};
+}
 
-export default FollowUpCard;
+export default FollowUpCard
