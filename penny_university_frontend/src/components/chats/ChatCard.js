@@ -18,7 +18,7 @@ const ChatCard = ({chat}) => {
         <Content source={chat.description}/> : null
       }
       <Link to={`/chats/${chat.id}`}>
-        {chat.followups.length} Follow Ups
+        {chat.followUpUrl} Follow Ups
       </Link>
     </Card>
   )

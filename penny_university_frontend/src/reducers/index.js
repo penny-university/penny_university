@@ -1,7 +1,7 @@
 import * as ActionTypes from '../actions'
 import paginate from './paginate'
 import {combineReducers} from 'redux'
-import {merge} from 'lodash/merge'
+import merge from 'lodash/merge'
 
 // Updates an entity cache in response to any action with response.entities.
 const entities = (state = { chats: {} }, action) => {
