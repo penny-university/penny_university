@@ -10,7 +10,7 @@ from .serializers import PennyChatSerializer, FollowUpSerializer
 
 class PennyChatViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoint that allows penny chats to be viewed or edited.
     """
     queryset = PennyChat.objects.all().order_by('-date')
     serializer_class = PennyChatSerializer
@@ -30,6 +30,7 @@ class ListCreateFollowUps(generics.GenericAPIView):
     """
     API endpoint that allows follow ups to be viewed or edited based on the foreign key of their associated chat.
     """
+    queryset = FollowUp.objects.all().order_by('-date')
     serializer_class = FollowUpSerializer
 
     def get(self, request, pk, format=None):
@@ -41,7 +42,7 @@ class ListCreateFollowUps(generics.GenericAPIView):
         return self.get_paginated_response(serializer.data)
 
     def post(self, request, pk, format=None):
-        follow_up_data = request.data
+        follow_up_data = dict(request.data)
         penny_chat_url = reverse('pennychat-detail', args=[pk], request=request)
         follow_up_data['penny_chat'] = penny_chat_url
         serializer = FollowUpSerializer(data=follow_up_data, context={'request': request})
