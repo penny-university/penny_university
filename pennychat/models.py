@@ -8,15 +8,17 @@ from users.models import UserProfile
 class PennyChat(models.Model):
     DRAFT_STATUS = 1
     SHARED_STATUS = 2
+    COMPLETED_STATUS = 3
     STATUS_CHOICES = (
         (DRAFT_STATUS, 'Draft'),
-        (SHARED_STATUS, 'Shared')
+        (SHARED_STATUS, 'Shared'),
+        (COMPLETED_STATUS, 'Completed'),
     )
 
     title = models.TextField()
     description = models.TextField()
     date = models.DateTimeField(null=True)
-    status = models.CharField(max_length=2, choices=STATUS_CHOICES, default=DRAFT_STATUS)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT_STATUS)
 
     # these two are only used during PennyChat creation from the bot command  why? because the slack API is horrible
     # and we're compensating - TODO revisit once they fire and rehire their product managers.
