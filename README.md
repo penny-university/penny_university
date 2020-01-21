@@ -69,3 +69,5 @@ To cancel just visit http://yourapp.herokuapp.com/forward
 * Pull users from slack (most importantly their real_name) using `./manage.py import_users_from_slack`
 * As stated above, these will only run dry runs. To actually commit the data to the database, add the `--live_run` parameter.
 
+
+(test trash)
