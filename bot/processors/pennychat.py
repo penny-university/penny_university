@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
+import logging
 from pytz import timezone, utc
 import urllib.parse
 import requests
+from slack.errors import SlackApiError
 
 from pennychat.models import PennyChat, Participant
 from bot.processors.base import (
@@ -389,7 +391,7 @@ class PennyChatBotModule(BotModule):
                 }
             }
         else:
-            self.slack.chat_postEphemeral(
+            self.chat_postEphemeral_with_fallback(
                 channel=penny_chat.template_channel,
                 user=penny_chat.user,
                 blocks=shared_message_preview_template(self.slack, penny_chat),
@@ -443,3 +445,16 @@ class PennyChatBotModule(BotModule):
         penny_chat.status = PennyChat.SHARED_STATUS
         penny_chat.save()
         requests.post(event['response_url'], json={'delete_original': True})
+
+    def chat_postEphemeral_with_fallback(self, channel, user, blocks):
+        try:
+            self.slack.chat_postEphemeral(channel=channel, user=user, blocks=blocks)
+        except SlackApiError as ex:
+            if 'error' in ex.response.data and ex.response.data['error'] == 'channel_not_found':
+                logging.info(
+                    f'Falling back to direct message b/c of channel_not_found ("{channel}"")'
+                    f'in chat_postEphemeral_with_fallback. It is probably a direct message channel.'
+                )
+                self.slack.chat_postMessage(channel=user, blocks=blocks)
+            else:
+                raise
