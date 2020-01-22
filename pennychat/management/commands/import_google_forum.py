@@ -256,6 +256,7 @@ def import_to_database(formated_chats, live_run=False):
                         title=dump_chat['title'],
                         date=dump_chat['date'],
                         description=dump_chat['description'],
+                        status=PennyChat.COMPLETED_STATUS,
                     )
                 )
                 if created:

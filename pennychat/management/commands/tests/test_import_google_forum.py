@@ -65,10 +65,14 @@ formatted_forum_dump = [
 @pytest.mark.django_db
 def test_import_to_database():
     def assert_db_in_proper_state():
-        chats = [p.title for p in PennyChat.objects.all()]
+        chats = PennyChat.objects.all()
         assert len(chats) == 3
-        for expected_chats in ['titleA', 'titleB', 'titleC']:
-            assert expected_chats in chats
+        chat_titles = [c.title for c in chats]
+        for expected_titles in ['titleA', 'titleB', 'titleC']:
+            assert expected_titles in chat_titles
+
+        for chat in chats:
+            assert chat.status == PennyChat.COMPLETED_STATUS
 
         followups = [f.content for f in FollowUp.objects.all()]
         assert len(followups) == 5
