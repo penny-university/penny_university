@@ -1,15 +1,28 @@
 from rest_framework import serializers
 
-from .models import PennyChat, FollowUp
+from .models import (
+    PennyChat,
+    FollowUp,
+    Participant,
+)
 from users.serializers import UserProfileSerializer
+
+
+class ParticipantSerializer(serializers.ModelSerializer):
+    user = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = Participant
+        fields = ['user', 'role']
 
 
 class PennyChatSerializer(serializers.HyperlinkedModelSerializer):
     follow_ups = serializers.HyperlinkedIdentityField(view_name='followup-list')
+    participants = ParticipantSerializer(many=True, read_only=True)
 
     class Meta:
         model = PennyChat
-        fields = ['id', 'url', 'title', 'description', 'date', 'follow_ups']
+        fields = ['id', 'url', 'title', 'description', 'date', 'follow_ups', 'participants']
 
 
 class FollowUpSerializer(serializers.HyperlinkedModelSerializer):
@@ -21,4 +34,4 @@ class FollowUpSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = FollowUp
-        fields = ['id', 'penny_chat', 'content', 'date', 'user']
+        fields = ['id', 'url', 'penny_chat', 'content', 'date', 'user']

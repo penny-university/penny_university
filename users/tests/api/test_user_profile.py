@@ -14,4 +14,4 @@ def test_user_profile_detail():
     )
     response = APIClient().get(f'/api/users/{user.id}/')
     assert response.data['real_name'] == 'Anonymous Profile'
-    assert response.data['email'] == 'anonymous@profile.com'
+    assert 'url' in response.data
