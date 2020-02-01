@@ -3,7 +3,6 @@ from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
-from users.models import UserProfile
 from .models import PennyChat, FollowUp
 from .serializers import PennyChatSerializer, FollowUpSerializer
 
@@ -16,14 +15,8 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     serializer_class = PennyChatSerializer
 
     def perform_create(self, serializer):
-        # get or create an anonymous user since we don't have auth
-        # this will eventually be replaced by user = self.request.user
-        user, created = UserProfile.objects.get_or_create(
-            real_name='Anonymous Profile',
-            defaults={
-                'email': 'anonymous@profile.com'
-            })
-        serializer.save(user=user)
+        # TODO add participants and make request user's UserProfile as the Organizer
+        serializer.save()
 
 
 class ListCreateFollowUps(generics.GenericAPIView):
@@ -47,12 +40,8 @@ class ListCreateFollowUps(generics.GenericAPIView):
         follow_up_data['penny_chat'] = penny_chat_url
         serializer = FollowUpSerializer(data=follow_up_data, context={'request': request})
         if serializer.is_valid():
-            user, created = UserProfile.objects.get_or_create(
-                real_name='Anonymous Profile',
-                defaults={
-                    'email': 'anonymous@profile.com'
-                })
-            serializer.save(user=user)
+            # TODO - if request.user is not anonymous then find the UserProfile corresponding to the request user
+            serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 

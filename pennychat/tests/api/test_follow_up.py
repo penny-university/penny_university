@@ -2,22 +2,12 @@ import pytest
 
 from rest_framework.test import APIClient
 
-from pennychat.tests import utils
 from pennychat.models import FollowUp
 
 
-@pytest.fixture
-def chats_setup():
-    return utils.generate_chats(with_follow_ups=True)
-
-
-@pytest.fixture
-def client():
-    return APIClient()
-
-
 @pytest.mark.django_db
-def test_follow_up_list(chats_setup, client):
+def test_follow_up_list(chats_setup):
+    client = APIClient()
     penny_chat = chats_setup[0]
     response = client.get(f'/api/chats/{penny_chat.id}/follow-ups/')
     assert response.status_code == 200
@@ -29,7 +19,8 @@ def test_follow_up_list(chats_setup, client):
 
 
 @pytest.mark.django_db
-def test_create_follow_up(chats_setup, client):
+def test_create_follow_up(chats_setup):
+    client = APIClient()
     penny_chat = chats_setup[0]
     content = 'Create new follow up'
     data = {
@@ -45,7 +36,8 @@ def test_create_follow_up(chats_setup, client):
 
 
 @pytest.mark.django_db
-def test_update_follow_up(chats_setup, client):
+def test_update_follow_up(chats_setup):
+    client = APIClient()
     first_penny_chat = chats_setup[0]
     second_penny_chat = chats_setup[1]
     chat_data = client.get(f'/api/chats/{first_penny_chat.id}/').data
@@ -67,7 +59,8 @@ def test_update_follow_up(chats_setup, client):
 
 
 @pytest.mark.django_db
-def test_partial_update_follow_up(chats_setup, client):
+def test_partial_update_follow_up(chats_setup):
+    client = APIClient()
     follow_up = chats_setup[0].follow_ups.first()
     data = {
         'content': 'Update follow up'
@@ -80,7 +73,8 @@ def test_partial_update_follow_up(chats_setup, client):
 
 
 @pytest.mark.django_db
-def test_delete_follow_up(chats_setup, client):
+def test_delete_follow_up(chats_setup):
+    client = APIClient()
     follow_up = chats_setup[0].follow_ups.first()
     response = client.delete(f'/api/follow-ups/{follow_up.id}/')
     assert response.status_code == 204
