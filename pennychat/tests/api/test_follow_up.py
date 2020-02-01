@@ -6,9 +6,9 @@ from pennychat.models import FollowUp
 
 
 @pytest.mark.django_db
-def test_follow_up_list(chats_setup):
+def test_follow_up_list(test_chats_1):
     client = APIClient()
-    penny_chat = chats_setup[0]
+    penny_chat = test_chats_1[0]
     response = client.get(f'/api/chats/{penny_chat.id}/follow-ups/')
     assert response.status_code == 200
     assert response.data['count'] == 2
@@ -19,9 +19,9 @@ def test_follow_up_list(chats_setup):
 
 
 @pytest.mark.django_db
-def test_create_follow_up(chats_setup):
+def test_create_follow_up(test_chats_1):
     client = APIClient()
-    penny_chat = chats_setup[0]
+    penny_chat = test_chats_1[0]
     content = 'Create new follow up'
     data = {
         'content': content
@@ -36,10 +36,10 @@ def test_create_follow_up(chats_setup):
 
 
 @pytest.mark.django_db
-def test_update_follow_up(chats_setup):
+def test_update_follow_up(test_chats_1):
     client = APIClient()
-    first_penny_chat = chats_setup[0]
-    second_penny_chat = chats_setup[1]
+    first_penny_chat = test_chats_1[0]
+    second_penny_chat = test_chats_1[1]
     chat_data = client.get(f'/api/chats/{first_penny_chat.id}/').data
     data = {
         'content': 'Update follow up',
@@ -59,25 +59,25 @@ def test_update_follow_up(chats_setup):
 
 
 @pytest.mark.django_db
-def test_partial_update_follow_up(chats_setup):
+def test_partial_update_follow_up(test_chats_1):
     client = APIClient()
-    follow_up = chats_setup[0].follow_ups.first()
+    follow_up = test_chats_1[0].follow_ups.first()
     data = {
         'content': 'Update follow up'
     }
     response = client.patch(f'/api/follow-ups/{follow_up.id}/', data=data, format='json')
     assert response.status_code == 200
-    follow_ups = client.get(f'/api/chats/{chats_setup[0].id}/follow-ups/').data['results']
+    follow_ups = client.get(f'/api/chats/{test_chats_1[0].id}/follow-ups/').data['results']
     assert follow_ups[0]['content'] == 'Update follow up'
     assert FollowUp.objects.get(pk=follow_ups[0]['id']).content == 'Update follow up'
 
 
 @pytest.mark.django_db
-def test_delete_follow_up(chats_setup):
+def test_delete_follow_up(test_chats_1):
     client = APIClient()
-    follow_up = chats_setup[0].follow_ups.first()
+    follow_up = test_chats_1[0].follow_ups.first()
     response = client.delete(f'/api/follow-ups/{follow_up.id}/')
     assert response.status_code == 204
-    response = client.get(f'/api/chats/{chats_setup[0].id}/follow-ups/')
+    response = client.get(f'/api/chats/{test_chats_1[0].id}/follow-ups/')
     assert response.data['count'] == 1
     assert response.data['results'][0]['id'] != follow_up.id

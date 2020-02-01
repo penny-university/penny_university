@@ -33,7 +33,7 @@ def generate_follow_ups(chat, users):
 
 
 @pytest.fixture
-def chats_setup():
+def test_chats_1():
     user_1 = generate_user('one')
     user_2 = generate_user('two')
     user_3 = generate_user('three')
