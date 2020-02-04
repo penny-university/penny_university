@@ -6,8 +6,9 @@ import {
   Redirect
 } from 'react-router-dom'
 import {Navigation} from './components/nav'
-import {ChatDetail} from './components/chats'
+import AlertContainer from './containers/AlertContainer'
 import ChatsPage from './containers/ChatsPage'
+import ChatDetailPage from './containers/ChatDetailPage'
 import Container from "reactstrap/es/Container"
 
 const App = ({store}) => (
@@ -16,7 +17,7 @@ const App = ({store}) => (
     <Container className='mt-3' fluid>
       <Switch>
         <Route path='/chats/:id'>
-          <ChatDetail/>
+          <ChatDetailPage/>
         </Route>
         <Route path='/chats'>
           <ChatsPage/>
@@ -25,6 +26,7 @@ const App = ({store}) => (
           <Redirect to='/chats'/>
         </Route>
       </Switch>
+      <AlertContainer/>
     </Container>
   </Provider>
 )

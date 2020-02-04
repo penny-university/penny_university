@@ -4,7 +4,7 @@ import fetch from 'cross-fetch'
 
 const API_ROOT = 'http://localhost:8000/api/'
 
-// Used to call the API so that all
+// Makes an API call, and properly formats the response.
 const callApi = (endpoint, schema) => {
   const url = (endpoint.indexOf(API_ROOT) === -1) ? API_ROOT + endpoint : endpoint
 
@@ -15,15 +15,16 @@ const callApi = (endpoint, schema) => {
           return Promise.reject(json)
         }
 
-        const camelJson = camelizeKeys(json.results)
+        const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
 
+        // normalize the response into our defined schemas
         return Object.assign({}, normalize(camelJson, schema), {nextPageUrl: json.next})
       })
     )
 }
 
 const chatSchema = new schema.Entity('chats', {}, {
-  idAttribute: chat => chat.url
+  idAttribute: chat => chat.id
 })
 
 const userSchema = new schema.Entity('users', {}, {
@@ -52,13 +53,13 @@ export const CALL_API = 'Call API'
 // A Redux middleware that interprets actions with CALL_API info specified.
 // Performs the call and promises when such actions are dispatched.
 export default store => next => action => {
-  const callAPI = action[CALL_API]
-  if (typeof callAPI === 'undefined') {
+  const callApiAction = action[CALL_API]
+  if (typeof callApiAction === 'undefined') {
     return next(action)
   }
 
-  let {endpoint} = callAPI
-  const {schema, types} = callAPI
+  let {endpoint} = callApiAction
+  const {schema, types} = callApiAction
 
   if (typeof endpoint === 'function') {
     endpoint = endpoint(store.getState())
@@ -70,6 +71,7 @@ export default store => next => action => {
   if (!schema) {
     throw new Error('Specify one of the exported Schemas.')
   }
+  // We will always pass a request, success, and failure action type
   if (!Array.isArray(types) || types.length !== 3) {
     throw new Error('Expected an array of three action types.')
   }
@@ -88,9 +90,9 @@ export default store => next => action => {
 
   return callApi(endpoint, schema).then(
     response => next(actionWith({
-      response,
-      type: successType
-    })),
+        response,
+        type: successType
+      })),
     error => next(actionWith({
       type: failureType,
       error: error.message || 'An error occurred.'

@@ -5,7 +5,7 @@ import FollowUpUserInfo from "./FollowUpUserInfo"
 const FollowUpCard = ({followUp}) => {
   return (
     <div className='pt-2'>
-      <FollowUpUserInfo user={followUp.user} date={followUp.date}/>
+      <FollowUpUserInfo user={followUp.userInfo} date={followUp.date}/>
       <Content className='ml-4 border-left pl-3' content={followUp.content}/>
     </div>
   )

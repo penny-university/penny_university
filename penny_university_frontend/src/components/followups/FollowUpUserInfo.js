@@ -9,7 +9,7 @@ const FollowUpUserInfo = ({user, date}) => (
       <FontAwesomeIcon color='white' size='lg' icon={faUser}/>
     </div>
     <div>
-      <h6>{user}</h6>
+      <h6>{user.realName}</h6>
       <Date date={date}/>
     </div>
   </div>

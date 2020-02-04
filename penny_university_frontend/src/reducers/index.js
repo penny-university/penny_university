@@ -1,10 +1,10 @@
 import * as ActionTypes from '../actions'
 import paginate from './paginate'
 import {combineReducers} from 'redux'
-import merge from 'lodash/merge'
+import { merge } from 'lodash'
 
-// Updates an entity cache in response to any action with response.entities.
-const entities = (state = { chats: {} }, action) => {
+// Updates an entity cache in response to any action with response.entities, such as a CHATS_LIST_SUCCESS
+const entities = (state = { chats: {}, followups: {}, users: {} }, action) => {
   if (action.response && action.response.entities) {
     return merge({}, state, action.response.entities)
   }
@@ -12,19 +12,40 @@ const entities = (state = { chats: {} }, action) => {
   return state
 }
 
+const error = (state = null, action) => {
+  const { type, error } = action
+
+  if (type === ActionTypes.CLEAR_ERROR_MESSAGE) {
+    return null
+  } else if (error) {
+    return error
+  }
+
+  return state
+}
+
 const pagination = combineReducers({
   chatsByFilter: paginate({
-    mapActionToKey: action => 'all',
+    mapActionToKey: () => 'all', // In the future, we will have different filters
     types: [
-      ActionTypes.CHATS_REQUEST,
-      ActionTypes.CHATS_SUCCESS,
-      ActionTypes.CHATS_FAILURE
+      ActionTypes.CHATS_LIST_REQUEST,
+      ActionTypes.CHATS_LIST_SUCCESS,
+      ActionTypes.CHATS_LIST_FAILURE
+    ]
+  }),
+  followUpsByChat: paginate({
+    mapActionToKey: action => action.chatId,
+    types: [
+      ActionTypes.FOLLOW_UPS_REQUEST,
+      ActionTypes.FOLLOW_UPS_SUCCESS,
+      ActionTypes.FOLLOW_UPS_FAILURE
     ]
   })
 })
 
 const rootReducer = combineReducers({
   entities,
+  error,
   pagination
 })
 
