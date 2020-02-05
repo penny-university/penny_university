@@ -57,7 +57,7 @@ class Participant(models.Model):
     )
 
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='participations')
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_chats')
     role = models.IntegerField(choices=ROLE_CHOICES, default=INVITEE)
 
     class Meta:
