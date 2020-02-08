@@ -13,6 +13,14 @@ pre {
   padding: .5rem;
 }
 
+.btn-red {
+  @extend .btn-danger;
+}
+
+.btn-outline-red {
+  @extend .btn-outline-danger;
+}
+
 .overlay-text {
   position: relative;
   z-index: 1;

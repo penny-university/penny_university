@@ -9,11 +9,11 @@ const AlertExample = ({message, dismiss}) => {
     dismiss()
   }
 
-  return (
+  return message ? (
     <Alert color="danger" isOpen={visible} toggle={onDismiss}>
       {message}
     </Alert>
-  )
+  ) : null
 }
 
 export default AlertExample

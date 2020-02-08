@@ -1,12 +1,11 @@
 import * as ActionTypes from '../actions'
 import paginate from './paginate'
 import {combineReducers} from 'redux'
-import { merge } from 'lodash'
 
 // Updates an entity cache in response to any action with response.entities, such as a CHATS_LIST_SUCCESS
 const entities = (state = { chats: {}, followups: {}, users: {} }, action) => {
   if (action.response && action.response.entities) {
-    return merge({}, state, action.response.entities)
+    return Object.assign({}, state, action.response.entities)
   }
 
   return state

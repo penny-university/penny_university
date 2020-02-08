@@ -47,7 +47,9 @@ const mapStateToProps = (state, ownProps) => {
   }
 }
 
-export default withRouter(connect(mapStateToProps, {
+const mapDispatchToProps = {
   loadChatDetail,
   loadFollowUps
-})(ChatDetailPage))
+}
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChatDetailPage))

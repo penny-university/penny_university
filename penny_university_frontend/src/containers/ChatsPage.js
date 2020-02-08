@@ -24,14 +24,13 @@ ChatsPage.propTypes = {
 }
 
 const mapStateToProps = (state) => {
-
   const {
     pagination: {chatsByFilter},
     entities: {chats}
   } = state
 
   const chatsPagination = chatsByFilter['all'] || {ids: []}
-  const { nextPageUrl } = chatsPagination
+  const {nextPageUrl} = chatsPagination
   const filteredChats = chatsPagination.ids.map(id => chats[id])
 
   return {
@@ -40,6 +39,8 @@ const mapStateToProps = (state) => {
   }
 }
 
-export default withRouter(connect(mapStateToProps, {
-  loadChatsList
-})(ChatsPage))
+const mapDispatchToProps = {
+  loadChatsList: loadChatsList
+}
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChatsPage))

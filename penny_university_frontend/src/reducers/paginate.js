@@ -1,4 +1,7 @@
-import union from 'lodash/union'
+// Takes two arrays and returns the union between them as a new array
+const union = (a, b) => (
+  [...new Set([...a, ...b])]
+)
 
 // Reducer for handling actions that require pagination. Requires three types (request, success, and failure),
 // and a function to map the pagination to a key, e.g. (action) => action.filterName.
@@ -28,10 +31,11 @@ const paginate = ({ types, mapActionToKey }) => {
           isFetching: true
         }
       case successType:
+        let { result } = action.response
         return {
           ...state,
           isFetching: false,
-          ids: union(state.ids, action.response.result),
+          ids: union(state.ids, result),
           nextPageUrl: action.response.nextPageUrl,
           pageCount: state.pageCount + 1
         }

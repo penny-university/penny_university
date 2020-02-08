@@ -4,7 +4,7 @@ import {connect} from 'react-redux'
 import {ErrorAlert} from '../components/alerts'
 
 const AlertContainer = ({error, dismissError}) => (
-  <div class="alert-container">
+  <div className="alert-container">
     <ErrorAlert message={error} dismiss={dismissError}/>
   </div>
 )
