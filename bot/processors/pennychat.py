@@ -124,7 +124,7 @@ def shared_message_preview_template(slack_client, penny_chat):
     return shared_message_preview_blocks
 
 
-def shared_message_template(penny_chat, user_name):
+def shared_message_template(penny_chat, user_name, include_rsvp=False):
     timestamp = int(penny_chat.date.astimezone(utc).timestamp())
     date_text = f'*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
 
@@ -136,7 +136,7 @@ def shared_message_template(penny_chat, user_name):
         f'{start_date}/{end_date}&details=' \
         f'{urllib.parse.quote(penny_chat.description)}'
 
-    return [
+    body = [
         {
             'type': 'section',
             'text': {
@@ -173,8 +173,40 @@ def shared_message_template(penny_chat, user_name):
                 },
                 'url': google_cal_url
             }
-        }
+        },
     ]
+
+    if include_rsvp:
+        body.append(
+            {
+                'type': 'actions',
+                'elements': [
+                    {
+                        'type': 'button',
+                        'text': {
+                            'type': 'plain_text',
+                            'text': 'Count me in :thumbsup:',
+                            'emoji': True,
+                        },
+                        'action_id': 'penny_chat_can_attend',
+                        'style': 'primary',
+                    },
+                    {
+                        'type': 'button',
+                        'text': {
+                            'type': 'plain_text',
+                            'text': 'I can\'t make it :thumbsdown:',
+                            'emoji': True,
+                        },
+                        'action_id': 'penny_chat_can_not_attend',
+                        'style': 'primary',
+                    }
+
+                ]
+            }
+        )
+
+    return body
 
 
 def penny_chat_details_modal(penny_chat):
@@ -311,6 +343,7 @@ class PennyChatBotModule(BotModule):
         'submit_details',
         'edit_chat',
         'share',
+        'can_attend',
     ]
 
     def __init__(self, slack):
@@ -440,11 +473,19 @@ class PennyChatBotModule(BotModule):
             if share_to != '':
                 self.slack.chat_postMessage(
                     channel=share_to,
-                    blocks=shared_message_template(penny_chat, user['real_name']),
+                    blocks=shared_message_template(penny_chat, user['real_name'], include_rsvp=True),
                 )
         penny_chat.status = PennyChat.SHARED_STATUS
         penny_chat.save()
         requests.post(event['response_url'], json={'delete_original': True})
+
+    @is_block_interaction_event
+    @is_action_id('penny_chat_can_attend')
+    def can_attend(self, event):
+        # get penny_chat (how?)
+        # make the user that RSVPed into an Attendee (and note if this was a change)
+        # if the person wasn't an attendee before then notify the organizer they have a new attendee
+        pass
 
     def chat_postEphemeral_with_fallback(self, channel, user, blocks):
         try:

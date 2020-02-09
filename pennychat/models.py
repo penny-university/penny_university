@@ -20,14 +20,15 @@ class PennyChat(models.Model):
     date = models.DateTimeField(null=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT_STATUS)
 
-    # these two are only used during PennyChat creation from the bot command  why? because the slack API is horrible
-    # and we're compensating - TODO revisit once they fire and rehire their product managers.
+    # these two are only used during PennyChat creation from the bot command  why? because the slack API appears to
+    # give us no other choice
     user_tz = models.TextField()
     template_channel = models.TextField()
     view = models.TextField()
 
     # these fields are in PennyChat because this model is doing double duty, serving as a record of both the invitation
-    # and the chat itself - we might want to create a formal PennyChatInvitation eventually
+    # and the chat itself - we might want to create a formal PennyChatInvitation eventually, it could link back to the
+    # penny chat itself
     user = models.TextField(null=True)
     invitees = models.TextField()
     channels = models.TextField()
