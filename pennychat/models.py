@@ -27,8 +27,6 @@ class PennyChat(models.Model):
 class PennyChatInvitation(models.Model):
     DRAFT = 10
     SHARED = 20
-    COMPLETED = 30
-    ABANDONED = 40
     STATUS_CHOICES = (
         (DRAFT, 'Draft'),
         (SHARED, 'Shared'),
