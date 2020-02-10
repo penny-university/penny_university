@@ -72,7 +72,7 @@ def test_import_to_database():
             assert expected_titles in chat_titles
 
         for chat in chats:
-            assert chat.status == PennyChat.COMPLETED_STATUS
+            assert chat.status == PennyChat.COMPLETED
 
         followups = [f.content for f in FollowUp.objects.all()]
         assert len(followups) == 5
