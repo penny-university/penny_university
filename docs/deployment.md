@@ -32,7 +32,7 @@ git push -f production master
 ```
 But be aware that this won't rollback database migrations. Rollback migrations with
 ```sh
-./manage.py migrate my_app 0007_whatever_migrations_you_made
+./manage.py migrate my_app 0007_the_migration_BEFORE_your_poison_migration
 ```
 
 
