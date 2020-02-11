@@ -478,7 +478,7 @@ class PennyChatBotModule(BotModule):
             if share_to != '':
                 self.slack_client.chat_postMessage(
                     channel=share_to,
-                    blocks=shared_message_template(penny_chat_invitation, organizer.real_name),
+                    blocks=shared_message_template(penny_chat, organizer.real_name),
                 )
 
         # Delete the ephemeral "do you want to share?" post
