@@ -38,10 +38,10 @@ def get_time_options():
 def shared_message_preview_template(slack_client, penny_chat_invitation):
     shares = []
     users = get_or_create_user_profile_from_slack_ids(
-        penny_chat_invitation.invitees.split(','),
+        comma_split(penny_chat_invitation.invitees),
         slack_client=slack_client,
     )
-    for slack_user_id in penny_chat_invitation.invitees.split(','):
+    for slack_user_id in comma_split(penny_chat_invitation.invitees):
         shares.append(users[slack_user_id].real_name)
 
     organizer = get_or_create_user_profile_from_slack_ids(
@@ -50,7 +50,7 @@ def shared_message_preview_template(slack_client, penny_chat_invitation):
     ).get(penny_chat_invitation.user)
 
     if len(penny_chat_invitation.channels) > 0:
-        for channel in penny_chat_invitation.channels.split(','):
+        for channel in comma_split(penny_chat_invitation.channels):
             shares.append(f'<#{channel}>')
 
     if len(shares) == 1:
@@ -178,10 +178,10 @@ def penny_chat_details_modal(penny_chat_invitation):
     time = {'text': {'type': 'plain_text', 'text': time_string}, 'value': time_string}
     users = []
     if penny_chat_invitation and len(penny_chat_invitation.invitees) > 0:
-        users = [user for user in penny_chat_invitation.invitees.split(',')]
+        users = comma_split(penny_chat_invitation.invitees)
     channels = []
     if penny_chat_invitation and len(penny_chat_invitation.channels) > 0:
-        channels = [channel for channel in penny_chat_invitation.channels.split(',')]
+        channels = comma_split(penny_chat_invitation.channels)
 
     template = {
         'type': 'modal',
@@ -456,7 +456,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
         users = get_or_create_user_profile_from_slack_ids(
-            penny_chat_invitation.invitees.split(','),
+            comma_split(penny_chat_invitation.invitees),
             slack_client=self.slack_client,
         )
         for user in users.values():
@@ -474,12 +474,11 @@ class PennyChatBotModule(BotModule):
                 defaults=dict(role=Participant.ORGANIZER),
             )
 
-        for share_to in penny_chat_invitation.channels.split(',') + penny_chat_invitation.invitees.split(','):
-            if share_to != '':
-                self.slack_client.chat_postMessage(
-                    channel=share_to,
-                    blocks=shared_message_template(penny_chat, organizer.real_name),
-                )
+        for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
+            self.slack_client.chat_postMessage(
+                channel=share_to,
+                blocks=shared_message_template(penny_chat, organizer.real_name),
+            )
 
         # Delete the ephemeral "do you want to share?" post
         requests.post(event['response_url'], json={'delete_original': True})
@@ -496,3 +495,8 @@ class PennyChatBotModule(BotModule):
                 self.slack_client.chat_postMessage(channel=user, blocks=blocks)
             else:
                 raise
+
+
+def comma_split(comma_delimited_string):
+    """normal string split for  ''.split(',') returns [''], so using this instead"""
+    return [x for x in comma_delimited_string.split(',') if x]
