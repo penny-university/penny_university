@@ -6,19 +6,38 @@ from users.models import UserProfile
 
 
 class PennyChat(models.Model):
-    DRAFT_STATUS = 1
-    SHARED_STATUS = 2
-    COMPLETED_STATUS = 3
+    SHARED = 20
+    COMPLETED = 30
+    ABANDONED = 40
     STATUS_CHOICES = (
-        (DRAFT_STATUS, 'Draft'),
-        (SHARED_STATUS, 'Shared'),
-        (COMPLETED_STATUS, 'Completed'),
+        (SHARED, 'Shared'),
+        (COMPLETED, 'Completed'),
+        (ABANDONED, 'Abandoned'),
     )
 
     title = models.TextField()
     description = models.TextField()
     date = models.DateTimeField(null=True)
-    status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT_STATUS)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=SHARED)
+
+    def __repr__(self):
+        return pprint_obj(self)
+
+
+class PennyChatInvitation(models.Model):
+    DRAFT = 10
+    SHARED = 20
+    STATUS_CHOICES = (
+        (DRAFT, 'Draft'),
+        (SHARED, 'Shared'),
+    )
+
+    # these fields are redundant in the actual `PennyChat` - as soon as the PennyChat is published, these fields
+    penny_chat = models.ForeignKey(PennyChat, null=True, on_delete=models.CASCADE, related_name='invitation')
+    title = models.TextField()
+    description = models.TextField()
+    date = models.DateTimeField(null=True)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT)
 
     # these two are only used during PennyChat creation from the bot command  why? because the slack API appears to
     # give us no other choice

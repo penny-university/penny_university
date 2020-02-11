@@ -5,7 +5,11 @@ import urllib.parse
 import requests
 from slack.errors import SlackApiError
 
-from pennychat.models import PennyChat, Participant
+from pennychat.models import (
+    PennyChat,
+    PennyChatInvitation,
+    Participant,
+)
 from bot.processors.base import (
     BotModule
 )
@@ -13,7 +17,7 @@ from bot.processors.filters import (
     is_action_id,
     is_block_interaction_event,
     is_event_type, has_callback_id)
-from users.models import get_or_create_user_profile_from_slack_ids
+from users.models import get_or_create_user_profile_from_slack_ids, get_or_create_user_profile_from_slack_id
 
 
 def datetime_range(start, end, delta):
@@ -31,32 +35,22 @@ def get_time_options():
     return time_options
 
 
-def shared_message_preview_template(slack_client, penny_chat):
+def shared_message_preview_template(slack_client, penny_chat_invitation):
     shares = []
-    if len(penny_chat.invitees) > 0:
-        for slack_user_id in penny_chat.invitees.split(','):
-            users = get_or_create_user_profile_from_slack_ids(penny_chat.invitees.split(','), slack_client=slack_client)
-            for user in users.values():
-                Participant.objects.update_or_create(
-                    penny_chat=penny_chat,
-                    user=user,
-                    defaults=dict(role=Participant.INVITEE),
-                )
-            shares.append(users[slack_user_id].real_name)
+    users = get_or_create_user_profile_from_slack_ids(
+        comma_split(penny_chat_invitation.invitees),
+        slack_client=slack_client,
+    )
+    for slack_user_id in comma_split(penny_chat_invitation.invitees):
+        shares.append(users[slack_user_id].real_name)
 
     organizer = get_or_create_user_profile_from_slack_ids(
-        [penny_chat.user],
+        [penny_chat_invitation.user],
         slack_client=slack_client,
-    ).get(penny_chat.user)
-    if organizer:
-        Participant.objects.update_or_create(
-            penny_chat=penny_chat,
-            user=organizer,
-            defaults=dict(role=Participant.ORGANIZER),
-        )
+    ).get(penny_chat_invitation.user)
 
-    if len(penny_chat.channels) > 0:
-        for channel in penny_chat.channels.split(','):
+    if len(penny_chat_invitation.channels) > 0:
+        for channel in comma_split(penny_chat_invitation.channels):
             shares.append(f'<#{channel}>')
 
     if len(shares) == 1:
@@ -82,7 +76,7 @@ def shared_message_preview_template(slack_client, penny_chat):
         {
             'type': 'divider'
         },
-    ] + shared_message_template(penny_chat, organizer.real_name) + [
+    ] + shared_message_template(penny_chat_invitation, organizer.real_name) + [
         {
             'type': 'divider'
         },
@@ -209,17 +203,17 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
     return body
 
 
-def penny_chat_details_modal(penny_chat):
-    tz = timezone(penny_chat.user_tz)
-    date = str(penny_chat.date.astimezone(tz).date())
-    time_string = datetime.strftime(penny_chat.date.astimezone(tz), '%-I:%M %p')
+def penny_chat_details_modal(penny_chat_invitation):
+    tz = timezone(penny_chat_invitation.user_tz)
+    date = str(penny_chat_invitation.date.astimezone(tz).date())
+    time_string = datetime.strftime(penny_chat_invitation.date.astimezone(tz), '%-I:%M %p')
     time = {'text': {'type': 'plain_text', 'text': time_string}, 'value': time_string}
     users = []
-    if penny_chat and len(penny_chat.invitees) > 0:
-        users = [user for user in penny_chat.invitees.split(',')]
+    if penny_chat_invitation and len(penny_chat_invitation.invitees) > 0:
+        users = comma_split(penny_chat_invitation.invitees)
     channels = []
-    if penny_chat and len(penny_chat.channels) > 0:
-        channels = [channel for channel in penny_chat.channels.split(',')]
+    if penny_chat_invitation and len(penny_chat_invitation.channels) > 0:
+        channels = comma_split(penny_chat_invitation.channels)
 
     template = {
         'type': 'modal',
@@ -247,7 +241,7 @@ def penny_chat_details_modal(penny_chat):
                 'element': {
                     'type': 'plain_text_input',
                     'action_id': 'penny_chat_title',
-                    'initial_value': penny_chat.title if penny_chat else ''
+                    'initial_value': penny_chat_invitation.title if penny_chat_invitation else ''
                 },
                 'label': {
                     'type': 'plain_text',
@@ -261,7 +255,7 @@ def penny_chat_details_modal(penny_chat):
                     'type': 'plain_text_input',
                     'action_id': 'penny_chat_description',
                     'multiline': True,
-                    'initial_value': penny_chat.description if penny_chat else ''
+                    'initial_value': penny_chat_invitation.description if penny_chat_invitation else ''
                 },
                 'label': {
                     'type': 'plain_text',
@@ -346,16 +340,16 @@ class PennyChatBotModule(BotModule):
         'can_attend',
     ]
 
-    def __init__(self, slack):
-        self.slack = slack
+    def __init__(self, slack_client):
+        self.slack_client = slack_client
 
     @classmethod
     def create_penny_chat(cls, slack, event):
         user = slack.users_info(user=event['user_id']).data['user']
         date = datetime.now().replace(minute=0, second=0, microsecond=0, tzinfo=utc)
-        penny_chat, created = PennyChat.objects.get_or_create(
+        penny_chat_invitation, created = PennyChatInvitation.objects.get_or_create(
             user=user['id'],
-            status=PennyChat.DRAFT_STATUS,
+            status=PennyChatInvitation.DRAFT,
             defaults={
                 'user_tz': user['tz'],
                 'template_channel': event['channel_id'],
@@ -363,59 +357,60 @@ class PennyChatBotModule(BotModule):
             },
         )
 
-        modal = penny_chat_details_modal(penny_chat)
+        modal = penny_chat_details_modal(penny_chat_invitation)
         response = slack.views_open(view=modal, trigger_id=event['trigger_id'])
-        penny_chat.view = response.data['view']['id']
-        penny_chat.save()
+        penny_chat_invitation.view = response.data['view']['id']
+        penny_chat_invitation.save()
 
     @is_block_interaction_event
     @is_action_id('penny_chat_date')
     def date_select(self, event):
         date = event['actions'][0]['selected_date']
-        penny_chat = PennyChat.objects.get(view=event['view']['id'])
-        tz = timezone(penny_chat.user_tz)
-        time = str(penny_chat.date.astimezone(tz).time()) if penny_chat.date else '00:00:00'
-        penny_chat.date = tz.localize(datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S'))
-        penny_chat.save()
+        penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
+        tz = timezone(penny_chat_invitation.user_tz)
+        time = str(penny_chat_invitation.date.astimezone(tz).time()) if penny_chat_invitation.date else '00:00:00'
+        penny_chat_invitation.date = tz.localize(datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S'))
+        penny_chat_invitation.save()
 
     @is_block_interaction_event
     @is_action_id('penny_chat_time')
     def time_select(self, event):
         time = event['actions'][0]['selected_option']['value']
-        penny_chat = PennyChat.objects.get(view=event['view']['id'])
-        tz = timezone(penny_chat.user_tz)
-        date = str(penny_chat.date.astimezone(tz).date()) if penny_chat.date else datetime.now().date()
-        penny_chat.date = tz.localize(datetime.strptime(date + ' ' + time, '%Y-%m-%d %I:%M %p'))
-        penny_chat.save()
+        penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
+        tz = timezone(penny_chat_invitation.user_tz)
+        date = str(penny_chat_invitation.date.astimezone(tz).date()) \
+            if penny_chat_invitation.date else datetime.now().date()
+        penny_chat_invitation.date = tz.localize(datetime.strptime(date + ' ' + time, '%Y-%m-%d %I:%M %p'))
+        penny_chat_invitation.save()
 
     @is_block_interaction_event
     @is_action_id('penny_chat_user_select')
     def user_select(self, event):
         users = event['actions'][0]['selected_users']
-        penny_chat = PennyChat.objects.get(view=event['view']['id'])
-        penny_chat.invitees = ','.join(users)
-        penny_chat.save()
+        penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
+        penny_chat_invitation.invitees = ','.join(users)
+        penny_chat_invitation.save()
 
     @is_block_interaction_event
     @is_action_id('penny_chat_channel_select')
     def channel_select(self, event):
         selected_channels = event['actions'][0]['selected_channels']
-        penny_chat = PennyChat.objects.get(view=event['view']['id'])
-        penny_chat.channels = ','.join(selected_channels)
-        penny_chat.save()
+        penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
+        penny_chat_invitation.channels = ','.join(selected_channels)
+        penny_chat_invitation.save()
 
     @is_event_type('view_submission')
     @has_callback_id('penny_chat_details')
     def submit_details(self, event):
         view = event['view']
-        penny_chat = PennyChat.objects.get(view=view['id'])
+        penny_chat_invitation = PennyChatInvitation.objects.get(view=view['id'])
         state = view['state']['values']
 
-        penny_chat.title = state['penny_chat_title']['penny_chat_title']['value']
-        penny_chat.description = state['penny_chat_description']['penny_chat_description']['value']
-        penny_chat.save()
+        penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
+        penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
+        penny_chat_invitation.save()
 
-        if len(penny_chat.invitees.strip()) == 0 and len(penny_chat.channels.strip()) == 0:
+        if len(penny_chat_invitation.invitees.strip()) == 0 and len(penny_chat_invitation.channels.strip()) == 0:
             return {
                 "response_action": "errors",
                 "errors": {
@@ -425,19 +420,22 @@ class PennyChatBotModule(BotModule):
             }
         else:
             self.chat_postEphemeral_with_fallback(
-                channel=penny_chat.template_channel,
-                user=penny_chat.user,
-                blocks=shared_message_preview_template(self.slack, penny_chat),
+                channel=penny_chat_invitation.template_channel,
+                user=penny_chat_invitation.user,
+                blocks=shared_message_preview_template(self.slack_client, penny_chat_invitation),
             )
 
     @is_block_interaction_event
     @is_action_id('penny_chat_edit')
     def edit_chat(self, event):
         try:
-            penny_chat = PennyChat.objects.get(user=event['user']['id'], status=PennyChat.DRAFT_STATUS)
+            penny_chat_invitation = PennyChatInvitation.objects.get(
+                user=event['user']['id'],
+                status=PennyChatInvitation.DRAFT,
+            )
         except:  # noqa
             requests.post(event['response_url'], json={'delete_original': True})
-            self.slack.chat_postEphemeral(
+            self.slack_client.chat_postEphemeral(
                 channel=event['channel']['id'],
                 user=event['user']['id'],
                 text=(
@@ -446,20 +444,23 @@ class PennyChatBotModule(BotModule):
                 ),
             )
             return
-        modal = penny_chat_details_modal(penny_chat)
-        response = self.slack.views_open(view=modal, trigger_id=event['trigger_id'])
-        penny_chat.view = response.data['view']['id']
-        penny_chat.save()
+        modal = penny_chat_details_modal(penny_chat_invitation)
+        response = self.slack_client.views_open(view=modal, trigger_id=event['trigger_id'])
+        penny_chat_invitation.view = response.data['view']['id']
+        penny_chat_invitation.save()
         requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
     @is_action_id('penny_chat_share')
     def share(self, event):
         try:
-            penny_chat = PennyChat.objects.get(user=event['user']['id'], status=PennyChat.DRAFT_STATUS)
+            penny_chat_invitation = PennyChatInvitation.objects.get(
+                user=event['user']['id'],
+                status=PennyChatInvitation.DRAFT,
+            )
         except:  # noqa
             requests.post(event['response_url'], json={'delete_original': True})
-            self.slack.chat_postEphemeral(
+            self.slack_client.chat_postEphemeral(
                 channel=event['channel']['id'],
                 user=event['user']['id'],
                 text=(
@@ -468,15 +469,51 @@ class PennyChatBotModule(BotModule):
                 ),
             )
             return
-        user = self.slack.users_info(user=penny_chat.user)['user']
-        for share_to in penny_chat.channels.split(',') + penny_chat.invitees.split(','):
-            if share_to != '':
-                self.slack.chat_postMessage(
-                    channel=share_to,
-                    blocks=shared_message_template(penny_chat, user['real_name'], include_rsvp=True),
-                )
-        penny_chat.status = PennyChat.SHARED_STATUS
-        penny_chat.save()
+
+        penny_chat = PennyChat.objects.create(
+            title=penny_chat_invitation.title,
+            description=penny_chat_invitation.description,
+            date=penny_chat_invitation.date,
+            status=penny_chat_invitation.SHARED,
+        )
+
+        penny_chat_invitation.penny_chat = penny_chat
+        penny_chat_invitation.status = PennyChatInvitation.SHARED
+
+        # below, I want to make sure that we don't use the penny_chat_invitation title/desc after we've made an
+        # official penny_chat.
+        # TODO: a better solution might be making penny_chat_invitation raise an error if the title and description
+        # are retrieved - but I don't know how
+        penny_chat_invitation.title = 'ERROR: refer to penny chat title rather than invitation title'
+        penny_chat_invitation.description = 'ERROR: refer to penny chat description rather than invitation description'
+        penny_chat_invitation.save()
+
+        users = get_or_create_user_profile_from_slack_ids(
+            comma_split(penny_chat_invitation.invitees),
+            slack_client=self.slack_client,
+        )
+        for user in users.values():
+            Participant.objects.update_or_create(
+                penny_chat=penny_chat,
+                user=user,
+                defaults=dict(role=Participant.INVITEE),
+            )
+
+        organizer = get_or_create_user_profile_from_slack_id(penny_chat_invitation.user, slack_client=self.slack_client)
+        if organizer:
+            Participant.objects.update_or_create(
+                penny_chat=penny_chat,
+                user=organizer,
+                defaults=dict(role=Participant.ORGANIZER),
+            )
+
+        for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
+            self.slack_client.chat_postMessage(
+                channel=share_to,
+                blocks=shared_message_template(penny_chat, organizer.real_name),
+            )
+
+        # Delete the ephemeral "do you want to share?" post
         requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
@@ -489,13 +526,18 @@ class PennyChatBotModule(BotModule):
 
     def chat_postEphemeral_with_fallback(self, channel, user, blocks):
         try:
-            self.slack.chat_postEphemeral(channel=channel, user=user, blocks=blocks)
+            self.slack_client.chat_postEphemeral(channel=channel, user=user, blocks=blocks)
         except SlackApiError as ex:
             if 'error' in ex.response.data and ex.response.data['error'] == 'channel_not_found':
                 logging.info(
                     f'Falling back to direct message b/c of channel_not_found ("{channel}"")'
                     f'in chat_postEphemeral_with_fallback. It is probably a direct message channel.'
                 )
-                self.slack.chat_postMessage(channel=user, blocks=blocks)
+                self.slack_client.chat_postMessage(channel=user, blocks=blocks)
             else:
                 raise
+
+
+def comma_split(comma_delimited_string):
+    """normal string split for  ''.split(',') returns [''], so using this instead"""
+    return [x for x in comma_delimited_string.split(',') if x]
