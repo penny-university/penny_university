@@ -90,6 +90,14 @@ def update_user_profile_from_slack_user(slack_user):
     return user, created
 
 
+def get_or_create_user_profile_from_slack_id(slack_user_id, slack_client=None, ignore_user_not_found=True):
+    return get_or_create_user_profile_from_slack_ids(
+        [slack_user_id],
+        slack_client=slack_client,
+        ignore_user_not_found=ignore_user_not_found,
+    ).get(slack_user_id)
+
+
 def get_or_create_user_profile_from_slack_ids(slack_user_ids, slack_client=None, ignore_user_not_found=True):
     """Gets or creates UserProfile from the slack users associated with user ids.
 
@@ -102,6 +110,10 @@ def get_or_create_user_profile_from_slack_ids(slack_user_ids, slack_client=None,
     users = {}
     for slack_user_id in set(slack_user_ids):
         try:
+            # call slack every time rather than just seeing if the user is in the database just in case slack contains
+            # updated information
+            # TODO add request-level or time-based caching since it's unlikely that slack has been updated
+            #  within the time of the request
             slack_user = slack_client.users_info(user=slack_user_id).data['user']
         except SlackApiError as e:
             if ignore_user_not_found and "'error': 'user_not_found'" in str(e):
