@@ -15,7 +15,7 @@ from bot.processors.base import (
     BotModule
 )
 from bot.processors.filters import (
-    is_action_id,
+    has_action_id,
     is_block_interaction_event,
     is_event_type, has_callback_id)
 from users.models import (
@@ -344,7 +344,7 @@ class PennyChatBotModule(BotModule):
         'submit_details',
         'edit_chat',
         'share',
-        'can_attend',
+        'attendance_selection',
     ]
 
     def __init__(self, slack_client):
@@ -370,7 +370,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     @is_block_interaction_event
-    @is_action_id('penny_chat_date')
+    @has_action_id('penny_chat_date')
     def date_select(self, event):
         date = event['actions'][0]['selected_date']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
@@ -380,7 +380,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     @is_block_interaction_event
-    @is_action_id('penny_chat_time')
+    @has_action_id('penny_chat_time')
     def time_select(self, event):
         time = event['actions'][0]['selected_option']['value']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
@@ -391,7 +391,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     @is_block_interaction_event
-    @is_action_id('penny_chat_user_select')
+    @has_action_id('penny_chat_user_select')
     def user_select(self, event):
         users = event['actions'][0]['selected_users']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
@@ -399,7 +399,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     @is_block_interaction_event
-    @is_action_id('penny_chat_channel_select')
+    @has_action_id('penny_chat_channel_select')
     def channel_select(self, event):
         selected_channels = event['actions'][0]['selected_channels']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
@@ -433,7 +433,7 @@ class PennyChatBotModule(BotModule):
             )
 
     @is_block_interaction_event
-    @is_action_id('penny_chat_edit')
+    @has_action_id('penny_chat_edit')
     def edit_chat(self, event):
         try:
             penny_chat_invitation = PennyChatInvitation.objects.get(
@@ -458,7 +458,7 @@ class PennyChatBotModule(BotModule):
         requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
-    @is_action_id('penny_chat_share')
+    @has_action_id('penny_chat_share')
     def share(self, event):
         try:
             penny_chat_invitation = PennyChatInvitation.objects.get(
@@ -525,26 +525,54 @@ class PennyChatBotModule(BotModule):
         requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
-    @is_action_id('penny_chat_can_attend')
-    def can_attend(self, event):  # TODO! test
+    # TODO! change all these action_items to constants everywhere
+    @has_action_id(['penny_chat_can_attend', 'penny_chat_can_not_attend'])
+    def attendance_selection(self, event):  # TODO! test
+        participant_role = Participant.ATTENDEE
+        if event['actions'][0]['action_id'] == 'penny_chat_can_not_attend':
+            participant_role = Participant.INVITED_NONATTENDEE
+
         try:
             user = UserProfile.objects.filter(slack_id=event['user']['id']).first()
             action_value = json.loads(event['actions'][0]['value'])
             penny_chat_id = action_value['penny_chat_id']
             penny_chat = PennyChat.objects.get(pk=penny_chat_id)
-            Participant.objects.update_or_create(
-                penny_chat=penny_chat,
-                user=user,
-                defaults=dict(role=Participant.ATTENDEE),
-            )
+
+            try:
+                participant = Participant.objects.get(penny_chat=penny_chat, user_id=3)
+                # participant = Participant.objects.get(penny_chat=penny_chat, user=user)  # TODO!
+            except Participant.DoesNotExist:
+                if participant_role == Participant.ATTENDEE:
+                    # TODO! notify! # TEST!
+                    Participant.objects.create(  # TODO test
+                        penny_chat=penny_chat,
+                        user=user,
+                        role=participant_role,
+                    )
+                # we don't create new participants for anything beside attendence
+                return
+
+            if participant.role == participant_role:
+                # TODO! test
+                # already in correct state - nothing to change, no one to notify
+                return
+
+            if participant.role == Participant.ORGANIZER:
+                # organizer clicked to attend (or not attend) their own event
+                # TODO! test
+                return
+
+            # after this point we have someone that was known to either be attending or not, but changed their mind
+            # OR we have people that were invited that are making a decision to attend or not
+            # for any of these we need notify the organizer and update the participation # TODO! test
+            # TODO! notify!
+            participant.role = participant_role
+            participant.save
         except RuntimeError:
             self.slack_client.chat_postEphemeral(
                 channel=event['channel']['id'],
                 user=event['user']['id'],
-                text=(
-                    "We are sorry, but an error has occurred and the Penny "
-                    "Chat you are trying to edit is no longer available."
-                ),
+                text="An error has occurred. Please try again in a moment.",
             )
             # TODO! log
 

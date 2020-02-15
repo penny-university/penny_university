@@ -10,7 +10,7 @@ from bot.processors.filters import (
     is_block_interaction_event,
     has_callback_id,
     is_event_type,
-    is_action_id
+    has_action_id
 )
 
 GREETING_CHANNEL = 'general'
@@ -149,7 +149,7 @@ class GreetingBotModule(BotModule):
         notify_admins(self.slack, f'<@{event["user"]}> just received a greeting message.')
 
     @is_block_interaction_event
-    @is_action_id('open_interests_dialog')
+    @has_action_id('open_interests_dialog')
     def show_interests_dialog(self, event):
         slack_id = event['user']['id']
         user = UserProfile.objects.filter(slack_id=slack_id).first()

@@ -67,13 +67,15 @@ class FollowUp(models.Model):
 
 
 class Participant(models.Model):
-    ORGANIZER = 1
-    ATTENDEE = 2
-    INVITEE = 3
+    ORGANIZER = 10
+    ATTENDEE = 20  # Not necessarily invited by name, could have come from a channel invite
+    INVITEE = 30  # Explicitly invited by name
+    INVITED_NONATTENDEE = 40  # Explicitly invited by name but indicated that they can't come
     ROLE_CHOICES = (
         (ORGANIZER, 'Organizer'),
         (ATTENDEE, 'Attendee'),
         (INVITEE, 'Invitee'),
+        (INVITED_NONATTENDEE, 'Invited NonAttendee'),
     )
 
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')

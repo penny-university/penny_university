@@ -45,5 +45,7 @@ def has_callback_id(callback_id, event):
 
 
 @event_processor_decorator
-def is_action_id(action_id, event):
-    return 'actions' in event and event['actions'][0]['action_id'] == action_id
+def has_action_id(action_ids, event):
+    if isinstance(action_ids, str):
+        action_ids = [action_ids]
+    return 'actions' in event and event['actions'][0]['action_id'] in action_ids
