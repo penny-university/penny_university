@@ -57,7 +57,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Set Up Node ${{ matrix.node }}
-    - uses: actions/setup-node@v1
+      uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node }}
     - run: cd penny_university_frontend
