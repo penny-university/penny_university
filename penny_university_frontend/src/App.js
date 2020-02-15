@@ -9,7 +9,7 @@ import {Navigation} from './components/nav'
 import AlertContainer from './containers/AlertContainer'
 import ChatsPage from './containers/ChatsPage'
 import ChatDetailPage from './containers/ChatDetailPage'
-import Container from "reactstrap/es/Container"
+import {Container} from 'reactstrap'
 
 const App = ({store}) => (
   <Provider store={store}>
