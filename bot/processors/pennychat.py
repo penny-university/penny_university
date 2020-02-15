@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta
 import logging
 from pytz import timezone, utc
@@ -17,7 +18,11 @@ from bot.processors.filters import (
     is_action_id,
     is_block_interaction_event,
     is_event_type, has_callback_id)
-from users.models import get_or_create_user_profile_from_slack_ids, get_or_create_user_profile_from_slack_id
+from users.models import (
+    get_or_create_user_profile_from_slack_ids,
+    get_or_create_user_profile_from_slack_id,
+    UserProfile,
+)
 
 
 def datetime_range(start, end, delta):
@@ -183,6 +188,7 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
                             'emoji': True,
                         },
                         'action_id': 'penny_chat_can_attend',
+                        'value': json.dumps({'penny_chat_id': penny_chat.id}),
                         'style': 'primary',
                     },
                     {
@@ -193,6 +199,7 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
                             'emoji': True,
                         },
                         'action_id': 'penny_chat_can_not_attend',
+                        'value': json.dumps({'penny_chat_id': penny_chat.id}),
                         'style': 'primary',
                     }
 
@@ -468,6 +475,7 @@ class PennyChatBotModule(BotModule):
                     "Chat you are trying to share is no longer available."
                 ),
             )
+            # TODO! log
             return
 
         penny_chat = PennyChat.objects.create(
@@ -510,7 +518,7 @@ class PennyChatBotModule(BotModule):
         for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
             self.slack_client.chat_postMessage(
                 channel=share_to,
-                blocks=shared_message_template(penny_chat, organizer.real_name),
+                blocks=shared_message_template(penny_chat, organizer.real_name, include_rsvp=True),
             )
 
         # Delete the ephemeral "do you want to share?" post
@@ -518,11 +526,27 @@ class PennyChatBotModule(BotModule):
 
     @is_block_interaction_event
     @is_action_id('penny_chat_can_attend')
-    def can_attend(self, event):
-        # get penny_chat (how?)
-        # make the user that RSVPed into an Attendee (and note if this was a change)
-        # if the person wasn't an attendee before then notify the organizer they have a new attendee
-        pass
+    def can_attend(self, event):  # TODO! test
+        try:
+            user = UserProfile.objects.filter(slack_id=event['user']['id']).first()
+            action_value = json.loads(event['actions'][0]['value'])
+            penny_chat_id = action_value['penny_chat_id']
+            penny_chat = PennyChat.objects.get(pk=penny_chat_id)
+            Participant.objects.update_or_create(
+                penny_chat=penny_chat,
+                user=user,
+                defaults=dict(role=Participant.ATTENDEE),
+            )
+        except RuntimeError:
+            self.slack_client.chat_postEphemeral(
+                channel=event['channel']['id'],
+                user=event['user']['id'],
+                text=(
+                    "We are sorry, but an error has occurred and the Penny "
+                    "Chat you are trying to edit is no longer available."
+                ),
+            )
+            # TODO! log
 
     def chat_postEphemeral_with_fallback(self, channel, user, blocks):
         try:
