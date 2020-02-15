@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  test:
+  test-backend:
 
     runs-on: ubuntu-latest
     strategy:
@@ -46,3 +46,20 @@ jobs:
     - name: Flake8
       run: |
         flake8
+    - name: Frontend
+
+  test-frontend:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ '10' ]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set Up Node ${{ matrix.node }}
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node }}
+    - run: cd penny_university_frontend
+    - run: npm install
+    - run: CI=true npm test
