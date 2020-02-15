@@ -1,10 +1,10 @@
 import pytest
 from datetime import datetime
 
-from django.db import IntegrityError
 from pytz import timezone, utc
 
 from bot.processors.pennychat import PennyChatBotModule
+import bot.processors.pennychat as penny_chat_constants
 from pennychat.models import (
     PennyChatInvitation,
     Participant,
@@ -42,7 +42,7 @@ def test_date_select(mocker):
         },
         'actions': [
             {
-                'action_id': 'penny_chat_date',
+                'action_id': penny_chat_constants.PENNY_CHAT_DATE,
                 'selected_date': '2019-01-01'
             }
         ],
@@ -72,7 +72,7 @@ def test_time_select(mocker):
         },
         'actions': [
             {
-                'action_id': 'penny_chat_time',
+                'action_id': penny_chat_constants.PENNY_CHAT_TIME,
                 'selected_option': {
                     'value': '12:00 PM'
                 }
@@ -109,7 +109,7 @@ def test_PennyChatBotModule_share(mocker):
             'id': organizer.slack_id
         },
         'trigger_id': 'hi there',
-        'actions': [{'action_id': 'penny_chat_share'}],
+        'actions': [{'action_id': penny_chat_constants.PENNY_CHAT_SHARE}],
         'response_url': 'http://some_website.com',
     }
 

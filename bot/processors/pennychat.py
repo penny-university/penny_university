@@ -24,6 +24,20 @@ from users.models import (
     UserProfile,
 )
 
+VIEW_SUBMISSION = 'view_submission'
+
+PENNY_CHAT_DATE = 'penny_chat_date'
+PENNY_CHAT_TIME = 'penny_chat_time'
+PENNY_CHAT_USER_SELECT = 'penny_chat_user_select'
+PENNY_CHAT_CHANNEL_SELECT = 'penny_chat_channel_select'
+PENNY_CHAT_DETAILS = 'penny_chat_details'
+PENNY_CHAT_EDIT = 'penny_chat_edit'
+PENNY_CHAT_SHARE = 'penny_chat_share'
+PENNY_CHAT_CAN_ATTEND = 'penny_chat_can_attend'
+PENNY_CHAT_CAN_NOT_ATTEND = 'penny_chat_can_not_attend'
+
+PENNY_CHAT_ID = 'penny_chat_id'
+
 
 def datetime_range(start, end, delta):
     current = start
@@ -102,7 +116,7 @@ def shared_message_preview_template(slack_client, penny_chat_invitation):
                         'text': 'Share :the_horns:',
                         'emoji': True,
                     },
-                    'action_id': 'penny_chat_share',
+                    'action_id': PENNY_CHAT_SHARE,
                     'style': 'primary',
                 },
                 {
@@ -112,7 +126,7 @@ def shared_message_preview_template(slack_client, penny_chat_invitation):
                         'text': 'Edit Details :pencil2:',
                         'emoji': True,
                     },
-                    'action_id': 'penny_chat_edit',
+                    'action_id': PENNY_CHAT_EDIT,
                     'style': 'primary',
                 }
 
@@ -187,8 +201,8 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
                             'text': 'Count me in :thumbsup:',
                             'emoji': True,
                         },
-                        'action_id': 'penny_chat_can_attend',
-                        'value': json.dumps({'penny_chat_id': penny_chat.id}),
+                        'action_id': PENNY_CHAT_CAN_ATTEND,
+                        'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),
                         'style': 'primary',
                     },
                     {
@@ -198,8 +212,8 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
                             'text': 'I can\'t make it :thumbsdown:',
                             'emoji': True,
                         },
-                        'action_id': 'penny_chat_can_not_attend',
-                        'value': json.dumps({'penny_chat_id': penny_chat.id}),
+                        'action_id': PENNY_CHAT_CAN_NOT_ATTEND,
+                        'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),
                         'style': 'primary',
                     }
 
@@ -224,7 +238,7 @@ def penny_chat_details_modal(penny_chat_invitation):
 
     template = {
         'type': 'modal',
-        'callback_id': 'penny_chat_details',
+        'callback_id': PENNY_CHAT_DETAILS,
         'title': {
             'type': 'plain_text',
             'text': 'Penny Chat Details'
@@ -286,12 +300,12 @@ def penny_chat_details_modal(penny_chat_invitation):
                 'elements': [
                     {
                         'type': 'datepicker',
-                        'action_id': 'penny_chat_date',
+                        'action_id': PENNY_CHAT_DATE,
                         'initial_date': date,
                     },
                     {
                         'type': 'static_select',
-                        'action_id': 'penny_chat_time',
+                        'action_id': PENNY_CHAT_TIME,
                         'initial_option': time,
                         'options': get_time_options()
                     }
@@ -310,7 +324,7 @@ def penny_chat_details_modal(penny_chat_invitation):
                         'text': 'Select Users'
                     },
                     'initial_users': users,
-                    'action_id': 'penny_chat_user_select',
+                    'action_id': PENNY_CHAT_USER_SELECT,
                 }
             },
             {
@@ -326,7 +340,7 @@ def penny_chat_details_modal(penny_chat_invitation):
                         'text': 'Select Channels'
                     },
                     'initial_channels': channels,
-                    'action_id': 'penny_chat_channel_select',
+                    'action_id': PENNY_CHAT_CHANNEL_SELECT,
                 }
             },
         ]
@@ -370,7 +384,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     @is_block_interaction_event
-    @has_action_id('penny_chat_date')
+    @has_action_id(PENNY_CHAT_DATE)
     def date_select(self, event):
         date = event['actions'][0]['selected_date']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
@@ -380,7 +394,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     @is_block_interaction_event
-    @has_action_id('penny_chat_time')
+    @has_action_id(PENNY_CHAT_TIME)
     def time_select(self, event):
         time = event['actions'][0]['selected_option']['value']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
@@ -391,7 +405,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     @is_block_interaction_event
-    @has_action_id('penny_chat_user_select')
+    @has_action_id(PENNY_CHAT_USER_SELECT)
     def user_select(self, event):
         users = event['actions'][0]['selected_users']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
@@ -399,15 +413,15 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     @is_block_interaction_event
-    @has_action_id('penny_chat_channel_select')
+    @has_action_id(PENNY_CHAT_CHANNEL_SELECT)
     def channel_select(self, event):
         selected_channels = event['actions'][0]['selected_channels']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
         penny_chat_invitation.channels = ','.join(selected_channels)
         penny_chat_invitation.save()
 
-    @is_event_type('view_submission')
-    @has_callback_id('penny_chat_details')
+    @is_event_type(PENNY_CHAT_SHARE)
+    @has_callback_id(PENNY_CHAT_DETAILS)
     def submit_details(self, event):
         view = event['view']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=view['id'])
@@ -433,7 +447,7 @@ class PennyChatBotModule(BotModule):
             )
 
     @is_block_interaction_event
-    @has_action_id('penny_chat_edit')
+    @has_action_id(PENNY_CHAT_EDIT)
     def edit_chat(self, event):
         try:
             penny_chat_invitation = PennyChatInvitation.objects.get(
@@ -458,7 +472,7 @@ class PennyChatBotModule(BotModule):
         requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
-    @has_action_id('penny_chat_share')
+    @has_action_id(PENNY_CHAT_SHARE)
     def share(self, event):
         try:
             penny_chat_invitation = PennyChatInvitation.objects.get(
@@ -526,10 +540,10 @@ class PennyChatBotModule(BotModule):
 
     @is_block_interaction_event
     # TODO! change all these action_items to constants everywhere
-    @has_action_id(['penny_chat_can_attend', 'penny_chat_can_not_attend'])
+    @has_action_id([PENNY_CHAT_CAN_ATTEND, PENNY_CHAT_CAN_NOT_ATTEND])
     def attendance_selection(self, event):  # TODO! test
         participant_role = Participant.ATTENDEE
-        if event['actions'][0]['action_id'] == 'penny_chat_can_not_attend':
+        if event['actions'][0]['action_id'] == PENNY_CHAT_CAN_NOT_ATTEND:
             participant_role = Participant.INVITED_NONATTENDEE
 
         try:
