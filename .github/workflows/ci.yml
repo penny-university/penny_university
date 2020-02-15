@@ -59,8 +59,10 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node }}
-    - name: Test Frontend
+    - name: Install Dependencies
       run: |
           cd penny_university_frontend
           npm install
-          CI=true npm test
+    - name: Run Tests
+      run: |
+        CI=true npm test
