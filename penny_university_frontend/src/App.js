@@ -1,33 +1,34 @@
-import React from 'react';
+import React from 'react'
+import {Provider} from 'react-redux'
 import {
-  BrowserRouter as Router,
   Switch,
   Route,
   Redirect
-} from 'react-router-dom';
-import {Navigation} from './components/nav';
-import {ChatDetail, ChatList} from './components/chats';
-import Container from "reactstrap/es/Container";
+} from 'react-router-dom'
+import {Navigation} from './components/nav'
+import AlertContainer from './containers/AlertContainer'
+import ChatsPage from './containers/ChatsPage'
+import ChatDetailPage from './containers/ChatDetailPage'
+import Container from "reactstrap/es/Container"
 
-function App() {
-  return (
-    <Router>
-      <Navigation/>
-      <Container className='mt-3' fluid>
-        <Switch>
-          <Route path='/chats/:id'>
-            <ChatDetail/>
-          </Route>
-          <Route path='/chats'>
-            <ChatList/>
-          </Route>
-          <Route path='/'>
-            <Redirect to='/chats'/>
-          </Route>
-        </Switch>
-      </Container>
-    </Router>
-  );
-}
+const App = ({store}) => (
+  <Provider store={store}>
+    <Navigation/>
+    <Container className='mt-3' fluid>
+      <Switch>
+        <Route path='/chats/:id'>
+          <ChatDetailPage/>
+        </Route>
+        <Route path='/chats'>
+          <ChatsPage/>
+        </Route>
+        <Route path='/'>
+          <Redirect to='/chats'/>
+        </Route>
+      </Switch>
+      <AlertContainer/>
+    </Container>
+  </Provider>
+)
 
-export default App;
+export default App

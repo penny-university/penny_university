@@ -1,5 +1,5 @@
 /*!
- * Bootstrap v4.4.0 (https://getbootstrap.com/)
+ * Bootstrap v4.4.1 (https://getbootstrap.com/)
  * Copyright 2011-2019 The Bootstrap Authors
  * Copyright 2011-2019 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
@@ -1522,7 +1522,8 @@ textarea.form-control {
   position: absolute;
   margin-top: 0.3rem;
   margin-left: -1.25rem; }
-  .form-check-input[disabled] ~ .form-check-label {
+  .form-check-input[disabled] ~ .form-check-label,
+  .form-check-input:disabled ~ .form-check-label {
     color: #6c757d; }
 
 .form-check-label {
@@ -1905,30 +1906,32 @@ fieldset:disabled a.btn {
     .show > .btn-warning.dropdown-toggle:focus {
       box-shadow: 0 0 0 0.2rem rgba(222, 170, 12, 0.5); }
 
-.btn-danger {
+.btn-danger, .btn-red {
   color: #fff;
   background-color: #f0544f;
   border-color: #f0544f; }
-  .btn-danger:hover {
+  .btn-danger:hover, .btn-red:hover {
     color: #fff;
     background-color: #ed322c;
     border-color: #ec2620; }
-  .btn-danger:focus, .btn-danger.focus {
+  .btn-danger:focus, .btn-red:focus, .btn-danger.focus, .focus.btn-red {
     color: #fff;
     background-color: #ed322c;
     border-color: #ec2620;
     box-shadow: 0 0 0 0.2rem rgba(242, 110, 105, 0.5); }
-  .btn-danger.disabled, .btn-danger:disabled {
+  .btn-danger.disabled, .disabled.btn-red, .btn-danger:disabled, .btn-red:disabled {
     color: #fff;
     background-color: #f0544f;
     border-color: #f0544f; }
-  .btn-danger:not(:disabled):not(.disabled):active, .btn-danger:not(:disabled):not(.disabled).active,
-  .show > .btn-danger.dropdown-toggle {
+  .btn-danger:not(:disabled):not(.disabled):active, .btn-red:not(:disabled):not(.disabled):active, .btn-danger:not(:disabled):not(.disabled).active, .btn-red:not(:disabled):not(.disabled).active,
+  .show > .btn-danger.dropdown-toggle,
+  .show > .dropdown-toggle.btn-red {
     color: #fff;
     background-color: #ec2620;
     border-color: #eb1b14; }
-    .btn-danger:not(:disabled):not(.disabled):active:focus, .btn-danger:not(:disabled):not(.disabled).active:focus,
-    .show > .btn-danger.dropdown-toggle:focus {
+    .btn-danger:not(:disabled):not(.disabled):active:focus, .btn-red:not(:disabled):not(.disabled):active:focus, .btn-danger:not(:disabled):not(.disabled).active:focus, .btn-red:not(:disabled):not(.disabled).active:focus,
+    .show > .btn-danger.dropdown-toggle:focus,
+    .show > .dropdown-toggle.btn-red:focus {
       box-shadow: 0 0 0 0.2rem rgba(242, 110, 105, 0.5); }
 
 .btn-light {
@@ -2088,25 +2091,27 @@ fieldset:disabled a.btn {
     .show > .btn-outline-warning.dropdown-toggle:focus {
       box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.5); }
 
-.btn-outline-danger {
+.btn-outline-danger, .btn-outline-red {
   color: #f0544f;
   border-color: #f0544f; }
-  .btn-outline-danger:hover {
+  .btn-outline-danger:hover, .btn-outline-red:hover {
     color: #fff;
     background-color: #f0544f;
     border-color: #f0544f; }
-  .btn-outline-danger:focus, .btn-outline-danger.focus {
+  .btn-outline-danger:focus, .btn-outline-red:focus, .btn-outline-danger.focus, .focus.btn-outline-red {
     box-shadow: 0 0 0 0.2rem rgba(240, 84, 79, 0.5); }
-  .btn-outline-danger.disabled, .btn-outline-danger:disabled {
+  .btn-outline-danger.disabled, .disabled.btn-outline-red, .btn-outline-danger:disabled, .btn-outline-red:disabled {
     color: #f0544f;
     background-color: transparent; }
-  .btn-outline-danger:not(:disabled):not(.disabled):active, .btn-outline-danger:not(:disabled):not(.disabled).active,
-  .show > .btn-outline-danger.dropdown-toggle {
+  .btn-outline-danger:not(:disabled):not(.disabled):active, .btn-outline-red:not(:disabled):not(.disabled):active, .btn-outline-danger:not(:disabled):not(.disabled).active, .btn-outline-red:not(:disabled):not(.disabled).active,
+  .show > .btn-outline-danger.dropdown-toggle,
+  .show > .dropdown-toggle.btn-outline-red {
     color: #fff;
     background-color: #f0544f;
     border-color: #f0544f; }
-    .btn-outline-danger:not(:disabled):not(.disabled):active:focus, .btn-outline-danger:not(:disabled):not(.disabled).active:focus,
-    .show > .btn-outline-danger.dropdown-toggle:focus {
+    .btn-outline-danger:not(:disabled):not(.disabled):active:focus, .btn-outline-red:not(:disabled):not(.disabled):active:focus, .btn-outline-danger:not(:disabled):not(.disabled).active:focus, .btn-outline-red:not(:disabled):not(.disabled).active:focus,
+    .show > .btn-outline-danger.dropdown-toggle:focus,
+    .show > .dropdown-toggle.btn-outline-red:focus {
       box-shadow: 0 0 0 0.2rem rgba(240, 84, 79, 0.5); }
 
 .btn-outline-light {
@@ -2674,9 +2679,9 @@ input[type="button"].btn-block {
     color: #fff;
     background-color: #89d7ff;
     border-color: #89d7ff; }
-  .custom-control-input[disabled] ~ .custom-control-label {
+  .custom-control-input[disabled] ~ .custom-control-label, .custom-control-input:disabled ~ .custom-control-label {
     color: #6c757d; }
-    .custom-control-input[disabled] ~ .custom-control-label::before {
+    .custom-control-input[disabled] ~ .custom-control-label::before, .custom-control-input:disabled ~ .custom-control-label::before {
       background-color: #e9ecef; }
 
 .custom-control-label {
@@ -2821,7 +2826,8 @@ input[type="button"].btn-block {
   .custom-file-input:focus ~ .custom-file-label {
     border-color: #56c6ff;
     box-shadow: 0 0 0 0.2rem rgba(0, 141, 213, 0.25); }
-  .custom-file-input[disabled] ~ .custom-file-label {
+  .custom-file-input[disabled] ~ .custom-file-label,
+  .custom-file-input:disabled ~ .custom-file-label {
     background-color: #e9ecef; }
   .custom-file-input:lang(en) ~ .custom-file-label::after {
     content: "Browse"; }
