@@ -46,7 +46,6 @@ jobs:
     - name: Flake8
       run: |
         flake8
-    - name: Frontend
 
   test-frontend:
 
@@ -60,6 +59,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node }}
-    - run: cd penny_university_frontend
-    - run: npm install
-    - run: CI=true npm test
+    - name: Test Frontend
+      run: |
+          cd penny_university_frontend
+          npm install
+          CI=true npm test
