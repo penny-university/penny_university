@@ -17,6 +17,8 @@ venv
 .vscode
 node_modules
 package-lock.json
+.envrc
+.direnv
 
 credentials.json
 

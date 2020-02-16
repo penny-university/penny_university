@@ -1,6 +1,5 @@
 import {normalize, schema} from 'normalizr'
 import {camelizeKeys} from 'humps'
-import fetch from 'cross-fetch'
 
 const API_ROOT = 'http://localhost:8000/api/'
 
@@ -90,9 +89,9 @@ export default store => next => action => {
 
   return callApi(endpoint, schema).then(
     response => next(actionWith({
-        response,
-        type: successType
-      })),
+      response,
+      type: successType
+    })),
     error => next(actionWith({
       type: failureType,
       error: error.message || 'An error occurred.'
