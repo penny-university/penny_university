@@ -14,11 +14,6 @@ Install the pip requirements using: `pip install -r requirements.txt` and `pip i
 Install the npm requirements by first navigating to the `src` directory (`cd src` from the root project directory), 
 and then using: `npm install`.
 
-## Run the Frontend
-Navigate to the frontend directory (`penny_university_frontend`). Compile the SCSS files using `npm run compile:css`.
-Run the application using `npm run start`. A browser window should automatically open to the application's homepage, 
-but if not, open a browser window and go to http://localhost:3000.
-
 ## Compiling Sass Files
 Penny University uses SCSS as a CSS preprocessor. SCSS files must be compiled into CSS before they can be used.
 
