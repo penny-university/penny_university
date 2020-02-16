@@ -539,9 +539,9 @@ class PennyChatBotModule(BotModule):
         requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
-    # TODO! change all these action_items to constants everywhere
     @has_action_id([PENNY_CHAT_CAN_ATTEND, PENNY_CHAT_CAN_NOT_ATTEND])
-    def attendance_selection(self, event):  # TODO! test
+    def attendance_selection(self, event):
+        # TODO! add complicated docstring here
         participant_role = Participant.ATTENDEE
         if event['actions'][0]['action_id'] == PENNY_CHAT_CAN_NOT_ATTEND:
             participant_role = Participant.INVITED_NONATTENDEE
@@ -552,43 +552,57 @@ class PennyChatBotModule(BotModule):
             penny_chat_id = action_value['penny_chat_id']
             penny_chat = PennyChat.objects.get(pk=penny_chat_id)
 
+            # create notification message (even if we choose not to use it below)
+            timestamp = int(penny_chat.date.astimezone(utc).timestamp())
+            date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
+            _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
+            notification = f'<@{user.slack_id}> will{_not} attend "{penny_chat.title}" {date_text}'
+
             try:
-                participant = Participant.objects.get(penny_chat=penny_chat, user_id=3)
-                # participant = Participant.objects.get(penny_chat=penny_chat, user=user)  # TODO!
+                participant = Participant.objects.get(penny_chat=penny_chat, user=user)
             except Participant.DoesNotExist:
+                # if participation doesn't exist, it's probably because the user was invited from a channel
                 if participant_role == Participant.ATTENDEE:
-                    # TODO! notify! # TEST!
-                    Participant.objects.create(  # TODO test
+                    Participant.objects.create(
                         penny_chat=penny_chat,
                         user=user,
                         role=participant_role,
                     )
-                # we don't create new participants for anything beside attendence
+                    organizer = UserProfile.objects.get(
+                        user_chats__penny_chat=penny_chat,
+                        user_chats__role=Participant.ORGANIZER,
+                    )
+                    self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
+                else:
+                    pass  # we don't create new participants for anything beside attendence
                 return
 
             if participant.role == participant_role:
-                # TODO! test
                 # already in correct state - nothing to change, no one to notify
                 return
 
             if participant.role == Participant.ORGANIZER:
                 # organizer clicked to attend (or not attend) their own event
-                # TODO! test
+                # TODO stat.count number of times organizer won't attend their own event
                 return
 
             # after this point we have someone that was known to either be attending or not, but changed their mind
             # OR we have people that were invited that are making a decision to attend or not
-            # for any of these we need notify the organizer and update the participation # TODO! test
-            # TODO! notify!
+            # for any of these we need notify the organizer and update the participation
             participant.role = participant_role
-            participant.save
+            participant.save()
+            organizer = UserProfile.objects.get(
+                user_chats__penny_chat=penny_chat,
+                user_chats__role=Participant.ORGANIZER,
+            )
+            self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
         except RuntimeError:
             self.slack_client.chat_postEphemeral(
                 channel=event['channel']['id'],
                 user=event['user']['id'],
                 text="An error has occurred. Please try again in a moment.",
             )
-            # TODO! log
+            raise
 
     def chat_postEphemeral_with_fallback(self, channel, user, blocks):
         try:
