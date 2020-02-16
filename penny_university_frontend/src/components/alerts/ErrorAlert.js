@@ -1,7 +1,7 @@
 import React, {useState} from 'react'
 import {Alert} from 'reactstrap'
 
-const AlertExample = ({message, dismiss}) => {
+const ErrorAlert = ({message, dismiss}) => {
   const [visible, setVisible] = useState(true)
 
   const onDismiss = () => {
@@ -16,4 +16,4 @@ const AlertExample = ({message, dismiss}) => {
   ) : null
 }
 
-export default AlertExample
+export default ErrorAlert
