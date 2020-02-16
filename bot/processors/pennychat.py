@@ -350,6 +350,21 @@ def penny_chat_details_modal(penny_chat_invitation):
 
 
 class PennyChatBotModule(BotModule):
+    """Responsible for all interactions related to the `/penny chat` command.
+
+
+    Flow:
+    1. User types in `/penny chat` and `create_penny_chat` creates a PennyChatInvitation and opens a modal for the user
+    2. During the create process the user fills our title, description, date, and invitee fields and these are handled
+        by callbacks `date_select` `time_select` `user_select` `channel_select`. The handling is complicated by Slack's
+        awkward API that tracks and updates modal state in a strange way. Because of this we save the modal state
+        every chance we get to the PennyChatInvitation.
+    3. Once the user submits the view it's handled by `submit_details`. The organizer is shown a preview of their
+        invitation and can then share or edit it more.
+    4. Edit and share are handled by `edit_chat` and `share` respectively.
+    5. Once the form is shared, users can RSVP by clicking buttons. This is handled by `attendance_selection` and the
+        organizer is notified accordingly.
+    """
     processors = [
         'date_select',
         'time_select',
@@ -420,7 +435,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.channels = ','.join(selected_channels)
         penny_chat_invitation.save()
 
-    @is_event_type(PENNY_CHAT_SHARE)
+    @is_event_type(VIEW_SUBMISSION)
     @has_callback_id(PENNY_CHAT_DETAILS)
     def submit_details(self, event):
         view = event['view']
@@ -489,7 +504,7 @@ class PennyChatBotModule(BotModule):
                     "Chat you are trying to share is no longer available."
                 ),
             )
-            # TODO! log
+            logging.exception('error in penny chat share')
             return
 
         penny_chat = PennyChat.objects.create(
@@ -541,7 +556,19 @@ class PennyChatBotModule(BotModule):
     @is_block_interaction_event
     @has_action_id([PENNY_CHAT_CAN_ATTEND, PENNY_CHAT_CAN_NOT_ATTEND])
     def attendance_selection(self, event):
-        # TODO! add complicated docstring here
+        """
+        When a penny chat is shared, the user can click on "will attend" and "won't attend" buttons, and the resulting
+        event is handled here.
+
+        There are two side effects of this method:
+         1. A Participant entry for the penny_chat and the user will be created or updated with the appropriate role.
+         2. The organizer will be notified of "important" changes.
+         3. The user will be told that the organizer will be notified.
+
+         The specifics are rather complicated, but you can see how they work in
+         bot.tests.processors.test_pennychat.test_PennyChatBotModule_attendance_selection
+
+        """
         participant_role = Participant.ATTENDEE
         if event['actions'][0]['action_id'] == PENNY_CHAT_CAN_NOT_ATTEND:
             participant_role = Participant.INVITED_NONATTENDEE
@@ -556,7 +583,8 @@ class PennyChatBotModule(BotModule):
             timestamp = int(penny_chat.date.astimezone(utc).timestamp())
             date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
             _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
-            notification = f'<@{user.slack_id}> will{_not} attend "{penny_chat.title}" {date_text}'
+            notification = f'<@{user.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
+            we_will_notify_organizer = "Thank you. We will notify the organizer."
 
             try:
                 participant = Participant.objects.get(penny_chat=penny_chat, user=user)
@@ -573,6 +601,11 @@ class PennyChatBotModule(BotModule):
                         user_chats__role=Participant.ORGANIZER,
                     )
                     self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
+                    self.chat_postEphemeral_with_fallback(
+                        channel=event['channel']['id'],
+                        user=user.slack_id,
+                        text=we_will_notify_organizer,
+                    )
                 else:
                     pass  # we don't create new participants for anything beside attendence
                 return
@@ -596,26 +629,31 @@ class PennyChatBotModule(BotModule):
                 user_chats__role=Participant.ORGANIZER,
             )
             self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
+            self.chat_postEphemeral_with_fallback(
+                channel=event['channel']['id'],
+                user=user.slack_id,
+                text=we_will_notify_organizer,
+            )
         except RuntimeError:
-            self.slack_client.chat_postEphemeral(
+            self.chat_postEphemeral_with_fallback(
                 channel=event['channel']['id'],
                 user=event['user']['id'],
                 text="An error has occurred. Please try again in a moment.",
             )
-            raise
+            logging.exception('error in penny chat attendance selection')
 
-    def chat_postEphemeral_with_fallback(self, channel, user, blocks):
+    def chat_postEphemeral_with_fallback(self, channel, user, blocks=None, text=None):
         try:
-            self.slack_client.chat_postEphemeral(channel=channel, user=user, blocks=blocks)
+            self.slack_client.chat_postEphemeral(channel=channel, user=user, blocks=blocks, text=text)
         except SlackApiError as ex:
             if 'error' in ex.response.data and ex.response.data['error'] == 'channel_not_found':
                 logging.info(
                     f'Falling back to direct message b/c of channel_not_found ("{channel}"")'
                     f'in chat_postEphemeral_with_fallback. It is probably a direct message channel.'
                 )
-                self.slack_client.chat_postMessage(channel=user, blocks=blocks)
+                self.slack_client.chat_postMessage(channel=user, blocks=blocks, text=text)
             else:
-                raise
+                logging.exception('error when messaging slack')
 
 
 def comma_split(comma_delimited_string):

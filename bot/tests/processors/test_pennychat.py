@@ -168,7 +168,6 @@ def test_PennyChatBotModule_share(mocker):
 
 
 testdata = [
-    # TODO! double check logic matches w/ msg, coverage, and reorganize systematically
     dict(
         # it doesn't make sense for the organizer to say that he can attend his own event
         msg="if organizer can attend then his role stays organizer and he isn't notified",
@@ -276,6 +275,7 @@ def test_PennyChatBotModule_attendance_selection(
 
     fake_title = 'Fake Title'
     fake_year = 2054
+    fake_channel = 'fake_chan'
     penny_chat = PennyChat.objects.create(
         date=timezone("America/Los_Angeles").localize(datetime(fake_year, 10, 12)),
         title=fake_title,
@@ -295,6 +295,7 @@ def test_PennyChatBotModule_attendance_selection(
             'user': {
                 'id': user.slack_id
             },
+            'channel': {'id': fake_channel},
             'trigger_id': '(used for @is_block_interaction_event decorator)',
             'actions': [{'action_id': attendance, 'value': penny_chat_id_dict}],
         }
@@ -318,6 +319,7 @@ def test_PennyChatBotModule_attendance_selection(
         f"expected and final roles do not match (roles: {Participant.ROLE_CHOICES})"
 
     if expected_organizer_notified:
+        # organizer notification
         slack_client.chat_postMessage.assert_called_once()
         notification = slack_client.chat_postMessage.call_args[1]
         assert notification['channel'] == 'organizer_id', 'notified the wrong person'
@@ -328,5 +330,12 @@ def test_PennyChatBotModule_attendance_selection(
             assert 'not' not in notification['text'].lower(), 'did we say they could NOT attend?'
         else:
             assert 'not' in notification['text'].lower(), 'did we say they COULD attend?'
+
+        # RSVPer "thanks" notification
+        slack_client.chat_postEphemeral.assert_called_once()
+        thanks = slack_client.chat_postEphemeral.call_args[1]
+        assert thanks['channel'] == fake_channel
+        assert thanks['user'] == user.slack_id
+        assert 'will notify' in thanks['text'].lower()
     else:
         slack_client.chat_postMessage.assert_not_called()
