@@ -14,4 +14,3 @@ but if not, open a browser window and go to http://localhost:3000.
 When you are inside the frontend directory, `npm test` will run the frontend tests in an interactive "watch" 
 environment. They will run each time you update a test. To run tests without watching the files, run `CI=true npm test`
 instead.
-
