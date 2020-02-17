@@ -22,12 +22,16 @@ const callApi = (endpoint, schema) => {
     )
 }
 
-const chatSchema = new schema.Entity('chats', {}, {
-  idAttribute: chat => chat.id
-})
-
 const userSchema = new schema.Entity('users', {}, {
   idAttribute: user => user.id
+})
+
+const chatSchema = new schema.Entity('chats', {
+  participants: [{
+    user: userSchema
+  }]
+}, {
+  idAttribute: chat => chat.id
 })
 
 const followUpSchema = new schema.Entity('followUps', {
