@@ -68,9 +68,9 @@ class FollowUp(models.Model):
 
 class Participant(models.Model):
     ORGANIZER = 10
-    ATTENDEE = 20  # Not necessarily invited by name, could have come from a channel invite
+    ATTENDEE = 20  # Will attend! these people might have been invited directly by name or indirectly by channel invite
     INVITEE = 30  # Explicitly invited by name
-    INVITED_NONATTENDEE = 40  # Explicitly invited by name but indicated that they can't come
+    INVITED_NONATTENDEE = 40  # Will not attend!
     ROLE_CHOICES = (
         (ORGANIZER, 'Organizer'),
         (ATTENDEE, 'Attendee'),
