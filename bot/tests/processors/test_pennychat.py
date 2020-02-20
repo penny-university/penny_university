@@ -145,11 +145,6 @@ def test_PennyChatBotModule_share(mocker):
     assert penny_chat.title == 'fake title'
     assert penny_chat.description == 'fake description'
 
-    # we're currently setting the penny_chat_invitation.title and description to an error message
-    # to make sure we don't use it on accident - after the penny_chat is created, it's the canonical source of data
-    assert penny_chat_invitation.title != 'fake title'
-    assert penny_chat_invitation.description != 'fake description'
-
     assert penny_chat.date == penny_chat_invitation.date
     assert penny_chat.status == PennyChat.SHARED
 

@@ -507,23 +507,9 @@ class PennyChatBotModule(BotModule):
             logging.exception('error in penny chat share')
             return
 
-        penny_chat = PennyChat.objects.create(
-            title=penny_chat_invitation.title,
-            description=penny_chat_invitation.description,
-            date=penny_chat_invitation.date,
-            status=penny_chat_invitation.SHARED,
-        )
-
-        penny_chat_invitation.penny_chat = penny_chat
         penny_chat_invitation.status = PennyChatInvitation.SHARED
-
-        # below, I want to make sure that we don't use the penny_chat_invitation title/desc after we've made an
-        # official penny_chat.
-        # TODO: a better solution might be making penny_chat_invitation raise an error if the title and description
-        # are retrieved - but I don't know how
-        penny_chat_invitation.title = 'ERROR: refer to penny chat title rather than invitation title'
-        penny_chat_invitation.description = 'ERROR: refer to penny chat description rather than invitation description'
         penny_chat_invitation.save()
+        penny_chat = penny_chat_invitation.penny_chat
 
         users = get_or_create_user_profile_from_slack_ids(
             comma_split(penny_chat_invitation.invitees),
