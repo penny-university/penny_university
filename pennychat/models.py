@@ -26,6 +26,7 @@ class PennyChat(models.Model):
         return pprint_obj(self)
 
 
+
 class PennyChatInvitation(PennyChat):
     penny_chat = models.OneToOneField(
         PennyChat,
