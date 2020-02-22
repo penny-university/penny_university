@@ -18,7 +18,7 @@ const ChatDetail = ({chat, followUps}) => {
     return (
       <Card body className='mb-3 border-0 shadow-sm'>
         <h3 className='mr-3'>{chat.title}</h3>
-        <Date date={chat.date}/>
+        <Date className='text-secondary' date={chat.date}/>
         {chat.description ? <Content className='mb-4' source={chat.description}/> : null}
         <div className='mb-4'>
           <HeartButton className='mr-2' count={followUps.length}/>

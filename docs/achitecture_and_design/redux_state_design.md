@@ -65,7 +65,7 @@ state = {
       2: {
         real_name: "John Berryman"
       }
-    } 
+    }
   },
   pagination: {
     chatsByFilter: {

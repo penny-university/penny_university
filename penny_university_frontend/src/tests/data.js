@@ -5,7 +5,18 @@ export const chats = [
     "title": "React Hooks",
     "description": "Learn to make your components functional using hooks",
     "date": "2020-02-02T12:00:00Z",
-    "followups": "http://localhost:8000/api/chats/2/follow-ups"
+    "followups": "http://localhost:8000/api/chats/2/follow-ups",
+    "participants": [
+      {
+        "user": {
+          "id": 3,
+          "url": "http://localhost:8000/api/users/3/",
+          "email": "test3@gmail.com",
+          "realName": "Test User 3"
+        },
+        "role": "Organizer"
+      }
+    ]
   },
   {
     "id": 1,
@@ -13,7 +24,68 @@ export const chats = [
     "title": "Testing with React/Redux",
     "description": "Learning to test front end applications",
     "date": "2020-01-01T12:00:00Z",
-    "followups": "http://localhost:8000/api/chats/1/follow-ups"
+    "followups": "http://localhost:8000/api/chats/1/follow-ups",
+    "participants": [
+      {
+        "user": {
+          "id": 1,
+          "url": "http://localhost:8000/api/users/1/",
+          "email": "test1@example.com",
+          "realName": "Test User 1"
+        },
+        "role": "Organizer"
+      },
+      {
+        "user": {
+          "id": 2,
+          "url": "http://localhost:8000/api/users/2/",
+          "email": "test2@example.com",
+          "realName": "Test User 2"
+        },
+        "role": "Attendee"
+      }
+    ]
+  }
+]
+
+export const chats_next = [
+  {
+    "id": 4,
+    "url": "http://localhost:8000/api/chats/4/",
+    "title": "The 4th chat",
+    "description": "",
+    "date": "2020-04-04T12:00:00Z",
+    "followups": "http://localhost:8000/api/chats/4/follow-ups",
+    "participants": [
+      {
+        "user": {
+          "id": 3,
+          "url": "http://localhost:8000/api/users/3/",
+          "email": "test3@gmail.com",
+          "realName": "Test User 3"
+        },
+        "role": "Organizer"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "url": "http://localhost:8000/api/chats/3/",
+    "title": "The 3rd chat",
+    "description": "This is the third list in the chat",
+    "date": "2020-03-03T12:00:00Z",
+    "followups": "http://localhost:8000/api/chats/3/follow-ups",
+    "participants": [
+      {
+        "user": {
+          "id": 1,
+          "url": "http://localhost:8000/api/users/1/",
+          "email": "test1@example.com",
+          "realName": "Test User 1"
+        },
+        "role": "Organizer"
+      }
+    ]
   }
 ]
 
