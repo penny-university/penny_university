@@ -12,8 +12,8 @@ from pennychat.models import (
     Participant,
 )
 from bot.processors.base import (
-    BotModule
-)
+    BotModule,
+    event_processor_decorator)
 from bot.processors.filters import (
     has_action_id,
     is_block_interaction_event,
@@ -52,6 +52,12 @@ def get_time_options():
         for dt in datetime_range(datetime(2019, 1, 1, 0), datetime(2019, 1, 2, 0), timedelta(minutes=15))
     ]
     return time_options
+
+
+def datetime_template(penny_chat):
+    timestamp = int(penny_chat.date.astimezone(utc).timestamp())
+    date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
+    return date_text
 
 
 def shared_message_preview_template(slack_client, penny_chat_invitation):
@@ -116,6 +122,8 @@ def shared_message_preview_template(slack_client, penny_chat_invitation):
                         'text': 'Share :the_horns:',
                         'emoji': True,
                     },
+                    # TODO! should this be a helper function?
+                    'value': json.dumps({PENNY_CHAT_ID: penny_chat_invitation.id}),
                     'action_id': PENNY_CHAT_SHARE,
                     'style': 'primary',
                 },
@@ -126,6 +134,7 @@ def shared_message_preview_template(slack_client, penny_chat_invitation):
                         'text': 'Edit Details :pencil2:',
                         'emoji': True,
                     },
+                    'value': json.dumps({PENNY_CHAT_ID: penny_chat_invitation.id}),
                     'action_id': PENNY_CHAT_EDIT,
                     'style': 'primary',
                 }
@@ -138,9 +147,6 @@ def shared_message_preview_template(slack_client, penny_chat_invitation):
 
 
 def shared_message_template(penny_chat, user_name, include_rsvp=False):
-    timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-    date_text = f'*Date and Time*\n<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
-
     start_date = penny_chat.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
     end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
     google_cal_url = 'https://calendar.google.com/calendar/render?' \
@@ -175,7 +181,7 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': date_text
+                'text': f'*Date and Time*\n{datetime_template(penny_chat)}'
             },
             'accessory': {
                 'type': 'button',
@@ -202,7 +208,7 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
                             'emoji': True,
                         },
                         'action_id': PENNY_CHAT_CAN_ATTEND,
-                        'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),
+                        'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),  # TODO! should this be a helper function?
                         'style': 'primary',
                     },
                     {
@@ -220,6 +226,42 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
                 ]
             }
         )
+
+    return body
+
+
+def organizer_edit_after_share_template(event, penny_chat):
+    body = [
+        {
+            "type": "section",
+            'block_id': 'organizer_edit_after_share_button',
+            "text": {
+                "type": "mrkdwn",
+                "text": (
+                    'Congratulations on your upcoming Penny Chat\n'
+                    f'*{penny_chat.title} ({datetime_template(penny_chat)})*\n'
+                    'If you need to change the details between now and the event, then click the button below.'
+                ),
+            },
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    'type': 'button',
+                    'text': {
+                        'type': 'plain_text',
+                        'text': 'Edit Details :pencil2:',
+                        'emoji': True,
+                    },
+                    'action_id': PENNY_CHAT_EDIT,
+                    'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),
+                    'style': 'primary',
+                },
+            ]
+        },
+
+    ]
 
     return body
 
@@ -352,7 +394,6 @@ def penny_chat_details_modal(penny_chat_invitation):
 class PennyChatBotModule(BotModule):
     """Responsible for all interactions related to the `/penny chat` command.
 
-
     Flow:
     1. User types in `/penny chat` and `create_penny_chat` creates a PennyChatInvitation and opens a modal for the user
     2. During the create process the user fills our title, description, date, and invitee fields and these are handled
@@ -450,8 +491,8 @@ class PennyChatBotModule(BotModule):
             return {
                 "response_action": "errors",
                 "errors": {
-                    "penny_chat_description": "One is a lonely number for a Penny Chat. "
-                                              "Invite at least one channel or user below."
+                    "penny_chat_description":
+                        "One is a lonely number for a Penny Chat. Invite at least one channel or user below."
                 }
             }
         else:
@@ -465,10 +506,8 @@ class PennyChatBotModule(BotModule):
     @has_action_id(PENNY_CHAT_EDIT)
     def edit_chat(self, event):
         try:
-            penny_chat_invitation = PennyChatInvitation.objects.get(
-                user=event['user']['id'],
-                status=PennyChatInvitation.DRAFT,
-            )
+            value = json.loads(event['actions'][0]['value'])
+            penny_chat_invitation = PennyChatInvitation.objects.get(id=value['penny_chat_id'])
         except:  # noqa
             requests.post(event['response_url'], json={'delete_original': True})
             self.slack_client.chat_postEphemeral(
@@ -480,11 +519,16 @@ class PennyChatBotModule(BotModule):
                 ),
             )
             return
+
         modal = penny_chat_details_modal(penny_chat_invitation)
         response = self.slack_client.views_open(view=modal, trigger_id=event['trigger_id'])
         penny_chat_invitation.view = response.data['view']['id']
         penny_chat_invitation.save()
-        requests.post(event['response_url'], json={'delete_original': True})
+
+        if event['actions'][0]['block_id'] == 'organizer_edit_after_share_button':
+            return
+        else:
+            requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
     @has_action_id(PENNY_CHAT_SHARE)
@@ -536,6 +580,11 @@ class PennyChatBotModule(BotModule):
                 blocks=shared_message_template(penny_chat, organizer.real_name, include_rsvp=True),
             )
 
+        self.slack_client.chat_postMessage(
+            channel=penny_chat_invitation.user,
+            blocks=organizer_edit_after_share_template(event, penny_chat),
+        )
+
         # Delete the ephemeral "do you want to share?" post
         requests.post(event['response_url'], json={'delete_original': True})
 
@@ -562,7 +611,7 @@ class PennyChatBotModule(BotModule):
         try:
             user = UserProfile.objects.filter(slack_id=event['user']['id']).first()
             action_value = json.loads(event['actions'][0]['value'])
-            penny_chat_id = action_value['penny_chat_id']
+            penny_chat_id = action_value[PENNY_CHAT_ID]
             penny_chat = PennyChat.objects.get(pk=penny_chat_id)
 
             # create notification message (even if we choose not to use it below)
