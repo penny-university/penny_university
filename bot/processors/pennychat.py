@@ -4,8 +4,8 @@ import logging
 from pytz import timezone, utc
 import urllib.parse
 import requests
-from slack.errors import SlackApiError
 
+from bot.utils import chat_postEphemeral_with_fallback
 from pennychat.models import (
     PennyChat,
     PennyChatInvitation,
@@ -13,7 +13,7 @@ from pennychat.models import (
 )
 from bot.processors.base import (
     BotModule,
-    event_processor_decorator)
+)
 from bot.processors.filters import (
     has_action_id,
     is_block_interaction_event,
@@ -230,7 +230,7 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
     return body
 
 
-def organizer_edit_after_share_template(event, penny_chat):
+def organizer_edit_after_share_template(penny_chat):
     body = [
         {
             "type": "section",
@@ -496,7 +496,8 @@ class PennyChatBotModule(BotModule):
                 }
             }
         else:
-            self.chat_postEphemeral_with_fallback(
+            chat_postEphemeral_with_fallback(
+                self.slack_client,
                 channel=penny_chat_invitation.template_channel,
                 user=penny_chat_invitation.user,
                 blocks=shared_message_preview_template(self.slack_client, penny_chat_invitation),
@@ -582,7 +583,7 @@ class PennyChatBotModule(BotModule):
 
         self.slack_client.chat_postMessage(
             channel=penny_chat_invitation.user,
-            blocks=organizer_edit_after_share_template(event, penny_chat),
+            blocks=organizer_edit_after_share_template(penny_chat),
         )
 
         # Delete the ephemeral "do you want to share?" post
@@ -636,7 +637,8 @@ class PennyChatBotModule(BotModule):
                         user_chats__role=Participant.ORGANIZER,
                     )
                     self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
-                    self.chat_postEphemeral_with_fallback(
+                    chat_postEphemeral_with_fallback(
+                        self.slack_client,
                         channel=event['channel']['id'],
                         user=user.slack_id,
                         text=we_will_notify_organizer,
@@ -664,31 +666,20 @@ class PennyChatBotModule(BotModule):
                 user_chats__role=Participant.ORGANIZER,
             )
             self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
-            self.chat_postEphemeral_with_fallback(
+            chat_postEphemeral_with_fallback(
+                self.slack_client,
                 channel=event['channel']['id'],
                 user=user.slack_id,
                 text=we_will_notify_organizer,
             )
         except RuntimeError:
-            self.chat_postEphemeral_with_fallback(
+            chat_postEphemeral_with_fallback(
+                self.slack_client,
                 channel=event['channel']['id'],
                 user=event['user']['id'],
                 text="An error has occurred. Please try again in a moment.",
             )
             logging.exception('error in penny chat attendance selection')
-
-    def chat_postEphemeral_with_fallback(self, channel, user, blocks=None, text=None):
-        try:
-            self.slack_client.chat_postEphemeral(channel=channel, user=user, blocks=blocks, text=text)
-        except SlackApiError as ex:
-            if 'error' in ex.response.data and ex.response.data['error'] == 'channel_not_found':
-                logging.info(
-                    f'Falling back to direct message b/c of channel_not_found ("{channel}"")'
-                    f'in chat_postEphemeral_with_fallback. It is probably a direct message channel.'
-                )
-                self.slack_client.chat_postMessage(channel=user, blocks=blocks, text=text)
-            else:
-                logging.exception('error when messaging slack')
 
 
 def comma_split(comma_delimited_string):
