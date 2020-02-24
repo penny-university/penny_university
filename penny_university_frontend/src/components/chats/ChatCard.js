@@ -6,6 +6,7 @@ import {
 } from 'reactstrap'
 import Date from '../Date'
 import Content from '../Content'
+import ParticipantList from './ParticipantList'
 
 const ChatCard = ({chat}) => {
   return (
@@ -13,13 +14,17 @@ const ChatCard = ({chat}) => {
       <CardTitle tag='h5'>
         <Link className='text-reset' to={`/chats/${chat.id}`}>{chat.title}</Link>
       </CardTitle>
-      <Date date={chat.date}/>
+      <Date className='text-secondary' date={chat.date}/>
       {chat.description ?
         <Content source={chat.description}/> : null
       }
-      <Link to={`/chats/${chat.id}`}>
-        {chat.followUpUrl} Follow Ups
-      </Link>
+      <div className='d-flex'>
+        <ParticipantList className='mr-2' participants={chat.participants} chatId={chat.id}/>
+        -
+        <Link className='ml-2' to={`/chats/${chat.id}`}>
+          Follow Ups
+        </Link>
+      </div>
     </Card>
   )
 }

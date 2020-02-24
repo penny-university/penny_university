@@ -15,7 +15,7 @@ describe('follow up actions', () => {
       headers: {'content-type': 'application/json'}
     })
 
-    const store = makeMockStore(initialState)
+    const store = makeMockStore()
 
     const expectedActionTypes = ['FOLLOW_UPS_REQUEST', 'FOLLOW_UPS_SUCCESS']
 
@@ -29,7 +29,7 @@ describe('follow up actions', () => {
       throw new Error('It failed!')
     })
 
-    const store = makeMockStore(initialState)
+    const store = makeMockStore()
 
     const expectedActions = [
       {
@@ -64,7 +64,7 @@ describe('follow up reducers', () => {
     // user will be normalized in response
     const expectedFollowUp = Object.assign({}, followUpsForChat[0], {user: 1})
 
-    const store = makeMockStore(initialState)
+    const store = makeMockStore()
 
     return store.dispatch(loadFollowUps('1')).then(() => {
       const state = reducer(initialState, store.getActions()[1])
@@ -79,7 +79,7 @@ describe('follow up reducers', () => {
       headers: {'content-type': 'application/json'}
     })
 
-    const store = makeMockStore(initialState)
+    const store = makeMockStore()
 
     return store.dispatch(loadFollowUps('1')).then(() => {
       const state = reducer(initialState, store.getActions()[1])
