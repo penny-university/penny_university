@@ -22,6 +22,10 @@ class PennyChat(models.Model):
     date = models.DateTimeField(null=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT)
 
+    # meta
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     def __repr__(self):
         return pprint_obj(self)
 
@@ -34,18 +38,14 @@ class PennyChatInvitation(PennyChat):
         parent_link=True,
         related_name='invitation',
     )
-    # these two are only used during PennyChat creation from the bot command  why? because the slack API appears to
-    # give us no other choice
+    # TODO! review these fields and make sure they're still used
     user_tz = models.TextField()
     template_channel = models.TextField()
     view = models.TextField()
-
-    # these fields are in PennyChat because this model is doing double duty, serving as a record of both the invitation
-    # and the chat itself - we might want to create a formal PennyChatInvitation eventually, it could link back to the
-    # penny chat itself
     user = models.TextField(null=True)
     invitees = models.TextField()
     channels = models.TextField()
+    shares = models.TextField(null=True)
 
     def __repr__(self):
         return pprint_obj(self)
