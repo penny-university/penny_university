@@ -336,16 +336,20 @@ class PennyChatBotModule(BotModule):
     """Responsible for all interactions related to the `/penny chat` command.
 
     Flow:
-    1. User types in `/penny chat` and `create_penny_chat` creates a PennyChatInvitation and opens a modal for the user
-    2. During the create process the user fills our title, description, date, and invitee fields and these are handled
-        by callbacks `date_select` `time_select` `user_select` `channel_select`. The handling is complicated by Slack's
-        awkward API that tracks and updates modal state in a strange way. Because of this we save the modal state
-        every chance we get to the PennyChatInvitation.
-    3. Once the user submits the view it's handled by `submit_details`. The organizer is shown a preview of their
-        invitation and can then share or edit it more.
-    4. Edit and share are handled by `edit_chat` and `share` respectively.
-    5. Once the form is shared, users can RSVP by clicking buttons. This is handled by `attendance_selection` and the
-        organizer is notified accordingly.
+    1. User types in `/penny chat` and `create_penny_chat` creates a PennyChatInvitation and opens a modal for the
+        organizer
+    2. During the create process the organizer fills our title, description, date, and invitee fields and these are
+        handled by callbacks `date_select` `time_select` `user_select` `channel_select`. The handling is complicated by
+        Slack's awkward API that tracks and updates modal state in a strange way. Because of this we save the modal
+        state every chance we get to the PennyChatInvitation.
+    3. Once the organizer submits the view it's handled by `submit_details_and_share`. The invitation will be sent to
+        all selected channels and users. `submit_details_and_share` also handles updated invitations by deleting all
+        previous invitation messages and issuing new ones.
+    4. Immediately after sharing the invitation, the organizer is provided with an edit button. If they click it then
+        `edit_chat` reopens the modal and allows them to edit and again submit the details (which takes them back to
+        `submit_details_and_share`).
+    5. Once the form is shared, organizers can RSVP by clicking buttons. This is handled by `attendance_selection` and
+        the organizer is notified accordingly.
     """
     processors = [
         'date_select',
@@ -353,6 +357,7 @@ class PennyChatBotModule(BotModule):
         'user_select',
         'channel_select',
         'submit_details_and_share',
+        'edit_chat',
         'attendance_selection',
     ]
 
@@ -521,6 +526,34 @@ class PennyChatBotModule(BotModule):
         )
 
         return
+
+    @is_block_interaction_event
+    @has_action_id(PENNY_CHAT_EDIT)
+    def edit_chat(self, event):
+        try:
+            value = json.loads(event['actions'][0]['value'])
+            penny_chat_invitation = PennyChatInvitation.objects.get(id=value['penny_chat_id'])
+        except:  # noqa
+            requests.post(event['response_url'], json={'delete_original': True})
+            self.slack_client.chat_postEphemeral(
+                channel=event['channel']['id'],
+                user=event['user']['id'],
+                text=(
+                    "We are sorry, but an error has occurred and the Penny "
+                    "Chat you are trying to edit is no longer available."
+                ),
+            )
+            return
+
+        modal = penny_chat_details_modal(penny_chat_invitation)
+        response = self.slack_client.views_open(view=modal, trigger_id=event['trigger_id'])
+        penny_chat_invitation.view = response.data['view']['id']
+        penny_chat_invitation.save()
+
+        if event['actions'][0]['block_id'] == 'organizer_edit_after_share_button':
+            return
+        else:
+            requests.post(event['response_url'], json={'delete_original': True})
 
     @is_block_interaction_event
     @has_action_id([PENNY_CHAT_CAN_ATTEND, PENNY_CHAT_CAN_NOT_ATTEND])
