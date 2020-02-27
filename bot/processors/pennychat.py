@@ -353,7 +353,7 @@ class PennyChatBotModule(BotModule):
         'time_select',
         'user_select',
         'channel_select',
-        'submit_details',
+        'submit_details_and_share',
         'attendance_selection',
     ]
 
@@ -435,7 +435,7 @@ class PennyChatBotModule(BotModule):
 
     @has_event_type([VIEW_SUBMISSION, VIEW_CLOSED])
     @has_callback_id(PENNY_CHAT_DETAILS)
-    def submit_details(self, event):  # TODO! change name to share or something - remember processor list and docs
+    def submit_details_and_share(self, event):
         view = event['view']
         penny_chat_invitation = PennyChatInvitation.objects.get(view=view['id'])
         state = view['state']['values']
@@ -470,6 +470,7 @@ class PennyChatBotModule(BotModule):
             slack_client=self.slack_client,
         )
         for user in users.values():
+            # TODO remove notion of Participant.INVITEE as well as these invites
             Participant.objects.update_or_create(
                 penny_chat=penny_chat,
                 user=user,

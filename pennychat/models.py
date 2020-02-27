@@ -38,7 +38,8 @@ class PennyChatInvitation(PennyChat):
         parent_link=True,
         related_name='invitation',
     )
-    # TODO! review these fields and make sure they're still used
+
+    # TODO can we get rid of view? it's currently just a weird way to retrieve the penny_chat_invite
     view = models.TextField()
     organizer_tz = models.TextField()  # change to organizer_tz
     organizer_slack_id = models.TextField(null=True)
