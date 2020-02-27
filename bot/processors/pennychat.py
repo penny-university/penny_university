@@ -121,7 +121,7 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
                             'emoji': True,
                         },
                         'action_id': PENNY_CHAT_CAN_ATTEND,
-                        'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),  # TODO! should this be a helper function?
+                        'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),  # TODO should this be a helper function?
                         'style': 'primary',
                     },
                     {
@@ -333,7 +333,6 @@ def penny_chat_details_modal(penny_chat_invitation):
 
 
 class PennyChatBotModule(BotModule):
-    # TODO! update docs
     """Responsible for all interactions related to the `/penny chat` command.
 
     Flow:
@@ -442,7 +441,7 @@ class PennyChatBotModule(BotModule):
 
         if event['type'] == VIEW_CLOSED:
             self.slack_client.chat_postMessage(
-                channel=penny_chat_invitation.organizer_slack_id,  # TODO! change "user" to "organizer_slack_id"
+                channel=penny_chat_invitation.organizer_slack_id,
                 blocks=organizer_edit_after_share_template(self.slack_client, penny_chat_invitation),
             )
             return
@@ -492,6 +491,10 @@ class PennyChatBotModule(BotModule):
         # Share with all channels and attendees
         old_shares = json.loads(penny_chat_invitation.shares or '{}')
         for channel, ts in old_shares.items():
+            if channel[0] != "C":
+                # skip users etc. because yu can't chat_delete messages posted to private channels
+                # TODO investigate something better to do here
+                continue
             try:
                 self.slack_client.chat_delete(channel=channel, ts=ts)
             except:  # noqa
@@ -499,16 +502,13 @@ class PennyChatBotModule(BotModule):
                 # be a user. Unfortunately chat.delete is inconsistent; the channel arg MUST be a channel
                 # we're attempting to use the API in hopes that they eventually fix it.
                 pass
-                # TODO! separate users and channels
 
-        # TODO! do we want to make the re-invite say "updated invitation" or something?
-
+        invitation_blocks = shared_message_template(penny_chat, organizer.real_name, include_rsvp=True)
         shares = {}
         for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
             resp = self.slack_client.chat_postMessage(
                 channel=share_to,
-                # TODO! don't have to rebuild this every time
-                blocks=shared_message_template(penny_chat, organizer.real_name, include_rsvp=True),
+                blocks=invitation_blocks,
             )
             shares[resp.data['channel']] = resp.data['ts']
 
