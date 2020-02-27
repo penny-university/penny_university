@@ -22,8 +22,7 @@ def create_penny_chat():
     date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=utc)
     chat = PennyChatInvitation.objects.create(
         status=PennyChatInvitation.DRAFT,
-        user_tz='America/Chicago',
-        template_channel='channel',
+        organizer_tz='America/Chicago',
         date=date,
         view='view',
     )

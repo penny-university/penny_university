@@ -39,10 +39,9 @@ class PennyChatInvitation(PennyChat):
         related_name='invitation',
     )
     # TODO! review these fields and make sure they're still used
-    user_tz = models.TextField()
-    template_channel = models.TextField()
     view = models.TextField()
-    user = models.TextField(null=True)
+    organizer_tz = models.TextField()  # change to organizer_tz
+    organizer_slack_id = models.TextField(null=True)
     invitees = models.TextField()
     channels = models.TextField()
     shares = models.TextField(null=True)
