@@ -371,7 +371,7 @@ class PennyChatBotModule(BotModule):
 
         penny_chat_invitations = PennyChatInvitation.objects \
             .filter(organizer_slack_id=user['id'], status=PennyChatInvitation.DRAFT) \
-            .order_by("-updated")
+            .order_by('-updated')
 
         if len(penny_chat_invitations) > 1:
             logging.error(
@@ -453,10 +453,10 @@ class PennyChatBotModule(BotModule):
 
         if len(penny_chat_invitation.invitees.strip()) == 0 and len(penny_chat_invitation.channels.strip()) == 0:
             return {
-                "response_action": "errors",
-                "errors": {
-                    "penny_chat_description":
-                        "One is a lonely number for a Penny Chat. Invite at least one channel or user below."
+                'response_action': 'errors',
+                'errors': {
+                    'penny_chat_description':
+                        'One is a lonely number for a Penny Chat. Invite at least one channel or user below.'
                 }
             }
 
@@ -496,7 +496,7 @@ class PennyChatBotModule(BotModule):
         # Share with all channels and attendees
         old_shares = json.loads(penny_chat_invitation.shares or '{}')
         for channel, ts in old_shares.items():
-            if channel[0] != "C":
+            if channel[0] != 'C':
                 # skip users etc. because yu can't chat_delete messages posted to private channels
                 # TODO investigate something better to do here
                 continue
@@ -539,8 +539,8 @@ class PennyChatBotModule(BotModule):
                 channel=event['channel']['id'],
                 user=event['user']['id'],
                 text=(
-                    "We are sorry, but an error has occurred and the Penny "
-                    "Chat you are trying to edit is no longer available."
+                    'We are sorry, but an error has occurred and the Penny '
+                    'Chat you are trying to edit is no longer available.'
                 ),
             )
             return
@@ -586,7 +586,7 @@ class PennyChatBotModule(BotModule):
             date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
             _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
             notification = f'<@{user.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
-            we_will_notify_organizer = "Thank you. We will notify the organizer."
+            we_will_notify_organizer = 'Thank you. We will notify the organizer.'
 
             try:
                 participant = Participant.objects.get(penny_chat=penny_chat, user=user)
