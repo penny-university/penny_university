@@ -174,11 +174,6 @@ def test_PennyChatBotModule_share(mocker):
     )
     assert organizer_participant.role == Participant.ORGANIZER
 
-    invitee_participant = Participant.objects.get(
-        penny_chat=penny_chat,
-        user=user_invitee_1,
-    )
-    assert invitee_participant.role == Participant.INVITEE
     assert penny_chat_invitation.status == PennyChatInvitation.SHARED
 
 
@@ -201,37 +196,10 @@ testdata = [
         expected_organizer_notified=False,
     ),
     dict(
-        msg="if invitee can attend then her role becomes ATTENDEE and the organizer is notified",
-        starting_role=Participant.INVITEE,
-        can_attend=True,
-        expected_final_role=Participant.ATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg="if invitee not can attend then her role becomes INVITED_NONATTENDEE and the organizer is notified",
-        starting_role=Participant.INVITEE,
-        can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg=(
-            "if an attendee decides they can't attend, then their role is changed to "
-            "INVITED_NONATTENDEE and the organizer is notified"
-        ),
+        msg="if an attendee can't attend, then their participation is removed and the organizer is notified",
         starting_role=Participant.ATTENDEE,
         can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg=(
-            "if an invited_nonattendee desides to attend, then their role is changed to "
-            "ATTENDEE and the organizer is notified"
-        ),
-        starting_role=Participant.INVITED_NONATTENDEE,
-        can_attend=True,
-        expected_final_role=Participant.ATTENDEE,
+        expected_final_role=None,
         expected_organizer_notified=True,
     ),
     dict(
@@ -242,16 +210,6 @@ testdata = [
         starting_role=Participant.ATTENDEE,
         can_attend=True,  # they've already said they'll be there and they say it again
         expected_final_role=Participant.ATTENDEE,
-        expected_organizer_notified=False,
-    ),
-    dict(
-        msg=(
-            "if an nonattendee chooses can_not_attend again, "
-            "then the participation is not changed and the organizer is not notified"
-        ),
-        starting_role=Participant.INVITED_NONATTENDEE,
-        can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
         expected_organizer_notified=False,
     ),
     dict(
@@ -282,6 +240,7 @@ def test_PennyChatBotModule_attendance_selection(
         mocker,
     ):
     organizer = UserProfile.objects.create(slack_id='organizer_id')
+    # TODO! test that a user unassociated with the interaction isn't affected
 
     if starting_role == Participant.ORGANIZER:
         user = organizer

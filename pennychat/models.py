@@ -64,18 +64,14 @@ class FollowUp(models.Model):
 class Participant(models.Model):
     ORGANIZER = 10
     ATTENDEE = 20  # Will attend! these people might have been invited directly by name or indirectly by channel invite
-    INVITEE = 30  # Explicitly invited by name
-    INVITED_NONATTENDEE = 40  # Will not attend!
     ROLE_CHOICES = (
         (ORGANIZER, 'Organizer'),
         (ATTENDEE, 'Attendee'),
-        (INVITEE, 'Invitee'),
-        (INVITED_NONATTENDEE, 'Invited NonAttendee'),
     )
 
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_chats')
-    role = models.IntegerField(choices=ROLE_CHOICES, default=INVITEE)
+    role = models.IntegerField(choices=ROLE_CHOICES)
 
     class Meta:
         unique_together = ('penny_chat', 'user',)
