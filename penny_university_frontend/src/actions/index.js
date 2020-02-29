@@ -12,6 +12,10 @@ export const FOLLOW_UPS_REQUEST = 'FOLLOW_UPS_REQUEST'
 export const FOLLOW_UPS_SUCCESS = 'FOLLOW_UPS_SUCCESS'
 export const FOLLOW_UPS_FAILURE = 'FOLLOW_UPS_FAILURE'
 
+export const UPDATE_FOLLOW_UP_REQUEST = 'UPDATE_FOLLOW_UP_REQUEST'
+export const UPDATE_FOLLOW_UP_SUCCESS = 'UPDATE_FOLLOW_UP_SUCCESS'
+export const UPDATE_FOLLOW_UP_FAILURE = 'UPDATE_FOLLOW_UP_FAILURE'
+
 export const CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE'
 
 // Creates an action that will fetch the chats list
@@ -39,6 +43,16 @@ const fetchFollowUps = (chatId, nextPageUrl) => ({
     types: [FOLLOW_UPS_REQUEST, FOLLOW_UPS_SUCCESS, FOLLOW_UPS_FAILURE],
     endpoint: nextPageUrl,
     schema: Schemas.FOLLOW_UP_ARRAY
+  }
+})
+
+const putFollowUp = (url, followUp) => ({
+  [CALL_API]: {
+    types: [UPDATE_FOLLOW_UP_REQUEST, UPDATE_FOLLOW_UP_SUCCESS, UPDATE_FOLLOW_UP_FAILURE],
+    endpoint: url,
+    schema: Schemas.FOLLOW_UP,
+    method: 'PUT',
+    payload: followUp
   }
 })
 
@@ -77,4 +91,9 @@ export const loadFollowUps = (chatId, nextPage) => (dispatch, getState) => {
   }
 
   return dispatch(fetchFollowUps(chatId, nextPageUrl))
+}
+
+export const updateFollowUp = (followUp) => (dispatch) => {
+  const url = `follow-ups/${followUp.id}/`
+  return dispatch(putFollowUp(url, followUp))
 }

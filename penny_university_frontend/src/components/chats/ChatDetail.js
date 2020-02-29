@@ -2,10 +2,10 @@ import React, {useEffect} from 'react'
 import {HeartButton, CreateButton} from '../buttons'
 import {Card} from 'reactstrap'
 import Date from '../Date'
-import Content from '../Content'
+import Content from '../content/Content'
 import {FollowUpCard} from '../followups'
 
-const ChatDetail = ({chat, followUps}) => {
+const ChatDetail = ({chat, followUps, updateFollowUp}) => {
   /*
    * Scrolls to the top of the page when the component is mounted. Sticky navbar causes a bug that keeps the scroll
    * position when navigating to the chat detail.
@@ -25,7 +25,7 @@ const ChatDetail = ({chat, followUps}) => {
           <CreateButton type='Follow Up'/>
         </div>
         <h5 className="mb-3">{followUps.length} Follow Ups</h5>
-        {followUps.map((followUp, i) => <FollowUpCard key={i} followUp={followUp}/>)}
+        {followUps.map((followUp, i) => <FollowUpCard key={i} followUp={followUp} updateFollowUp={updateFollowUp}/>)}
       </Card>
     )
   } else {

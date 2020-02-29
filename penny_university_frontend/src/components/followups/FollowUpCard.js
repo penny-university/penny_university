@@ -1,12 +1,31 @@
-import React from 'react'
-import Content from '../Content'
-import FollowUpUserInfo from "./FollowUpUserInfo"
+import React, {useState} from 'react'
+import {Content, EditContent} from '../content'
+import {EditButton, SaveButton} from '../buttons'
+import FollowUpUserInfo from './FollowUpUserInfo'
 
-const FollowUpCard = ({followUp}) => {
+const FollowUpCard = ({followUp, updateFollowUp}) => {
+  const [editMode, toggleEditMode] = useState(false)
+  const [content, updateContent] = useState(followUp.content)
+
+  const saveFollowUp = () => {
+    followUp.content = content
+    updateFollowUp(followUp)
+    toggleEditMode(false)
+  }
+
   return (
     <div className='pt-2'>
-      <FollowUpUserInfo user={followUp.userInfo} date={followUp.date}/>
-      <Content className='ml-4 border-left pl-3' content={followUp.content}/>
+      <div className='d-flex justify-content-between'>
+        <FollowUpUserInfo user={followUp.userInfo} date={followUp.date}/>
+        {editMode ?
+          <SaveButton className='align-self-start' text='Save Changes' onClick={saveFollowUp}/> :
+          <EditButton className='align-self-start' text='Edit Follow Up' onClick={() => toggleEditMode(true)}/>
+        }
+      </div>
+      {editMode ?
+        <EditContent content={content} onChange={updateContent}/> :
+        <Content className='ml-4 border-left pl-3' content={content}/>
+      }
     </div>
   )
 }
