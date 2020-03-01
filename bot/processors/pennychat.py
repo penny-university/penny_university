@@ -573,7 +573,7 @@ class PennyChatBotModule(BotModule):
             )
 
             if organizer == user:
-                # TODO! notify user that it's silly to attend or not attend their own event
+                # TODO notify user that it's silly to attend or not attend their own event
                 return
 
             # create organizer notification message (even if we choose not to use it below)

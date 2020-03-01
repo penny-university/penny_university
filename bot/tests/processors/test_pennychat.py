@@ -240,12 +240,13 @@ def test_PennyChatBotModule_attendance_selection(
         mocker,
     ):
     organizer = UserProfile.objects.create(slack_id='organizer_id')
-    # TODO! test that a user unassociated with the interaction isn't affected
 
     if starting_role == Participant.ORGANIZER:
         user = organizer
     else:
         user = UserProfile.objects.create(slack_id=str(time.time_ns()))
+
+    some_other_attendee = UserProfile.objects.create(slack_id=str(time.time_ns()))
 
     fake_title = 'Fake Title'
     fake_year = 2054
@@ -257,6 +258,7 @@ def test_PennyChatBotModule_attendance_selection(
     penny_chat_id_dict = json.dumps({penny_chat_constants.PENNY_CHAT_ID: penny_chat.id})
 
     Participant.objects.create(penny_chat=penny_chat, user=organizer, role=Participant.ORGANIZER)
+    Participant.objects.create(penny_chat=penny_chat, user=some_other_attendee, role=Participant.ATTENDEE)
     if starting_role not in [None, Participant.ORGANIZER]:
         Participant.objects.create(penny_chat=penny_chat, user=user, role=starting_role)
 
@@ -313,3 +315,6 @@ def test_PennyChatBotModule_attendance_selection(
         assert 'will notify' in thanks['text'].lower()
     else:
         slack_client.chat_postMessage.assert_not_called()
+
+    # Make sure the other attendee wasn't affected
+    assert Participant.objects.get(penny_chat=penny_chat, user=some_other_attendee).role == Participant.ATTENDEE
