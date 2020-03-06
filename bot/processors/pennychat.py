@@ -467,20 +467,6 @@ class PennyChatBotModule(BotModule):
 
         penny_chat = penny_chat_invitation.penny_chat
 
-        # Create Participants for all invited users
-        # TODO no need to create INVITEE participants, let's just wait until they say they can ATTEND
-        users = get_or_create_user_profile_from_slack_ids(
-            comma_split(penny_chat_invitation.invitees),
-            slack_client=self.slack_client,
-        )
-        for user in users.values():
-            # TODO remove notion of Participant.INVITEE as well as these invites
-            Participant.objects.update_or_create(
-                penny_chat=penny_chat,
-                user=user,
-                defaults=dict(role=Participant.INVITEE),
-            )
-
         # Create Participant entry for Organizer
         organizer = get_or_create_user_profile_from_slack_id(
             penny_chat_invitation.organizer_slack_id,
@@ -573,71 +559,55 @@ class PennyChatBotModule(BotModule):
         """
         participant_role = Participant.ATTENDEE
         if event['actions'][0]['action_id'] == PENNY_CHAT_CAN_NOT_ATTEND:
-            participant_role = Participant.INVITED_NONATTENDEE
+            participant_role = None
 
         try:
-            user = UserProfile.objects.filter(slack_id=event['user']['id']).first()
+            user = get_or_create_user_profile_from_slack_id(
+                event['user']['id'],
+                slack_client=self.slack_client,
+            )
             action_value = json.loads(event['actions'][0]['value'])
             penny_chat_id = action_value[PENNY_CHAT_ID]
             penny_chat = PennyChat.objects.get(pk=penny_chat_id)
 
-            # create notification message (even if we choose not to use it below)
+            organizer = UserProfile.objects.get(
+                user_chats__penny_chat=penny_chat,
+                user_chats__role=Participant.ORGANIZER,
+            )
+
+            if organizer == user:
+                # TODO notify user that it's silly to attend or not attend their own event
+                return
+
+            # create organizer notification message (even if we choose not to use it below)
             timestamp = int(penny_chat.date.astimezone(utc).timestamp())
             date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
             _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
             notification = f'<@{user.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
             we_will_notify_organizer = 'Thank you. We will notify the organizer.'
 
-            try:
-                participant = Participant.objects.get(penny_chat=penny_chat, user=user)
-            except Participant.DoesNotExist:
-                # if participation doesn't exist, it's probably because the user was invited from a channel
-                if participant_role == Participant.ATTENDEE:
-                    Participant.objects.create(
-                        penny_chat=penny_chat,
-                        user=user,
-                        role=participant_role,
-                    )
-                    organizer = UserProfile.objects.get(
-                        user_chats__penny_chat=penny_chat,
-                        user_chats__role=Participant.ORGANIZER,
-                    )
-                    self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
-                    chat_postEphemeral_with_fallback(
-                        self.slack_client,
-                        channel=event['channel']['id'],
-                        user=user.slack_id,
-                        text=we_will_notify_organizer,
-                    )
-                else:
-                    pass  # we don't create new participants for anything beside attendence
-                return
+            changed = False
+            if participant_role:
+                participant, created = Participant.objects.update_or_create(
+                    user=user,
+                    penny_chat=penny_chat,
+                    defaults={'role': participant_role}
+                )
+                if created:
+                    changed = True
+            else:
+                num_deleted, _ = Participant.objects.filter(user=user, penny_chat=penny_chat).delete()
+                if num_deleted > 0:
+                    changed = True
 
-            if participant.role == participant_role:
-                # already in correct state - nothing to change, no one to notify
-                return
-
-            if participant.role == Participant.ORGANIZER:
-                # organizer clicked to attend (or not attend) their own event
-                # TODO stat.count number of times organizer won't attend their own event
-                return
-
-            # after this point we have someone that was known to either be attending or not, but changed their mind
-            # OR we have people that were invited that are making a decision to attend or not
-            # for any of these we need notify the organizer and update the participation
-            participant.role = participant_role
-            participant.save()
-            organizer = UserProfile.objects.get(
-                user_chats__penny_chat=penny_chat,
-                user_chats__role=Participant.ORGANIZER,
-            )
-            self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
-            chat_postEphemeral_with_fallback(
-                self.slack_client,
-                channel=event['channel']['id'],
-                user=user.slack_id,
-                text=we_will_notify_organizer,
-            )
+            if changed:
+                self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
+                chat_postEphemeral_with_fallback(
+                    self.slack_client,
+                    channel=event['channel']['id'],
+                    user=user.slack_id,
+                    text=we_will_notify_organizer,
+                )
         except RuntimeError:
             chat_postEphemeral_with_fallback(
                 self.slack_client,

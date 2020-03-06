@@ -174,11 +174,6 @@ def test_PennyChatBotModule_share(mocker):
     )
     assert organizer_participant.role == Participant.ORGANIZER
 
-    invitee_participant = Participant.objects.get(
-        penny_chat=penny_chat,
-        user=user_invitee_1,
-    )
-    assert invitee_participant.role == Participant.INVITEE
     assert penny_chat_invitation.status == PennyChatInvitation.SHARED
 
 
@@ -201,37 +196,10 @@ testdata = [
         expected_organizer_notified=False,
     ),
     dict(
-        msg="if invitee can attend then her role becomes ATTENDEE and the organizer is notified",
-        starting_role=Participant.INVITEE,
-        can_attend=True,
-        expected_final_role=Participant.ATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg="if invitee not can attend then her role becomes INVITED_NONATTENDEE and the organizer is notified",
-        starting_role=Participant.INVITEE,
-        can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg=(
-            "if an attendee decides they can't attend, then their role is changed to "
-            "INVITED_NONATTENDEE and the organizer is notified"
-        ),
+        msg="if an attendee can't attend, then their participation is removed and the organizer is notified",
         starting_role=Participant.ATTENDEE,
         can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg=(
-            "if an invited_nonattendee desides to attend, then their role is changed to "
-            "ATTENDEE and the organizer is notified"
-        ),
-        starting_role=Participant.INVITED_NONATTENDEE,
-        can_attend=True,
-        expected_final_role=Participant.ATTENDEE,
+        expected_final_role=None,
         expected_organizer_notified=True,
     ),
     dict(
@@ -242,16 +210,6 @@ testdata = [
         starting_role=Participant.ATTENDEE,
         can_attend=True,  # they've already said they'll be there and they say it again
         expected_final_role=Participant.ATTENDEE,
-        expected_organizer_notified=False,
-    ),
-    dict(
-        msg=(
-            "if an nonattendee chooses can_not_attend again, "
-            "then the participation is not changed and the organizer is not notified"
-        ),
-        starting_role=Participant.INVITED_NONATTENDEE,
-        can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
         expected_organizer_notified=False,
     ),
     dict(
@@ -288,6 +246,8 @@ def test_PennyChatBotModule_attendance_selection(
     else:
         user = UserProfile.objects.create(slack_id=str(time.time_ns()))
 
+    some_other_attendee = UserProfile.objects.create(slack_id=str(time.time_ns()))
+
     fake_title = 'Fake Title'
     fake_year = 2054
     fake_channel = 'fake_chan'
@@ -298,6 +258,7 @@ def test_PennyChatBotModule_attendance_selection(
     penny_chat_id_dict = json.dumps({penny_chat_constants.PENNY_CHAT_ID: penny_chat.id})
 
     Participant.objects.create(penny_chat=penny_chat, user=organizer, role=Participant.ORGANIZER)
+    Participant.objects.create(penny_chat=penny_chat, user=some_other_attendee, role=Participant.ATTENDEE)
     if starting_role not in [None, Participant.ORGANIZER]:
         Participant.objects.create(penny_chat=penny_chat, user=user, role=starting_role)
 
@@ -320,7 +281,8 @@ def test_PennyChatBotModule_attendance_selection(
     slack_client = mocker.Mock()
 
     # The Actual Tests
-    PennyChatBotModule(slack_client).attendance_selection(event)
+    with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', return_value=user):
+        PennyChatBotModule(slack_client).attendance_selection(event)
 
     # Evaluation
     actual_final_role = None
@@ -354,3 +316,6 @@ def test_PennyChatBotModule_attendance_selection(
         assert 'will notify' in thanks['text'].lower()
     else:
         slack_client.chat_postMessage.assert_not_called()
+
+    # Make sure the other attendee wasn't affected
+    assert Participant.objects.get(penny_chat=penny_chat, user=some_other_attendee).role == Participant.ATTENDEE
