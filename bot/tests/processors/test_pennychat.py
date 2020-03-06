@@ -281,7 +281,8 @@ def test_PennyChatBotModule_attendance_selection(
     slack_client = mocker.Mock()
 
     # The Actual Tests
-    PennyChatBotModule(slack_client).attendance_selection(event)
+    with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', return_value=user):
+        PennyChatBotModule(slack_client).attendance_selection(event)
 
     # Evaluation
     actual_final_role = None

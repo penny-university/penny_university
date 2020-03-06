@@ -562,7 +562,10 @@ class PennyChatBotModule(BotModule):
             participant_role = None
 
         try:
-            user = UserProfile.objects.filter(slack_id=event['user']['id']).first()
+            user = get_or_create_user_profile_from_slack_id(
+                event['user']['id'],
+                slack_client=self.slack_client,
+            )
             action_value = json.loads(event['actions'][0]['value'])
             penny_chat_id = action_value[PENNY_CHAT_ID]
             penny_chat = PennyChat.objects.get(pk=penny_chat_id)
