@@ -9,7 +9,7 @@ from bot.processors.filters import (
     in_room,
     is_block_interaction_event,
     has_callback_id,
-    is_event_type,
+    has_event_type,
     has_action_id
 )
 
@@ -143,7 +143,7 @@ class GreetingBotModule(BotModule):
         self.slack = slack
 
     @in_room(GREETING_CHANNEL)
-    @is_event_type('message.channel_join')
+    @has_event_type('message.channel_join')
     def welcome_user(self, event):
         self.slack.chat_postMessage(channel=event['user'], blocks=greeting_blocks(event['user']))
         notify_admins(self.slack, f'<@{event["user"]}> just received a greeting message.')
@@ -156,7 +156,7 @@ class GreetingBotModule(BotModule):
         template = onboarding_template(user)
         self.slack.dialog_open(dialog=template, trigger_id=event['trigger_id'])
 
-    @is_event_type('dialog_submission')
+    @has_event_type('dialog_submission')
     @has_callback_id('interests')
     def submit_interests(self, event):
         slack_id = event['user']['id']

@@ -22,6 +22,10 @@ class PennyChat(models.Model):
     date = models.DateTimeField(null=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT)
 
+    # meta
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     def __repr__(self):
         return pprint_obj(self)
 
@@ -34,18 +38,14 @@ class PennyChatInvitation(PennyChat):
         parent_link=True,
         related_name='invitation',
     )
-    # these two are only used during PennyChat creation from the bot command  why? because the slack API appears to
-    # give us no other choice
-    user_tz = models.TextField()
-    template_channel = models.TextField()
-    view = models.TextField()
 
-    # these fields are in PennyChat because this model is doing double duty, serving as a record of both the invitation
-    # and the chat itself - we might want to create a formal PennyChatInvitation eventually, it could link back to the
-    # penny chat itself
-    user = models.TextField(null=True)
+    # TODO can we get rid of view? it's currently just a weird way to retrieve the penny_chat_invite
+    view = models.TextField()
+    organizer_tz = models.TextField()  # change to organizer_tz
+    organizer_slack_id = models.TextField(null=True)
     invitees = models.TextField()
     channels = models.TextField()
+    shares = models.TextField(null=True)
 
     def __repr__(self):
         return pprint_obj(self)
@@ -64,18 +64,14 @@ class FollowUp(models.Model):
 class Participant(models.Model):
     ORGANIZER = 10
     ATTENDEE = 20  # Will attend! these people might have been invited directly by name or indirectly by channel invite
-    INVITEE = 30  # Explicitly invited by name
-    INVITED_NONATTENDEE = 40  # Will not attend!
     ROLE_CHOICES = (
         (ORGANIZER, 'Organizer'),
         (ATTENDEE, 'Attendee'),
-        (INVITEE, 'Invitee'),
-        (INVITED_NONATTENDEE, 'Invited NonAttendee'),
     )
 
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_chats')
-    role = models.IntegerField(choices=ROLE_CHOICES, default=INVITEE)
+    role = models.IntegerField(choices=ROLE_CHOICES)
 
     class Meta:
         unique_together = ('penny_chat', 'user',)

@@ -22,8 +22,7 @@ def create_penny_chat():
     date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=utc)
     chat = PennyChatInvitation.objects.create(
         status=PennyChatInvitation.DRAFT,
-        user_tz='America/Chicago',
-        template_channel='channel',
+        organizer_tz='America/Chicago',
         date=date,
         view='view',
     )
@@ -99,11 +98,13 @@ def test_PennyChatBotModule_share(mocker):
     # make sure that things don't break if for some reason a user attempts to invite themselves
     user_invitee_2 = organizer
 
+    view_id = 'some_silly_view_id'
     penny_chat_invitation = PennyChatInvitation.objects.create(
         invitees=','.join([user_invitee_1.slack_id, user_invitee_2.slack_id]),
-        user=organizer.slack_id,
+        organizer_slack_id=organizer.slack_id,
         date=timezone("America/Los_Angeles").localize(datetime(1979, 10, 12)),
         title='fake title',
+        view=view_id,
         description='fake description',
     )
 
@@ -121,32 +122,51 @@ def test_PennyChatBotModule_share(mocker):
         'user': {
             'id': organizer.slack_id
         },
-        'trigger_id': 'hi there',
+        'view': {
+            'id': view_id,
+            'state': {
+                'values': {
+                    'penny_chat_title': {
+                        'penny_chat_title': {
+                            'value': 'new_title',
+                        }
+                    },
+                    'penny_chat_description': {
+                        'penny_chat_description': {
+                            'value': 'new_description',
+                        }
+                    }
+                }
+            },
+        },
         'actions': [{'action_id': penny_chat_constants.PENNY_CHAT_SHARE}],
         'response_url': 'http://some_website.com',
+        'type': penny_chat_constants.VIEW_SUBMISSION,
+        'callback_id': penny_chat_constants.PENNY_CHAT_DETAILS,
     }
 
     slack_client = mocker.Mock()
+    slack_client.chat_postMessage().data = {'channel': 'share_chan', 'ts': 'share_ts'}
 
     with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock), \
             mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
             mocker.patch('bot.processors.pennychat.requests'):
 
         # The Actual Test
-        PennyChatBotModule(slack_client).share(event)
+        PennyChatBotModule(slack_client).submit_details_and_share(event)
 
     message_to_slack = str(slack_client.chat_postMessage.call_args[1]['blocks'])
-    assert "fake title" in message_to_slack
-    assert "fake description" in message_to_slack
+    assert "new_title" in message_to_slack
+    assert "new_description" in message_to_slack
 
     penny_chat_invitation.refresh_from_db()
     penny_chat = penny_chat_invitation.penny_chat
     assert penny_chat is not None
-    assert penny_chat.title == 'fake title'
-    assert penny_chat.description == 'fake description'
-
+    assert penny_chat.title == 'new_title'
+    assert penny_chat.description == 'new_description'
     assert penny_chat.date == penny_chat_invitation.date
     assert penny_chat.status == PennyChat.SHARED
+    assert penny_chat_invitation.shares == '{"share_chan": "share_ts"}'
 
     organizer_participant = Participant.objects.get(
         penny_chat=penny_chat,
@@ -154,11 +174,6 @@ def test_PennyChatBotModule_share(mocker):
     )
     assert organizer_participant.role == Participant.ORGANIZER
 
-    invitee_participant = Participant.objects.get(
-        penny_chat=penny_chat,
-        user=user_invitee_1,
-    )
-    assert invitee_participant.role == Participant.INVITEE
     assert penny_chat_invitation.status == PennyChatInvitation.SHARED
 
 
@@ -181,37 +196,10 @@ testdata = [
         expected_organizer_notified=False,
     ),
     dict(
-        msg="if invitee can attend then her role becomes ATTENDEE and the organizer is notified",
-        starting_role=Participant.INVITEE,
-        can_attend=True,
-        expected_final_role=Participant.ATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg="if invitee not can attend then her role becomes INVITED_NONATTENDEE and the organizer is notified",
-        starting_role=Participant.INVITEE,
-        can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg=(
-            "if an attendee decides they can't attend, then their role is changed to "
-            "INVITED_NONATTENDEE and the organizer is notified"
-        ),
+        msg="if an attendee can't attend, then their participation is removed and the organizer is notified",
         starting_role=Participant.ATTENDEE,
         can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
-        expected_organizer_notified=True,
-    ),
-    dict(
-        msg=(
-            "if an invited_nonattendee desides to attend, then their role is changed to "
-            "ATTENDEE and the organizer is notified"
-        ),
-        starting_role=Participant.INVITED_NONATTENDEE,
-        can_attend=True,
-        expected_final_role=Participant.ATTENDEE,
+        expected_final_role=None,
         expected_organizer_notified=True,
     ),
     dict(
@@ -222,16 +210,6 @@ testdata = [
         starting_role=Participant.ATTENDEE,
         can_attend=True,  # they've already said they'll be there and they say it again
         expected_final_role=Participant.ATTENDEE,
-        expected_organizer_notified=False,
-    ),
-    dict(
-        msg=(
-            "if an nonattendee chooses can_not_attend again, "
-            "then the participation is not changed and the organizer is not notified"
-        ),
-        starting_role=Participant.INVITED_NONATTENDEE,
-        can_attend=False,
-        expected_final_role=Participant.INVITED_NONATTENDEE,
         expected_organizer_notified=False,
     ),
     dict(
@@ -268,6 +246,8 @@ def test_PennyChatBotModule_attendance_selection(
     else:
         user = UserProfile.objects.create(slack_id=str(time.time_ns()))
 
+    some_other_attendee = UserProfile.objects.create(slack_id=str(time.time_ns()))
+
     fake_title = 'Fake Title'
     fake_year = 2054
     fake_channel = 'fake_chan'
@@ -278,6 +258,7 @@ def test_PennyChatBotModule_attendance_selection(
     penny_chat_id_dict = json.dumps({penny_chat_constants.PENNY_CHAT_ID: penny_chat.id})
 
     Participant.objects.create(penny_chat=penny_chat, user=organizer, role=Participant.ORGANIZER)
+    Participant.objects.create(penny_chat=penny_chat, user=some_other_attendee, role=Participant.ATTENDEE)
     if starting_role not in [None, Participant.ORGANIZER]:
         Participant.objects.create(penny_chat=penny_chat, user=user, role=starting_role)
 
@@ -300,7 +281,8 @@ def test_PennyChatBotModule_attendance_selection(
     slack_client = mocker.Mock()
 
     # The Actual Tests
-    PennyChatBotModule(slack_client).attendance_selection(event)
+    with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', return_value=user):
+        PennyChatBotModule(slack_client).attendance_selection(event)
 
     # Evaluation
     actual_final_role = None
@@ -334,3 +316,6 @@ def test_PennyChatBotModule_attendance_selection(
         assert 'will notify' in thanks['text'].lower()
     else:
         slack_client.chat_postMessage.assert_not_called()
+
+    # Make sure the other attendee wasn't affected
+    assert Participant.objects.get(penny_chat=penny_chat, user=some_other_attendee).role == Participant.ATTENDEE

@@ -8,23 +8,42 @@ def in_room(room, event):
 
 
 @event_processor_decorator
-def is_event_type(type_string, event):
-    type_arr = type_string.split('.')
-    assert 1 <= len(type_arr) <= 2, \
-        'Format for type_string must be "foo" or "foo.bar" of "*.bar" or "foo.*"'
-    if len(type_arr) == 1:
-        type_arr.append('*')
-    if 'type' not in event:
-        return False
-    if type_arr[0] != '*' and event['type'] != type_arr[0]:
-        return False
-    if 'subtype' in event:
-        if type_arr[1] != '*' and event['subtype'] != type_arr[1]:
+def has_event_type(types, event):
+    """Process decorator that pass through any event that is one of the specified types.
+
+    Each type argument can take any of these forms:
+    * "foo" or "foo.*" - matches events of type "foo" and any subtype
+    * "foo.bar" - matches events of type "foo" and subtype "bar"
+    * "*.bar" - matches events of any type have subtype "bar"
+    * "*.*" - has an event type
+    """
+    def is_event_type(type_string):
+        """To process one type_string at a time."""
+        type_arr = type_string.split('.')
+        assert 1 <= len(type_arr) <= 2, \
+            'Format for type_string must be "foo" or "foo.bar" of "*.bar" or "foo.*"'
+        if len(type_arr) == 1:
+            type_arr.append('*')
+        if 'type' not in event:
             return False
-    else:
-        if type_arr[1] != '*':
+        if type_arr[0] != '*' and event['type'] != type_arr[0]:
             return False
-    return True
+        if 'subtype' in event:
+            if type_arr[1] != '*' and event['subtype'] != type_arr[1]:
+                return False
+        else:
+            if type_arr[1] != '*':
+                return False
+        return True
+
+    if isinstance(types, str):
+        types = [types]
+
+    for type_string in types:
+        if is_event_type(type_string):
+            return True
+
+    return False
 
 
 @event_processor_decorator

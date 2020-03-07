@@ -57,7 +57,6 @@ def test_chats_1():
 
     Participant.objects.create(user=user_1, penny_chat=chat_1, role=Participant.ORGANIZER)
     Participant.objects.create(user=user_2, penny_chat=chat_1, role=Participant.ATTENDEE)
-    Participant.objects.create(user=user_3, penny_chat=chat_1, role=Participant.INVITEE)
 
     Participant.objects.create(user=user_2, penny_chat=chat_2, role=Participant.ORGANIZER)
     Participant.objects.create(user=user_3, penny_chat=chat_2, role=Participant.ATTENDEE)
