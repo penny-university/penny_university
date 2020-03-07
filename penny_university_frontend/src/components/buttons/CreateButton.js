@@ -4,9 +4,9 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import {Button} from 'reactstrap'
 
-const CreateButton = ({className, type, size}) => {
+const CreateButton = ({className, type, size, onClick}) => {
   return (
-    <Button outline size={size} color='primary' className={className}>
+    <Button size={size} color='primary' onClick={onClick} className={className}>
       <FontAwesomeIcon icon={faPlus}/> Add New {type}
     </Button>
   )

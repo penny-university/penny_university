@@ -4,15 +4,16 @@ import {faSave} from '@fortawesome/free-solid-svg-icons'
 import {Button} from 'reactstrap'
 import PropTypes from 'prop-types'
 
-const SaveButton = ({className, text, size, onClick}) => {
+const SaveButton = ({className, type, size, onClick}) => {
   return (
-    <Button outline size={size} color='primary' className={className} onClick={onClick}>
-      <FontAwesomeIcon icon={faSave}/> {text}
+    <Button size={size} color='primary' className={className} onClick={onClick}>
+      <FontAwesomeIcon icon={faSave}/> Save {type}
     </Button>
   )
 }
 
 SaveButton.propTypes = {
+  type: PropTypes.string,
   size: PropTypes.string
 }
 

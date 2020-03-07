@@ -2,17 +2,22 @@ import React, {useEffect} from 'react'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import {withRouter} from 'react-router-dom'
-import {loadChatDetail, loadFollowUps, updateFollowUp} from '../actions'
+import {createFollowUp, loadChatDetail, loadFollowUps, updateFollowUp} from '../actions'
 import {ChatDetail} from '../components/chats'
 
-const ChatDetailPage = ({id, chat, followUpsList, loadChatDetail, loadFollowUps, updateFollowUp}) => {
+const ChatDetailPage = ({id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp}) => {
   useEffect(() => {
     loadChatDetail(id)
     loadFollowUps(id)
   }, [id, loadChatDetail, loadFollowUps])
 
   return (
-    <ChatDetail chat={chat} followUps={followUpsList} updateFollowUp={updateFollowUp}/>
+    <ChatDetail
+      chat={chat}
+      followUps={followUpsList}
+      loadFollowUps={loadFollowUps}
+      createFollowUp={createFollowUp}
+      updateFollowUp={updateFollowUp}/>
   )
 }
 
@@ -44,7 +49,7 @@ const mapStateToProps = (state, ownProps) => {
   const decorateUserWithRole = (user) => {
     if (chat) {
       let participant = chat.participants.find(p => p.user.id === user.id)
-      return participant.role
+      return participant ? participant.role : null
     } else {
       return null
     }
@@ -68,6 +73,7 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = {
   loadChatDetail,
   loadFollowUps,
+  createFollowUp,
   updateFollowUp
 }
 

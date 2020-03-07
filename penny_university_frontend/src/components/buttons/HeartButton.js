@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 
 const HeartButton = ({className, count, size}) => {
   return (
-    <Button outline size={size} color='red' className={className}>
+    <Button size={size} color='red' className={className}>
       <FontAwesomeIcon icon={faHeart}/> {count}
     </Button>
   )

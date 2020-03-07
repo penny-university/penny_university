@@ -18,8 +18,8 @@ const FollowUpCard = ({followUp, updateFollowUp}) => {
       <div className='d-flex justify-content-between'>
         <FollowUpUserInfo user={followUp.userInfo} date={followUp.date}/>
         {editMode ?
-          <SaveButton className='align-self-start' text='Save Changes' onClick={saveFollowUp}/> :
-          <EditButton className='align-self-start' text='Edit Follow Up' onClick={() => toggleEditMode(true)}/>
+          <SaveButton className='align-self-start' type='Changes' onClick={saveFollowUp}/> :
+          <EditButton className='align-self-start' type='Follow Up' onClick={() => toggleEditMode(true)}/>
         }
       </div>
       {editMode ?

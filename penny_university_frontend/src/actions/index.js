@@ -12,6 +12,10 @@ export const FOLLOW_UPS_REQUEST = 'FOLLOW_UPS_REQUEST'
 export const FOLLOW_UPS_SUCCESS = 'FOLLOW_UPS_SUCCESS'
 export const FOLLOW_UPS_FAILURE = 'FOLLOW_UPS_FAILURE'
 
+export const CREATE_FOLLOW_UP_REQUEST = 'CREATE_FOLLOW_UP_REQUEST'
+export const CREATE_FOLLOW_UP_SUCCESS = 'CREATE_FOLLOW_UP_SUCCESS'
+export const CREATE_FOLLOW_UP_FAILURE = 'CREATE_FOLLOW_UP_FAILURE'
+
 export const UPDATE_FOLLOW_UP_REQUEST = 'UPDATE_FOLLOW_UP_REQUEST'
 export const UPDATE_FOLLOW_UP_SUCCESS = 'UPDATE_FOLLOW_UP_SUCCESS'
 export const UPDATE_FOLLOW_UP_FAILURE = 'UPDATE_FOLLOW_UP_FAILURE'
@@ -56,6 +60,16 @@ const putFollowUp = (url, followUp) => ({
   }
 })
 
+const postFollowUp = (url, followUp) => ({
+  [CALL_API]: {
+    types: [CREATE_FOLLOW_UP_REQUEST, CREATE_FOLLOW_UP_SUCCESS, CREATE_FOLLOW_UP_FAILURE],
+    endpoint: url,
+    schema: Schemas.FOLLOW_UP,
+    method: 'POST',
+    payload: followUp
+  }
+})
+
 // These are all thunks. They return a call to dispatch with an action passed into it
 export const loadChatsList = (filter, nextPage) => (dispatch, getState) => {
   const {
@@ -96,4 +110,11 @@ export const loadFollowUps = (chatId, nextPage) => (dispatch, getState) => {
 export const updateFollowUp = (followUp) => (dispatch) => {
   const url = `follow-ups/${followUp.id}/`
   return dispatch(putFollowUp(url, followUp))
+}
+
+export const createFollowUp = (chatId, followUp) => async (dispatch) => {
+  const url = `chats/${chatId}/follow-ups/`
+  await dispatch(postFollowUp(url, followUp))
+
+  return dispatch(fetchFollowUps(chatId, url + `?page=last`))
 }
