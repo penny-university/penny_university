@@ -1,25 +1,46 @@
 import {normalize, schema} from 'normalizr'
-import {camelizeKeys} from 'humps'
+import {camelizeKeys, decamelizeKeys} from 'humps'
 
 const API_ROOT = 'http://localhost:8000/api/'
 
 // Makes an API call, and properly formats the response.
-const callApi = (endpoint, schema) => {
+const callApi = (endpoint, schema, method, payload) => {
   const url = (endpoint.indexOf(API_ROOT) === -1) ? API_ROOT + endpoint : endpoint
 
-  return fetch(url)
-    .then(response =>
-      response.json().then(json => {
-        if (!response.ok) {
-          return Promise.reject(json)
-        }
+  switch (method) {
+    case 'POST':
+    case 'PUT':
+      const jsonPayload = JSON.stringify(decamelizeKeys(payload))
+      return fetch(url, {method, body: jsonPayload, headers: {'Content-Type': 'application/json'}})
+        .then(response =>
+          response.json().then(json => {
+            if (!response.ok) {
+              return Promise.reject(json)
+            }
 
-        const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
+            const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
 
-        // normalize the response into our defined schemas
-        return Object.assign({}, normalize(camelJson, schema), {nextPageUrl: json.next})
-      })
-    )
+            // normalize the response into our defined schemas
+            return Object.assign({}, normalize(camelJson, schema), {nextPageUrl: json.next})
+          })
+        )
+    default:
+      return fetch(url)
+        .then(response =>
+          response.json().then(json => {
+            if (!response.ok) {
+              return Promise.reject(json)
+            }
+
+            const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
+
+            // normalize the response into our defined schemas
+            return Object.assign({}, normalize(camelJson, schema), {nextPageUrl: json.next})
+          })
+        )
+  }
+
+
 }
 
 const userSchema = new schema.Entity('users', {}, {
@@ -62,7 +83,7 @@ export default store => next => action => {
   }
 
   let {endpoint} = callApiAction
-  const {schema, types} = callApiAction
+  const {schema, types, method, payload} = callApiAction
 
   if (typeof endpoint === 'function') {
     endpoint = endpoint(store.getState())
@@ -91,7 +112,7 @@ export default store => next => action => {
   const [requestType, successType, failureType] = types
   next(actionWith({type: requestType}))
 
-  return callApi(endpoint, schema).then(
+  return callApi(endpoint, schema, method, payload).then(
     response => next(actionWith({
       response,
       type: successType

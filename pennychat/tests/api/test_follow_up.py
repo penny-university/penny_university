@@ -11,8 +11,8 @@ def test_follow_up_list(test_chats_1):
     penny_chat = test_chats_1[0]
     response = client.get(f'/api/chats/{penny_chat.id}/follow-ups/')
     assert response.status_code == 200
-    assert response.data['count'] == 2
-    follow_ups = response.data['results']
+    follow_ups = response.data
+    assert len(follow_ups) == 2
     # first follow up should be the first follow up created
     assert follow_ups[0]['content'] == 'The first follow up'
     assert FollowUp.objects.get(pk=follow_ups[0]['id']).content == 'The first follow up'
@@ -29,8 +29,8 @@ def test_create_follow_up(test_chats_1):
     response = client.post(f'/api/chats/{penny_chat.id}/follow-ups/', data=data, format='json')
     assert response.status_code == 201
     response = client.get(f'/api/chats/{penny_chat.id}/follow-ups/')
-    assert response.data['count'] == 3
-    follow_ups = response.data['results']
+    follow_ups = response.data
+    assert len(follow_ups) == 3
     assert follow_ups[2]['content'] == content
     assert FollowUp.objects.get(pk=follow_ups[2]['id']).content == content
 
@@ -50,10 +50,10 @@ def test_update_follow_up(test_chats_1):
     assert response.status_code == 200
     # check that follow up was removed from original chat
     response = client.get(f'/api/chats/{second_penny_chat.id}/follow-ups/')
-    assert response.data['count'] == 1
+    assert len(response.data) == 1
     response = client.get(f'/api/chats/{first_penny_chat.id}/follow-ups/')
-    assert response.data['count'] == 3
-    follow_ups = response.data['results']
+    follow_ups = response.data
+    assert len(follow_ups) == 3
     assert follow_ups[2]['content'] == 'Update follow up'
     assert FollowUp.objects.get(pk=follow_ups[2]['id']).content == 'Update follow up'
 
@@ -67,7 +67,8 @@ def test_partial_update_follow_up(test_chats_1):
     }
     response = client.patch(f'/api/follow-ups/{follow_up.id}/', data=data, format='json')
     assert response.status_code == 200
-    follow_ups = client.get(f'/api/chats/{test_chats_1[0].id}/follow-ups/').data['results']
+    response = client.get(f'/api/chats/{test_chats_1[0].id}/follow-ups/')
+    follow_ups = response.data
     assert follow_ups[0]['content'] == 'Update follow up'
     assert FollowUp.objects.get(pk=follow_ups[0]['id']).content == 'Update follow up'
 
@@ -79,5 +80,6 @@ def test_delete_follow_up(test_chats_1):
     response = client.delete(f'/api/follow-ups/{follow_up.id}/')
     assert response.status_code == 204
     response = client.get(f'/api/chats/{test_chats_1[0].id}/follow-ups/')
-    assert response.data['count'] == 1
-    assert response.data['results'][0]['id'] != follow_up.id
+    follow_ups = response.data
+    assert len(follow_ups) == 1
+    assert follow_ups[0]['id'] != follow_up.id

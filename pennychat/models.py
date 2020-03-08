@@ -75,6 +75,7 @@ class Participant(models.Model):
 
     class Meta:
         unique_together = ('penny_chat', 'user',)
+        ordering = ['role']
 
     def __repr__(self):
         return pprint_obj(self)

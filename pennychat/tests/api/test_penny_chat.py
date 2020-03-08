@@ -105,4 +105,4 @@ def test_follow_up_url(test_chats_1):
     assert follow_up_url == f'http://testserver/api/chats/{penny_chat.id}/follow-ups/'
     response = client.get(follow_up_url)
     assert response.status_code == 200
-    assert response.data['count'] == 2
+    assert len(response.data) == 2

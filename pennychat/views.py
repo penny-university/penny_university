@@ -5,6 +5,7 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .models import PennyChat, FollowUp
 from .serializers import PennyChatSerializer, FollowUpSerializer
+from users.models import UserProfile
 
 
 class PennyChatViewSet(viewsets.ModelViewSet):
@@ -29,10 +30,8 @@ class ListCreateFollowUps(generics.GenericAPIView):
     def get(self, request, pk, format=None):
         follow_ups = FollowUp.objects.filter(penny_chat_id=pk)
         queryset = self.filter_queryset(follow_ups)
-
-        page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def post(self, request, pk, format=None):
         follow_up_data = dict(request.data)
@@ -41,6 +40,14 @@ class ListCreateFollowUps(generics.GenericAPIView):
         serializer = FollowUpSerializer(data=follow_up_data, context={'request': request})
         if serializer.is_valid():
             # TODO - if request.user is not anonymous then find the UserProfile corresponding to the request user
+            # creating new follow ups will not work unless you uncomment these lines!
+            # user, created = UserProfile.objects.get_or_create(
+            #     real_name='Anonymous Profile',
+            #     defaults={
+            #         'email': 'anonymous@profile.com',
+            #         'slack_team_id': '1'
+            #     })
+            # serializer.save(user=user)
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)

@@ -5,7 +5,7 @@ import {
   CardTitle
 } from 'reactstrap'
 import Date from '../Date'
-import Content from '../Content'
+import {Content} from '../content'
 import ParticipantList from './ParticipantList'
 
 const ChatCard = ({chat}) => {

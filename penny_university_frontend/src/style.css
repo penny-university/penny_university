@@ -7145,13 +7145,17 @@ a.text-dark:hover, a.text-dark:focus {
 
 html,
 body {
-  background: #f8f9fa;
+  background: #f0f0f0;
   height: 100%; }
 
 pre {
-  background: #f8f9fa;
+  background: #f0f0f0;
   border-radius: 0.25rem;
   padding: .5rem; }
+
+.alert-container {
+  bottom: 0;
+  position: fixed; }
 
 .overlay-text {
   position: relative;
