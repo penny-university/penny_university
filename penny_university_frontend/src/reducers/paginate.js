@@ -6,7 +6,6 @@ const union = (a, b) => (
 // Reducer for handling actions that require pagination. Requires three types (request, success, and failure),
 // and a function to map the pagination to a key, e.g. (action) => action.filterName.
 const paginate = ({ types, mapActionToKey }) => {
-  console.log("HIT IT!")
   if (!Array.isArray(types) || types.length !== 3) {
     throw new Error('Expected types to be an array of three elements.')
   }
