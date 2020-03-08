@@ -15,6 +15,8 @@ const entities = (state = { chats: {}, followUps: {}, users: {} }, action) => {
 const error = (state = null, action) => {
   const { type, error } = action
 
+  console.log(error)
+
   if (type === ActionTypes.CLEAR_ERROR_MESSAGE) {
     return null
   } else if (error) {

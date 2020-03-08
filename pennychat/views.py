@@ -1,9 +1,12 @@
 from rest_framework import viewsets, mixins, generics
+from rest_framework.decorators import permission_classes
+from rest_framework.exceptions import NotAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
-from .models import PennyChat, FollowUp
+from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer
 from users.models import UserProfile
 
@@ -34,20 +37,15 @@ class ListCreateFollowUps(generics.GenericAPIView):
         return Response(serializer.data)
 
     def post(self, request, pk, format=None):
+        if not request.auth:
+            raise NotAuthenticated()
         follow_up_data = dict(request.data)
         penny_chat_url = reverse('pennychat-detail', args=[pk], request=request)
         follow_up_data['penny_chat'] = penny_chat_url
         serializer = FollowUpSerializer(data=follow_up_data, context={'request': request})
         if serializer.is_valid():
-            # TODO - if request.user is not anonymous then find the UserProfile corresponding to the request user
-            # creating new follow ups will not work unless you uncomment these lines!
-            # user, created = UserProfile.objects.get_or_create(
-            #     real_name='Anonymous Profile',
-            #     defaults={
-            #         'email': 'anonymous@profile.com',
-            #         'slack_team_id': '1'
-            #     })
-            # serializer.save(user=user)
+            profile = UserProfile.objects.get(user=request.user)
+            serializer.save(user=profile)
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)

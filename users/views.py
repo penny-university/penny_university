@@ -1,9 +1,31 @@
+from django.contrib.auth.models import User
+
 from rest_framework import mixins, generics
+from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.authtoken.models import Token
 
 from pennychat.serializers import UserChatSerializer
 from .models import UserProfile
-from .serializers import UserProfileSerializer
+from .serializers import UserSerializer, UserProfileSerializer
 from pennychat.models import Participant
+
+
+class CreateUser(generics.CreateAPIView):
+    queryset = User.objects.all()
+
+    def post(self, request, format=None, **kwargs):
+        user_data = request.data
+        serializer = UserSerializer(data=user_data, context={'request': request})
+        if serializer.is_valid():
+            user = serializer.save()
+            user_profiles = UserProfile.objects.filter(email=user.email)
+            for profile in user_profiles:
+                profile.user = user
+                profile.save()
+            token = Token.objects.create(user=user)
+            return Response(data={'token': token.key, 'user': serializer.data})
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class UserProfileDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
