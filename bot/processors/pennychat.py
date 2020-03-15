@@ -476,7 +476,7 @@ class PennyChatBotModule(BotModule):
             slack_client=self.slack_client,
         )
         if organizer:
-            Participant.objects.update_or_create(
+            ParticipantInvitation.objects.update_or_create(  # TODO! make invitation
                 penny_chat=penny_chat,
                 user=organizer,
                 defaults=dict(role=Participant.ORGANIZER),
@@ -592,7 +592,7 @@ class PennyChatBotModule(BotModule):
 
             created = deleted = False
             if participant_role:
-                participant_invitation, created = ParticipantInvitation.objects.update_or_create(
+                participant, created = ParticipantInvitation.objects.update_or_create(
                     user=user,
                     penny_chat=penny_chat,
                     defaults={'role': participant_role}
@@ -605,10 +605,12 @@ class PennyChatBotModule(BotModule):
                         # NOTE the `penny_chat.date.timestamp` unix timestamp is in UTC and the post_at is also in UTC
                         post_at=int(penny_chat.date.timestamp() - ONE_HOUR),
                     )
-                    participant_invitation.scheduled_message_id = resp.data['scheduled_message_id']
-                    participant_invitation.save()  # TODO! test
+                    participant.invitation.scheduled_message_id = resp.data['scheduled_message_id']
+                    participant.invitation.save()  # TODO! test
             else:
-                num_deleted, _ = Participant.objects.filter(user=user, penny_chat=penny_chat).delete()
+                # TODO! make invitation - make sure to delete both Participant
+                #  and Invitation and TEST since this functionality will change
+                num_deleted, _ = ParticipantInvitation.objects.filter(user=user, penny_chat=penny_chat).delete()
                 if num_deleted > 0:
                     deleted = True
 

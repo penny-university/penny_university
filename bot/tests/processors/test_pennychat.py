@@ -12,6 +12,7 @@ import bot.processors.pennychat as penny_chat_constants
 from pennychat.models import (
     PennyChatInvitation,
     Participant,
+    ParticipantInvitation,
     PennyChat,
 )
 from users.models import UserProfile
@@ -262,10 +263,10 @@ def test_PennyChatBotModule_attendance_selection(
     )
     penny_chat_id_dict = json.dumps({penny_chat_constants.PENNY_CHAT_ID: penny_chat.id})
 
-    Participant.objects.create(penny_chat=penny_chat, user=organizer, role=Participant.ORGANIZER)
-    Participant.objects.create(penny_chat=penny_chat, user=some_other_attendee, role=Participant.ATTENDEE)
+    ParticipantInvitation.objects.create(penny_chat=penny_chat, user=organizer, role=Participant.ORGANIZER)
+    ParticipantInvitation.objects.create(penny_chat=penny_chat, user=some_other_attendee, role=Participant.ATTENDEE)
     if starting_role not in [None, Participant.ORGANIZER]:
-        Participant.objects.create(penny_chat=penny_chat, user=user, role=starting_role)
+        ParticipantInvitation.objects.create(penny_chat=penny_chat, user=user, role=starting_role)
 
     def user_attendance_event(user, can_attend):
         if can_attend:
@@ -284,6 +285,9 @@ def test_PennyChatBotModule_attendance_selection(
     event = user_attendance_event(user, can_attend)
 
     slack_client = mocker.Mock()
+    mockData = mocker.Mock()
+    mockData.data = {'scheduled_message_id': 'SOME_SCHEDULED_MESSAGE_ID'}
+    slack_client.chat_scheduleMessage.return_value = mockData
 
     # The Actual Tests
     with mock_get_or_create_user_profile_from_slack_ids([organizer, user, some_other_attendee], mocker):
@@ -292,13 +296,13 @@ def test_PennyChatBotModule_attendance_selection(
     # Evaluation
     actual_final_role = None
     try:
-        actual_final_role = Participant.objects.get(penny_chat=penny_chat, user=user).role
-    except Participant.DoesNotExist:
+        actual_final_role = ParticipantInvitation.objects.get(penny_chat=penny_chat, user=user).role
+    except ParticipantInvitation.DoesNotExist:
         # presumably we weren't supposed to make a participant. this will be tested below
         pass
 
     assert expected_final_role == actual_final_role, \
-        f"expected and final roles do not match (roles: {Participant.ROLE_CHOICES})"
+        f"expected and final roles do not match (roles: {ParticipantInvitation.ROLE_CHOICES})"
 
     if expected_organizer_notified:
         # organizer notification
@@ -323,4 +327,6 @@ def test_PennyChatBotModule_attendance_selection(
         slack_client.chat_postMessage.assert_not_called()
 
     # Make sure the other attendee wasn't affected
-    assert Participant.objects.get(penny_chat=penny_chat, user=some_other_attendee).role == Participant.ATTENDEE
+    assert ParticipantInvitation.objects.get(
+        penny_chat=penny_chat, user=some_other_attendee
+    ).role == Participant.ATTENDEE
