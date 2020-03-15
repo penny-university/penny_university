@@ -10,6 +10,7 @@ from pennychat.models import (
     PennyChat,
     PennyChatInvitation,
     Participant,
+    ParticipantInvitation,
 )
 from bot.processors.base import BotModule
 from bot.processors.filters import (
@@ -36,6 +37,8 @@ PENNY_CHAT_CAN_ATTEND = 'penny_chat_can_attend'
 PENNY_CHAT_CAN_NOT_ATTEND = 'penny_chat_can_not_attend'
 
 PENNY_CHAT_ID = 'penny_chat_id'
+
+ONE_HOUR = 3600  # one hour is 3600 seconds! it's true!
 
 
 def datetime_range(start, end, delta):
@@ -589,11 +592,21 @@ class PennyChatBotModule(BotModule):
 
             created = deleted = False
             if participant_role:
-                participant, created = Participant.objects.update_or_create(
+                participant_invitation, created = ParticipantInvitation.objects.update_or_create(
                     user=user,
                     penny_chat=penny_chat,
                     defaults={'role': participant_role}
                 )
+                if created:
+                    resp = self.slack_client.chat_scheduleMessage(
+                        channel=user,
+                        text=pre_penny_chat_reminder,
+                        # TODO! test that the time is actually correct
+                        # NOTE the `penny_chat.date.timestamp` unix timestamp is in UTC and the post_at is also in UTC
+                        post_at=int(penny_chat.date.timestamp() - ONE_HOUR),
+                    )
+                    participant_invitation.scheduled_message_id = resp.data['scheduled_message_id']
+                    participant_invitation.save()  # TODO! test
             else:
                 num_deleted, _ = Participant.objects.filter(user=user, penny_chat=penny_chat).delete()
                 if num_deleted > 0:
@@ -606,12 +619,6 @@ class PennyChatBotModule(BotModule):
                     channel=event['channel']['id'],
                     user=user.slack_id,
                     text=we_will_notify_organizer,
-                )
-            if created:
-                self.slack_client.chat_scheduleMessage(
-                    channel=user,
-                    text=pre_penny_chat_reminder,
-                    post_at=124,
                 )
         except RuntimeError:
             chat_postEphemeral_with_fallback(

@@ -82,7 +82,6 @@ class Participant(models.Model):
 
 
 class ParticipantInvitation(Participant):
-    scheduled_message_id = models.TextField()
     participant = models.OneToOneField(
         auto_created=True,
         on_delete=models.deletion.CASCADE,
@@ -92,6 +91,7 @@ class ParticipantInvitation(Participant):
         to='pennychat.Participant',
         related_name='invitation',
     )
+    scheduled_message_id = models.TextField()  # TODO! change to CharField(16)
 
     def __repr__(self):
         return pprint_obj(self)
