@@ -15,7 +15,6 @@ class UserProfile(models.Model):
     slack_team_id = models.CharField(max_length=20)
     display_name = models.CharField(max_length=100)
     real_name = models.CharField(max_length=100)
-    time_zone = models.CharField(max_length=40, null=True)  # TODO - should this be on the User model?
 
     # pennyu-related
     topics_to_learn = models.CharField(max_length=1500)
