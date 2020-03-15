@@ -7,7 +7,7 @@ class Command(ShellCommand):
         from IPython import start_ipython
 
         script_to_run_on_startup = """
-        from pennychat.models import PennyChat, PennyChatInvitation, FollowUp, Participant
+        from pennychat.models import PennyChat, PennyChatInvitation, FollowUp, Participant, ParticipantInvitation
 
         from users.models import UserProfile
 

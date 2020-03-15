@@ -79,3 +79,19 @@ class Participant(models.Model):
 
     def __repr__(self):
         return pprint_obj(self)
+
+
+class ParticipantInvitation(Participant):
+    scheduled_message_id = models.TextField()
+    participant = models.OneToOneField(
+        auto_created=True,
+        on_delete=models.deletion.CASCADE,
+        parent_link=True,
+        primary_key=True,
+        serialize=False,
+        to='pennychat.Participant',
+        related_name='invitation',
+    )
+
+    def __repr__(self):
+        return pprint_obj(self)

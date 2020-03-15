@@ -15,6 +15,7 @@ class UserProfile(models.Model):
     slack_team_id = models.CharField(max_length=20)
     display_name = models.CharField(max_length=100)
     real_name = models.CharField(max_length=100)
+    time_zone = models.CharField(max_length=40, null=True)  # TODO - should this be on the User model?
 
     # pennyu-related
     topics_to_learn = models.CharField(max_length=1500)
@@ -114,6 +115,7 @@ def get_or_create_user_profile_from_slack_ids(slack_user_ids, slack_client=None,
             # updated information
             # TODO add request-level or time-based caching since it's unlikely that slack has been updated
             #  within the time of the request
+            # TODO or maybe see if we have the user's data already saved and DON'T go to slack if we already have it.
             slack_user = slack_client.users_info(user=slack_user_id).data['user']
         except SlackApiError as e:
             if ignore_user_not_found and "'error': 'user_not_found'" in str(e):

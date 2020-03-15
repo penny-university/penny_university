@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from datetime import datetime
 import json
 import time
@@ -16,6 +17,21 @@ from pennychat.models import (
 from users.models import UserProfile
 
 TZ = timezone('America/Chicago')
+
+
+@contextmanager
+def mock_get_or_create_user_profile_from_slack_ids(users, mocker):
+
+    def ids_mock(slack_user_ids, slack_client):
+        lookup = {user.slack_id: user for user in users}
+        return {user_id: lookup[user_id] for user_id in slack_user_ids}
+
+    def id_mock(slack_user_id, slack_client):
+        return ids_mock([slack_user_id], slack_client).get(slack_user_id)
+
+    with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock), \
+            mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', side_effect=id_mock):
+        yield
 
 
 def create_penny_chat():
@@ -108,16 +124,6 @@ def test_PennyChatBotModule_share(mocker):
         description='fake description',
     )
 
-    def ids_mock(user_ids, slack_client):
-        lookup = {
-            organizer.slack_id: organizer,
-            user_invitee_1.slack_id: user_invitee_1,
-        }
-        return {user_id: lookup[user_id] for user_id in user_ids}
-
-    def id_mock(user_id, slack_client):
-        return ids_mock([user_id], slack_client).get(user_id)
-
     event = {
         'user': {
             'id': organizer.slack_id
@@ -148,8 +154,7 @@ def test_PennyChatBotModule_share(mocker):
     slack_client = mocker.Mock()
     slack_client.chat_postMessage().data = {'channel': 'share_chan', 'ts': 'share_ts'}
 
-    with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock), \
-            mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
+    with mock_get_or_create_user_profile_from_slack_ids([organizer, user_invitee_1, user_invitee_2], mocker), \
             mocker.patch('bot.processors.pennychat.requests'):
 
         # The Actual Test
@@ -281,7 +286,7 @@ def test_PennyChatBotModule_attendance_selection(
     slack_client = mocker.Mock()
 
     # The Actual Tests
-    with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', return_value=user):
+    with mock_get_or_create_user_profile_from_slack_ids([organizer, user, some_other_attendee], mocker):
         PennyChatBotModule(slack_client).attendance_selection(event)
 
     # Evaluation

@@ -549,13 +549,9 @@ class PennyChatBotModule(BotModule):
         event is handled here.
 
         There are two side effects of this method:
-         1. A Participant entry for the penny_chat and the user will be created or updated with the appropriate role.
-         2. The organizer will be notified of "important" changes.
+         1. A Participant entry for the penny_chat and the user will be created or deleted depending upon the selection.
+         2. The organizer will be notified.
          3. The user will be told that the organizer will be notified.
-
-         The specifics are rather complicated, but you can see how they work in
-         bot.tests.processors.test_pennychat.test_PennyChatBotModule_attendance_selection
-
         """
         participant_role = Participant.ATTENDEE
         if event['actions'][0]['action_id'] == PENNY_CHAT_CAN_NOT_ATTEND:
@@ -563,7 +559,7 @@ class PennyChatBotModule(BotModule):
 
         try:
             user = get_or_create_user_profile_from_slack_id(
-                event['user']['id'],
+                slack_user_id=event['user']['id'],
                 slack_client=self.slack_client,
             )
             action_value = json.loads(event['actions'][0]['value'])
@@ -583,30 +579,39 @@ class PennyChatBotModule(BotModule):
             timestamp = int(penny_chat.date.astimezone(utc).timestamp())
             date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
             _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
-            notification = f'<@{user.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
+            organizer_notification = \
+                f'<@{user.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
+
             we_will_notify_organizer = 'Thank you. We will notify the organizer.'
 
-            changed = False
+            # TODO! replace with blocks
+            pre_penny_chat_reminder = f'Just a reminder, "{penny_chat.title}" is coming up in one hour.'
+
+            created = deleted = False
             if participant_role:
                 participant, created = Participant.objects.update_or_create(
                     user=user,
                     penny_chat=penny_chat,
                     defaults={'role': participant_role}
                 )
-                if created:
-                    changed = True
             else:
                 num_deleted, _ = Participant.objects.filter(user=user, penny_chat=penny_chat).delete()
                 if num_deleted > 0:
-                    changed = True
+                    deleted = True
 
-            if changed:
-                self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
+            if created or deleted:
+                self.slack_client.chat_postMessage(channel=organizer.slack_id, text=organizer_notification)
                 chat_postEphemeral_with_fallback(
                     self.slack_client,
                     channel=event['channel']['id'],
                     user=user.slack_id,
                     text=we_will_notify_organizer,
+                )
+            if created:
+                self.slack_client.chat_scheduleMessage(
+                    channel=user,
+                    text=pre_penny_chat_reminder,
+                    post_at=124,
                 )
         except RuntimeError:
             chat_postEphemeral_with_fallback(
