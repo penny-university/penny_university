@@ -448,6 +448,8 @@ class PennyChatBotModule(BotModule):
         state = view['state']['values']
 
         if event['type'] == VIEW_CLOSED:
+            # organizer closed the form w/o saving - make sure to send them another organizer_edit_after_share_template
+            # so that they can still edit their event
             self.slack_client.chat_postMessage(
                 channel=penny_chat_invitation.organizer_slack_id,
                 blocks=organizer_edit_after_share_template(self.slack_client, penny_chat_invitation),
@@ -497,6 +499,9 @@ class PennyChatBotModule(BotModule):
                 # we're attempting to use the API in hopes that they eventually fix it.
                 pass
 
+        # There's a little bug here, this only sends the update to the invited people but not the people that RSVP'ed
+        # Unfortunately we can't send to all of these people because it will take too long to send all those requests
+        # TODO figure out how to do async requests asynchronously!
         invitation_blocks = shared_message_template(penny_chat, organizer.real_name, include_rsvp=True)
         shares = {}
         for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
