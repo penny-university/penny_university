@@ -1,6 +1,5 @@
 from rest_framework import viewsets, mixins, generics
-from rest_framework.decorators import permission_classes
-from rest_framework.exceptions import NotAuthenticated
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
@@ -19,8 +18,19 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     serializer_class = PennyChatSerializer
 
     def perform_create(self, serializer):
-        # TODO add participants and make request user's UserProfile as the Organizer
-        serializer.save()
+        if not self.request.auth:
+            raise NotAuthenticated()
+        chat = serializer.save()
+        profile = UserProfile.objects.get(user=self.request.user)
+        participant = Participant.objects.create(user=profile, penny_chat=chat)
+        participant.save()
+
+    def perform_update(self, serializer):
+        if not self.request.auth:
+            raise NotAuthenticated()
+        if self.get_object().get_organizer().user.user is not self.request.user:
+            raise PermissionDenied
+        super().perform_update(serializer)
 
 
 class ListCreateFollowUps(generics.GenericAPIView):
@@ -57,12 +67,19 @@ class UpdateDeleteFollowUp(mixins.UpdateModelMixin, mixins.DestroyModelMixin, ge
     """
     queryset = FollowUp.objects.all()
     serializer_class = FollowUpSerializer
+    permission_classes = [IsAuthenticated]
 
     def put(self, request, *args, **kwargs):
+        if self.get_object().user.user != request.user:
+            raise PermissionDenied
         return self.update(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
+        if self.get_object().user.user != request.user:
+            raise PermissionDenied
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
+        if self.get_object().user.user != request.user:
+            raise PermissionDenied
         return self.destroy(request, *args, **kwargs)

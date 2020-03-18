@@ -29,6 +29,9 @@ class PennyChat(models.Model):
     def __repr__(self):
         return pprint_obj(self)
 
+    def get_organizer(self):
+        return self.participants.get(role=Participant.ORGANIZER)
+
 
 class PennyChatInvitation(PennyChat):
     penny_chat = models.OneToOneField(
