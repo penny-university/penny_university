@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
     'pennychat.apps.PennychatConfig',
     'users.apps.UsersConfig',
+    'penny_university.apps.PennyUniversityConfig',
 ]
 
 MIDDLEWARE = [
