@@ -40,12 +40,12 @@ INSTALLED_APPS = [
     'background_task',
     'corsheaders',
     'rest_framework',
-    'bot.apps.BotConfig',
-    'api.apps.ApiConfig',
-    'home.apps.HomeConfig',
-    'pennychat.apps.PennychatConfig',
-    'users.apps.UsersConfig',
-    'penny_university.apps.PennyUniversityConfig',
+    'bot',
+    'api',
+    'home',
+    'pennychat',
+    'users',
+    'penny_university',
 ]
 
 MIDDLEWARE = [

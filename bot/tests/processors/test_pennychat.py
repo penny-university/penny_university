@@ -148,7 +148,7 @@ def test_PennyChatBotModule_share(mocker):
     slack_client = mocker.Mock()
     slack_client.chat_postMessage().data = {'channel': 'share_chan', 'ts': 'share_ts'}
 
-    with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock), \
+    with mocker.patch('bot.tasks.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock), \
             mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
             mocker.patch('bot.processors.pennychat.requests'):
 
