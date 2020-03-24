@@ -54,12 +54,9 @@ def post_organizer_edit_after_share_template(penny_chat_view_id):
 
 @background
 def share_penny_chat_invitation(penny_chat_id):
-    # TODO! teset
+    # TODO! test
     penny_chat_invitation = PennyChatInvitation.objects.get(id=penny_chat_id)
-    organizer = UserProfile.objects.get(  # TODO! turn this into penny_chat.organizer @property
-        user_chats__penny_chat=penny_chat_invitation,
-        user_chats__role=Participant.ORGANIZER,
-    )
+    organizer = penny_chat_invitation.get_organizer()
     slack_client = _get_slack_client()
 
     # unshare the old shares

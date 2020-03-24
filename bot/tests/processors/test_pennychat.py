@@ -108,14 +108,14 @@ def test_PennyChatBotModule_share(mocker):
         description='fake description',
     )
 
-    def ids_mock(user_ids, slack_client):
+    def ids_mock(user_ids, slack_client=None):
         lookup = {
             organizer.slack_id: organizer,
             user_invitee_1.slack_id: user_invitee_1,
         }
         return {user_id: lookup[user_id] for user_id in user_ids}
 
-    def id_mock(user_id, slack_client):
+    def id_mock(user_id, slack_client=None):
         return ids_mock([user_id], slack_client).get(user_id)
 
     event = {
@@ -145,20 +145,16 @@ def test_PennyChatBotModule_share(mocker):
         'callback_id': penny_chat_constants.PENNY_CHAT_DETAILS,
     }
 
-    slack_client = mocker.Mock()
-    slack_client.chat_postMessage().data = {'channel': 'share_chan', 'ts': 'share_ts'}
-
     share_penny_chat_invitation = mocker.patch('bot.processors.pennychat.share_penny_chat_invitation')
     post_organizer_edit_after_share_template = mocker.patch(
         'bot.processors.pennychat.post_organizer_edit_after_share_template'
     )
 
     # The Actual Test
-    with mocker.patch('bot.tasks.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock), \
-            mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
-            mocker.patch('bot.processors.pennychat.requests'), share_penny_chat_invitation, \
+    # TODO! remove get_or_create_user_profile_from_slack_ids mocks everywhere
+    with mocker.patch('pennychat.models.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
             post_organizer_edit_after_share_template:
-        PennyChatBotModule(slack_client).submit_details_and_share(event)
+        PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_args == call(penny_chat_invitation.id)
     assert post_organizer_edit_after_share_template.now.call_args == call(view_id)
@@ -170,14 +166,7 @@ def test_PennyChatBotModule_share(mocker):
     assert penny_chat.description == 'new_description'
     assert penny_chat.date == penny_chat_invitation.date
     assert penny_chat.status == PennyChat.SHARED
-
-    # TODO! stick onto the penny_chat as a helper method
-    organizer_participant = Participant.objects.get(
-        penny_chat=penny_chat,
-        user=organizer,
-    )
-    assert organizer_participant.role == Participant.ORGANIZER
-
+    assert penny_chat_invitation.get_organizer() == organizer
     assert penny_chat_invitation.status == PennyChatInvitation.SHARED
 
 

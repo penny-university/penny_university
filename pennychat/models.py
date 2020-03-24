@@ -2,7 +2,10 @@ from django.db import models
 from django.utils import timezone
 
 from common.utils import pprint_obj
-from users.models import UserProfile
+from users.models import (
+    UserProfile,
+    get_or_create_user_profile_from_slack_id,
+)
 
 
 class PennyChat(models.Model):
@@ -28,6 +31,25 @@ class PennyChat(models.Model):
 
     def __repr__(self):
         return pprint_obj(self)
+
+    def save_organizer_from_slack_id(self, slack_user_id):
+        organizer = get_or_create_user_profile_from_slack_id(slack_user_id)
+        self.save_organizer(organizer)
+
+    def save_organizer(self, organizer):
+        if organizer:
+            Participant.objects.update_or_create(
+                penny_chat=self,
+                user=organizer,
+                defaults=dict(role=Participant.ORGANIZER),
+            )
+
+    def get_organizer(self):
+        organizer = UserProfile.objects.get(
+            user_chats__penny_chat=self,
+            user_chats__role=Participant.ORGANIZER,
+        )
+        return organizer
 
 
 class PennyChatInvitation(PennyChat):

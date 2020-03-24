@@ -112,8 +112,7 @@ def get_or_create_user_profile_from_slack_ids(slack_user_ids, slack_client=None,
         try:
             # call slack every time rather than just seeing if the user is in the database just in case slack contains
             # updated information
-            # TODO add request-level or time-based caching since it's unlikely that slack has been updated
-            #  within the time of the request
+            # TODO get the user out of the db and only check slack if the update_at is older than some cutoff
             slack_user = slack_client.users_info(user=slack_user_id).data['user']
         except SlackApiError as e:
             if ignore_user_not_found and "'error': 'user_not_found'" in str(e):

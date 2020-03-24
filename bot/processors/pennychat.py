@@ -290,7 +290,6 @@ class PennyChatBotModule(BotModule):
     @has_event_type([VIEW_SUBMISSION, VIEW_CLOSED])
     @has_callback_id(PENNY_CHAT_DETAILS)
     def submit_details_and_share(self, event):
-        # TODO! remove organizer from invitee list
         view = event['view']
         # TODO! hide penny chat id in the value and get rid of fetch by view
         penny_chat_invitation = PennyChatInvitation.objects.get(view=view['id'])
@@ -313,20 +312,7 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.status = PennyChatInvitation.SHARED
         penny_chat_invitation.save()
 
-        penny_chat = penny_chat_invitation.penny_chat
-
-        # Create Participant entry for Organizer
-        # TODO! attach this to the penny_chat
-        organizer = get_or_create_user_profile_from_slack_id(
-            penny_chat_invitation.organizer_slack_id,
-            slack_client=self.slack_client,
-        )
-        if organizer:
-            Participant.objects.update_or_create(
-                penny_chat=penny_chat,
-                user=organizer,
-                defaults=dict(role=Participant.ORGANIZER),
-            )
+        penny_chat_invitation.save_organizer_from_slack_id(penny_chat_invitation.organizer_slack_id)
 
         share_penny_chat_invitation(penny_chat_invitation.id)
 
@@ -389,10 +375,7 @@ class PennyChatBotModule(BotModule):
             penny_chat_id = action_value[PENNY_CHAT_ID]
             penny_chat = PennyChat.objects.get(pk=penny_chat_id)
 
-            organizer = UserProfile.objects.get(
-                user_chats__penny_chat=penny_chat,
-                user_chats__role=Participant.ORGANIZER,
-            )
+            organizer = penny_chat.get_organizer()
 
             if organizer == user:
                 # TODO notify user that it's silly to attend or not attend their own event
@@ -437,7 +420,7 @@ class PennyChatBotModule(BotModule):
             logging.exception('error in penny chat attendance selection')
 
 
-# TODO! do we still need this?
+# TODO do we still need this?
 def comma_split(comma_delimited_string):
     """normal string split for  ''.split(',') returns [''], so using this instead"""
     return [x for x in comma_delimited_string.split(',') if x]
