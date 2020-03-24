@@ -7,9 +7,14 @@ from django.conf import settings
 from pytz import utc
 from slack import WebClient
 
-from pennychat.models import PennyChatInvitation
-from users.models import get_or_create_user_profile_from_slack_ids
-
+from pennychat.models import (
+    PennyChatInvitation,
+    Participant,
+)
+from users.models import (
+    get_or_create_user_profile_from_slack_ids,
+    UserProfile,
+)
 
 VIEW_SUBMISSION = 'view_submission'
 VIEW_CLOSED = 'view_closed'
@@ -36,7 +41,6 @@ def _get_slack_client():
 
 @background
 def post_organizer_edit_after_share_template(penny_chat_view_id):
-    print("proof that it worked!")
     # TODO! replace penny_chat_view_id with penny_chat_invitation_id
     slack_client = _get_slack_client()
 
@@ -45,6 +49,40 @@ def post_organizer_edit_after_share_template(penny_chat_view_id):
         channel=penny_chat_invitation.organizer_slack_id,
         blocks=organizer_edit_after_share_template(slack_client, penny_chat_invitation),
     )
+
+
+@background
+def share_penny_chat_invitation(penny_chat_id):
+    penny_chat_invitation = PennyChatInvitation.objects.get(id=penny_chat_id)
+    organizer = UserProfile.objects.get(  # TODO! turn this into penny_chat.organizer @property
+        user_chats__penny_chat=penny_chat_invitation,
+        user_chats__role=Participant.ORGANIZER,
+    )
+    slack_client = _get_slack_client()
+
+    # unshare the old shares
+    old_shares = json.loads(penny_chat_invitation.shares or '{}')
+    for channel, ts in old_shares.items():
+        if channel[0] != 'C':
+            # skip users etc. because yu can't chat_delete messages posted to private channels
+            # TODO investigate something better to do here
+            # https://github.com/penny-university/penny_university/issues/140 might resolve this
+            continue
+        try:
+            slack_client.chat_delete(channel=channel, ts=ts)
+        except:  # noqa
+            # can't do anything about it anyway... might as well continue
+            pass
+    invitation_blocks = shared_message_template(penny_chat_invitation, organizer.real_name, include_rsvp=True)
+    shares = {}
+    for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
+        resp = slack_client.chat_postMessage(
+            channel=share_to,
+            blocks=invitation_blocks,
+        )
+        shares[resp.data['channel']] = resp.data['ts']
+    penny_chat_invitation.shares = json.dumps(shares)
+    penny_chat_invitation.save()
 
 
 def datetime_template(penny_chat):

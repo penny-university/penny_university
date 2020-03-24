@@ -4,7 +4,10 @@ import logging
 from pytz import timezone, utc
 import requests
 
-from bot.tasks import post_organizer_edit_after_share_template, shared_message_template
+from bot.tasks import (
+    post_organizer_edit_after_share_template,
+    share_penny_chat_invitation,
+)
 from bot.utils import chat_postEphemeral_with_fallback
 from pennychat.models import (
     PennyChat,
@@ -293,11 +296,6 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation = PennyChatInvitation.objects.get(view=view['id'])
         state = view['state']['values']
 
-        if event['type'] == VIEW_CLOSED:
-            # TODO make NOW
-            post_organizer_edit_after_share_template(view['id'])
-            return
-
         if len(penny_chat_invitation.invitees.strip()) == 0 and len(penny_chat_invitation.channels.strip()) == 0:
             return {
                 'response_action': 'errors',
@@ -307,14 +305,18 @@ class PennyChatBotModule(BotModule):
                 }
             }
 
+        post_organizer_edit_after_share_template.now(view['id'])
+
         # Ready to share
         penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
         penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
         penny_chat_invitation.status = PennyChatInvitation.SHARED
+        penny_chat_invitation.save()
 
         penny_chat = penny_chat_invitation.penny_chat
 
         # Create Participant entry for Organizer
+        # TODO! attach this to the penny_chat
         organizer = get_or_create_user_profile_from_slack_id(
             penny_chat_invitation.organizer_slack_id,
             slack_client=self.slack_client,
@@ -326,35 +328,8 @@ class PennyChatBotModule(BotModule):
                 defaults=dict(role=Participant.ORGANIZER),
             )
 
-        # Share with all channels and attendees
-        old_shares = json.loads(penny_chat_invitation.shares or '{}')
-        for channel, ts in old_shares.items():
-            if channel[0] != 'C':
-                # skip users etc. because yu can't chat_delete messages posted to private channels
-                # TODO investigate something better to do here
-                continue
-            try:
-                self.slack_client.chat_delete(channel=channel, ts=ts)
-            except:  # noqa
-                # slack's chat.postMessage endpoint (below) takes a channel argument which can actually
-                # be a user. Unfortunately chat.delete is inconsistent; the channel arg MUST be a channel
-                # we're attempting to use the API in hopes that they eventually fix it.
-                pass
+        share_penny_chat_invitation(penny_chat_invitation.id)
 
-        invitation_blocks = shared_message_template(penny_chat, organizer.real_name, include_rsvp=True)
-        shares = {}
-        for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
-            resp = self.slack_client.chat_postMessage(
-                channel=share_to,
-                blocks=invitation_blocks,
-            )
-            shares[resp.data['channel']] = resp.data['ts']
-
-        penny_chat_invitation.shares = json.dumps(shares)
-        penny_chat_invitation.save()
-
-        # TODO make NOW
-        post_organizer_edit_after_share_template(view['id'])
         return
 
     @is_block_interaction_event
