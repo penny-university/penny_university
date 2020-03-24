@@ -2,7 +2,6 @@ from datetime import datetime
 import json
 import time
 
-
 import pytest
 from pytz import timezone, utc
 
@@ -13,6 +12,7 @@ from pennychat.models import (
     Participant,
     PennyChat,
 )
+from unittest.mock import call
 from users.models import UserProfile
 
 TZ = timezone('America/Chicago')
@@ -148,16 +148,20 @@ def test_PennyChatBotModule_share(mocker):
     slack_client = mocker.Mock()
     slack_client.chat_postMessage().data = {'channel': 'share_chan', 'ts': 'share_ts'}
 
+    share_penny_chat_invitation = mocker.patch('bot.processors.pennychat.share_penny_chat_invitation')
+    post_organizer_edit_after_share_template = mocker.patch(
+        'bot.processors.pennychat.post_organizer_edit_after_share_template'
+    )
+
+    # The Actual Test
     with mocker.patch('bot.tasks.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock), \
             mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
-            mocker.patch('bot.processors.pennychat.requests'):
-
-        # The Actual Test
+            mocker.patch('bot.processors.pennychat.requests'), share_penny_chat_invitation, \
+            post_organizer_edit_after_share_template:
         PennyChatBotModule(slack_client).submit_details_and_share(event)
 
-    message_to_slack = str(slack_client.chat_postMessage.call_args[1]['blocks'])
-    assert "new_title" in message_to_slack
-    assert "new_description" in message_to_slack
+    assert share_penny_chat_invitation.call_args == call(penny_chat_invitation.id)
+    assert post_organizer_edit_after_share_template.now.call_args == call(view_id)
 
     penny_chat_invitation.refresh_from_db()
     penny_chat = penny_chat_invitation.penny_chat
@@ -166,8 +170,8 @@ def test_PennyChatBotModule_share(mocker):
     assert penny_chat.description == 'new_description'
     assert penny_chat.date == penny_chat_invitation.date
     assert penny_chat.status == PennyChat.SHARED
-    assert penny_chat_invitation.shares == '{"share_chan": "share_ts"}'
 
+    # TODO! stick onto the penny_chat as a helper method
     organizer_participant = Participant.objects.get(
         penny_chat=penny_chat,
         user=organizer,
