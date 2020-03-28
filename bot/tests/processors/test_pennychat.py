@@ -115,7 +115,7 @@ def test_PennyChatBotModule_share(mocker):
         }
         return {user_id: lookup[user_id] for user_id in user_ids}
 
-    def id_mock(user_id, slack_client=None):
+    def id_mock(user_id, slack_client=None, ignore_user_not_found=True):
         return ids_mock([user_id], slack_client).get(user_id)
 
     event = {

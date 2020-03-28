@@ -7,14 +7,8 @@ from django.conf import settings
 from pytz import utc
 from slack import WebClient
 
-from pennychat.models import (
-    PennyChatInvitation,
-    Participant,
-)
-from users.models import (
-    get_or_create_user_profile_from_slack_ids,
-    UserProfile,
-)
+from pennychat.models import PennyChatInvitation
+from users.models import get_or_create_user_profile_from_slack_ids
 
 VIEW_SUBMISSION = 'view_submission'
 VIEW_CLOSED = 'view_closed'
@@ -54,6 +48,7 @@ def post_organizer_edit_after_share_template(penny_chat_view_id):
 
 @background
 def share_penny_chat_invitation(penny_chat_id):
+    """Shares penny chat invitations with people and channels in the invitee list"""
     # TODO! test
     penny_chat_invitation = PennyChatInvitation.objects.get(id=penny_chat_id)
     organizer = penny_chat_invitation.get_organizer()
@@ -62,11 +57,8 @@ def share_penny_chat_invitation(penny_chat_id):
     # unshare the old shares
     old_shares = json.loads(penny_chat_invitation.shares or '{}')
     for channel, ts in old_shares.items():
-        if channel[0] != 'C':
-            # skip users etc. because yu can't chat_delete messages posted to private channels
-            # TODO investigate something better to do here
-            # https://github.com/penny-university/penny_university/issues/140 might resolve this
-            continue
+        # TODO https://github.com/penny-university/penny_university/issues/140 might
+        # until this is resolved we will not be able to remove shared messages in private channels
         try:
             slack_client.chat_delete(channel=channel, ts=ts)
         except:  # noqa

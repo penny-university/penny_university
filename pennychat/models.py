@@ -33,16 +33,15 @@ class PennyChat(models.Model):
         return pprint_obj(self)
 
     def save_organizer_from_slack_id(self, slack_user_id):
-        organizer = get_or_create_user_profile_from_slack_id(slack_user_id)
+        organizer = get_or_create_user_profile_from_slack_id(slack_user_id, ignore_user_not_found=False)
         self.save_organizer(organizer)
 
     def save_organizer(self, organizer):
-        if organizer:
-            Participant.objects.update_or_create(
-                penny_chat=self,
-                user=organizer,
-                defaults=dict(role=Participant.ORGANIZER),
-            )
+        Participant.objects.update_or_create(
+            penny_chat=self,
+            user=organizer,
+            defaults=dict(role=Participant.ORGANIZER),
+        )
 
     def get_organizer(self):
         organizer = UserProfile.objects.get(
