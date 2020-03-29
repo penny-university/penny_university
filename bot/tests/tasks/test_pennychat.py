@@ -4,10 +4,11 @@ from unittest.mock import call
 
 from django.utils import timezone
 import pytest
+from pytz import utc
 
 from bot.tasks import share_penny_chat_invitation, post_organizer_edit_after_share_template, \
-    organizer_edit_after_share_template
-from pennychat.models import PennyChatInvitation
+    organizer_edit_after_share_template, shared_message_template
+from pennychat.models import PennyChatInvitation, PennyChat
 from users.models import UserProfile
 
 
@@ -135,13 +136,12 @@ def test_post_organizer_edit_after_share_template(mocker):
     assert slack_client.chat_postMessage.call_args == call(blocks='some_block', channel='some_organizer_slack_id')
 
 
-@pytest.mark.django_db
 def test_organizer_edit_after_share_template(mocker):
-    user_1 = UserProfile.objects.create(slack_id='user_1', real_name='user_1')
-    user_2 = UserProfile.objects.create(slack_id='user_2', real_name='user_2')
-    organizer = UserProfile.objects.create(slack_id='organizer', real_name='Orlando')
+    user_1 = UserProfile(slack_id='user_1', real_name='user_1')
+    user_2 = UserProfile(slack_id='user_2', real_name='user_2')
+    organizer = UserProfile(slack_id='organizer', real_name='Orlando')
 
-    penny_chat = PennyChatInvitation.objects.create(
+    penny_chat = PennyChatInvitation(
         title='Chat 1',
         invitees='user_1,user_2',
         organizer_slack_id='organizer',
@@ -159,3 +159,27 @@ def test_organizer_edit_after_share_template(mocker):
 
     assert 'some_blocks' in template
     assert 'You just shared this invitation with:* user_1, user_2, <#Chan1>, and <#Chan2>.' in template
+
+
+def test_shared_message_template(mocker):
+    penny_chat = PennyChat(
+        id=1,
+        title='Chat 1',
+        description='some_description',
+        date=datetime(1979, 10, 12, 1, 1, 1, tzinfo=utc),
+    )
+    user_name = 'John Berryman'
+
+    template = str(shared_message_template(penny_chat, user_name, include_rsvp=True))
+    assert '*John Berryman* invited you to a new Penny Chat' in template
+    assert '*Title*\\nChat 1' in template
+    assert '*Description*\\nsome_description' in template
+    assert 'Count me in' in template, 'should be there when include_rsvp is true'
+    assert 'I can\'t make it' in template, 'should be there when include_rsvp is True'
+
+    template = str(shared_message_template(penny_chat, user_name, include_rsvp=False))
+    assert '*John Berryman* invited you to a new Penny Chat' in template
+    assert '*Title*\\nChat 1' in template
+    assert '*Description*\\nsome_description' in template
+    assert 'Count me in' not in template, 'should not be there when include_rsvp is False'
+    assert 'I can\'t make it' not in template, 'should not be there when include_rsvp is False'
