@@ -12,7 +12,6 @@ from bot.processors.pennychat import (
 from bot.tasks import organizer_edit_after_share_template, shared_message_template
 from pennychat.models import PennyChatInvitation
 from users.models import get_or_create_user_profile_from_slack_id
-# TODO! make ticket for getting this working again
 
 
 class Command(BaseCommand):

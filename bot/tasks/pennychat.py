@@ -49,7 +49,6 @@ def post_organizer_edit_after_share_template(penny_chat_view_id):
 @background
 def share_penny_chat_invitation(penny_chat_id):
     """Shares penny chat invitations with people and channels in the invitee list"""
-    # TODO! test
     penny_chat_invitation = PennyChatInvitation.objects.get(id=penny_chat_id)
     organizer = penny_chat_invitation.get_organizer()
     slack_client = _get_slack_client()

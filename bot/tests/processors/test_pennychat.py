@@ -108,15 +108,12 @@ def test_PennyChatBotModule_share(mocker):
         description='fake description',
     )
 
-    def ids_mock(user_ids, slack_client=None):
+    def id_mock(user_id, slack_client=None, ignore_user_not_found=True):
         lookup = {
             organizer.slack_id: organizer,
             user_invitee_1.slack_id: user_invitee_1,
         }
-        return {user_id: lookup[user_id] for user_id in user_ids}
-
-    def id_mock(user_id, slack_client=None, ignore_user_not_found=True):
-        return ids_mock([user_id], slack_client).get(user_id)
+        return lookup[user_id]
 
     event = {
         'user': {
@@ -151,7 +148,6 @@ def test_PennyChatBotModule_share(mocker):
     )
 
     # The Actual Test
-    # TODO! remove get_or_create_user_profile_from_slack_ids mocks everywhere
     with mocker.patch('pennychat.models.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
             post_organizer_edit_after_share_template:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
