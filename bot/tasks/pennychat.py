@@ -35,8 +35,6 @@ def _get_slack_client():
 
 @background
 def post_organizer_edit_after_share_template(penny_chat_view_id):
-    # TODO! test
-    # TODO! replace penny_chat_view_id with penny_chat_invitation_id
     slack_client = _get_slack_client()
 
     penny_chat_invitation = PennyChatInvitation.objects.get(view=penny_chat_view_id)
@@ -166,6 +164,7 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
 
 
 def organizer_edit_after_share_template(slack_client, penny_chat_invitation):
+    # TODO! test
     shares = []
     users = get_or_create_user_profile_from_slack_ids(
         comma_split(penny_chat_invitation.invitees),

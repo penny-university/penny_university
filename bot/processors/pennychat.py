@@ -291,7 +291,6 @@ class PennyChatBotModule(BotModule):
     @has_callback_id(PENNY_CHAT_DETAILS)
     def submit_details_and_share(self, event):
         view = event['view']
-        # TODO! hide penny chat id in the value and get rid of fetch by view
         penny_chat_invitation = PennyChatInvitation.objects.get(view=view['id'])
         state = view['state']['values']
 
