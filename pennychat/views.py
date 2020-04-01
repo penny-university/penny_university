@@ -19,18 +19,25 @@ class PennyChatViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         if not self.request.auth:
-            raise NotAuthenticated()
+            raise NotAuthenticated
         chat = serializer.save()
         profile = UserProfile.objects.get(user=self.request.user)
-        participant = Participant.objects.create(user=profile, penny_chat=chat)
+        participant = Participant.objects.create(user_profile=profile, penny_chat=chat, role=Participant.ORGANIZER)
         participant.save()
 
     def perform_update(self, serializer):
         if not self.request.auth:
-            raise NotAuthenticated()
-        if self.get_object().get_organizer().user.user is not self.request.user:
+            raise NotAuthenticated
+        if self.get_object().get_organizer().user_profile.user != self.request.user:
             raise PermissionDenied
         super().perform_update(serializer)
+
+    def perform_destroy(self, instance):
+        if not self.request.auth:
+            raise NotAuthenticated
+        if self.get_object().get_organizer().user_profile.user != self.request.user:
+            raise PermissionDenied
+        super().perform_destroy(instance)
 
 
 class ListCreateFollowUps(generics.GenericAPIView):
@@ -48,14 +55,14 @@ class ListCreateFollowUps(generics.GenericAPIView):
 
     def post(self, request, pk, format=None):
         if not request.auth:
-            raise NotAuthenticated()
+            raise NotAuthenticated
         follow_up_data = dict(request.data)
         penny_chat_url = reverse('pennychat-detail', args=[pk], request=request)
         follow_up_data['penny_chat'] = penny_chat_url
         serializer = FollowUpSerializer(data=follow_up_data, context={'request': request})
         if serializer.is_valid():
             profile = UserProfile.objects.get(user=request.user)
-            serializer.save(user=profile)
+            serializer.save(user_profile=profile)
             serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
@@ -70,16 +77,16 @@ class UpdateDeleteFollowUp(mixins.UpdateModelMixin, mixins.DestroyModelMixin, ge
     permission_classes = [IsAuthenticated]
 
     def put(self, request, *args, **kwargs):
-        if self.get_object().user.user != request.user:
+        if self.get_object().user_profile.user != request.user:
             raise PermissionDenied
         return self.update(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
-        if self.get_object().user.user != request.user:
+        if self.get_object().user_profile.user != request.user:
             raise PermissionDenied
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        if self.get_object().user.user != request.user:
+        if self.get_object().user_profile.user != request.user:
             raise PermissionDenied
         return self.destroy(request, *args, **kwargs)

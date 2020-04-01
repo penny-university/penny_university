@@ -475,7 +475,7 @@ class PennyChatBotModule(BotModule):
         if organizer:
             Participant.objects.update_or_create(
                 penny_chat=penny_chat,
-                user=organizer,
+                user_profile=organizer,
                 defaults=dict(role=Participant.ORGANIZER),
             )
 
@@ -589,14 +589,14 @@ class PennyChatBotModule(BotModule):
             changed = False
             if participant_role:
                 participant, created = Participant.objects.update_or_create(
-                    user=user,
+                    user_profile=user,
                     penny_chat=penny_chat,
                     defaults={'role': participant_role}
                 )
                 if created:
                     changed = True
             else:
-                num_deleted, _ = Participant.objects.filter(user=user, penny_chat=penny_chat).delete()
+                num_deleted, _ = Participant.objects.filter(user_profile=user, penny_chat=penny_chat).delete()
                 if num_deleted > 0:
                     changed = True
 

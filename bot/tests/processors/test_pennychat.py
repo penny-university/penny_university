@@ -170,7 +170,7 @@ def test_PennyChatBotModule_share(mocker):
 
     organizer_participant = Participant.objects.get(
         penny_chat=penny_chat,
-        user=organizer,
+        user_profile=organizer,
     )
     assert organizer_participant.role == Participant.ORGANIZER
 
@@ -257,10 +257,10 @@ def test_PennyChatBotModule_attendance_selection(
     )
     penny_chat_id_dict = json.dumps({penny_chat_constants.PENNY_CHAT_ID: penny_chat.id})
 
-    Participant.objects.create(penny_chat=penny_chat, user=organizer, role=Participant.ORGANIZER)
-    Participant.objects.create(penny_chat=penny_chat, user=some_other_attendee, role=Participant.ATTENDEE)
+    Participant.objects.create(penny_chat=penny_chat, user_profile=organizer, role=Participant.ORGANIZER)
+    Participant.objects.create(penny_chat=penny_chat, user_profile=some_other_attendee, role=Participant.ATTENDEE)
     if starting_role not in [None, Participant.ORGANIZER]:
-        Participant.objects.create(penny_chat=penny_chat, user=user, role=starting_role)
+        Participant.objects.create(penny_chat=penny_chat, user_profile=user, role=starting_role)
 
     def user_attendance_event(user, can_attend):
         if can_attend:
@@ -287,7 +287,7 @@ def test_PennyChatBotModule_attendance_selection(
     # Evaluation
     actual_final_role = None
     try:
-        actual_final_role = Participant.objects.get(penny_chat=penny_chat, user=user).role
+        actual_final_role = Participant.objects.get(penny_chat=penny_chat, user_profile=user).role
     except Participant.DoesNotExist:
         # presumably we weren't supposed to make a participant. this will be tested below
         pass
@@ -318,4 +318,4 @@ def test_PennyChatBotModule_attendance_selection(
         slack_client.chat_postMessage.assert_not_called()
 
     # Make sure the other attendee wasn't affected
-    assert Participant.objects.get(penny_chat=penny_chat, user=some_other_attendee).role == Participant.ATTENDEE
+    assert Participant.objects.get(penny_chat=penny_chat, user_profile=some_other_attendee).role == Participant.ATTENDEE

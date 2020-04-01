@@ -44,7 +44,7 @@ class ListUserChats(generics.GenericAPIView):
     serializer_class = UserChatSerializer
 
     def get(self, request, pk, format=None):
-        user_chats = Participant.objects.filter(user_id=pk)
+        user_chats = Participant.objects.filter(user_profile_id=pk)
         queryset = self.filter_queryset(user_chats)
 
         page = self.paginate_queryset(queryset)
