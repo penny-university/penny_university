@@ -143,17 +143,17 @@ def test_PennyChatBotModule_share(mocker):
     }
 
     share_penny_chat_invitation = mocker.patch('bot.processors.pennychat.share_penny_chat_invitation')
-    post_organizer_edit_after_share_template = mocker.patch(
-        'bot.processors.pennychat.post_organizer_edit_after_share_template'
+    post_organizer_edit_after_share_blocks = mocker.patch(
+        'bot.processors.pennychat.post_organizer_edit_after_share_blocks'
     )
 
     # The Actual Test
     with mocker.patch('pennychat.models.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
-            post_organizer_edit_after_share_template:
+            post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_args == call(penny_chat_invitation.id)
-    assert post_organizer_edit_after_share_template.now.call_args == call(view_id)
+    assert post_organizer_edit_after_share_blocks.now.call_args == call(view_id)
 
     penny_chat_invitation.refresh_from_db()
     penny_chat = penny_chat_invitation.penny_chat

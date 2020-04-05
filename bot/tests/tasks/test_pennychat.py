@@ -8,9 +8,9 @@ from pytz import utc
 
 from bot.tasks.pennychat import (
     share_penny_chat_invitation,
-    post_organizer_edit_after_share_template,
-    _penny_chat_details_template,
-    organizer_edit_after_share_template,
+    post_organizer_edit_after_share_blocks,
+    _penny_chat_details_blocks,
+    organizer_edit_after_share_blocks,
 )
 import bot.tasks.pennychat as pennychat_constants
 from pennychat.models import PennyChatInvitation, PennyChat
@@ -106,7 +106,7 @@ def test_share_penny_chat_invitation(mocker):
 
 
 @pytest.mark.django_db
-def test_post_organizer_edit_after_share_template(mocker):
+def test_post_organizer_edit_after_share_blocks(mocker):
     penny_chat_view_id = 'some_view_id'
     organizer_slack_id = 'some_organizer_slack_id'
 
@@ -135,13 +135,13 @@ def test_post_organizer_edit_after_share_template(mocker):
     slack_client.chat_postMessage.side_effect = chat_postMessage(1234)
 
     with mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client),\
-            mocker.patch('bot.tasks.pennychat.organizer_edit_after_share_template', return_value='some_block'):
-        post_organizer_edit_after_share_template.now(penny_chat_view_id),
+            mocker.patch('bot.tasks.pennychat.organizer_edit_after_share_blocks', return_value='some_block'):
+        post_organizer_edit_after_share_blocks.now(penny_chat_view_id),
 
     assert slack_client.chat_postMessage.call_args == call(blocks='some_block', channel='some_organizer_slack_id')
 
 
-def test_organizer_edit_after_share_template(mocker):
+def test_organizer_edit_after_share_blocks(mocker):
     user_1 = UserProfile(slack_id='user_1', real_name='user_1')
     user_2 = UserProfile(slack_id='user_2', real_name='user_2')
     organizer = UserProfile(slack_id='organizer', real_name='Orlando')
@@ -159,14 +159,14 @@ def test_organizer_edit_after_share_template(mocker):
     slack_client = mocker.Mock()
 
     with mocker.patch('bot.tasks.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock),\
-            mocker.patch('bot.tasks.pennychat._penny_chat_details_template', return_value=['some_blocks']):
-        template = str(organizer_edit_after_share_template(slack_client, penny_chat))
+            mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value=['some_blocks']):
+        template = str(organizer_edit_after_share_blocks(slack_client, penny_chat))
 
     assert 'some_blocks' in template
     assert 'You just shared this invitation with:* user_1, user_2, <#Chan1>, and <#Chan2>.' in template
 
 
-def test_penny_chat_details_template(mocker):
+def test_penny_chat_details_blocks(mocker):
     penny_chat = PennyChat(
         id=1,
         title='Chat 1',
@@ -175,7 +175,7 @@ def test_penny_chat_details_template(mocker):
     )
     user_name = 'John Berryman'
 
-    template = str(_penny_chat_details_template(penny_chat, user_name, mode=pennychat_constants.PREVIEW))
+    template = str(_penny_chat_details_blocks(penny_chat, user_name, mode=pennychat_constants.PREVIEW))
     assert '*John Berryman* invited you to a new Penny Chat' in template, 'wrong header_text'
     assert '*Title*\\nChat 1' in template
     assert '*Description*\\nsome_description' in template
@@ -183,7 +183,7 @@ def test_penny_chat_details_template(mocker):
     assert 'I can\'t make it' not in template, 'should not be there when include_rsvp is False'
     assert 'calendar.google.com' in template, 'should have calendar link when include_calendar_link is True'
 
-    template = str(_penny_chat_details_template(penny_chat, user_name, mode=pennychat_constants.INVITE))
+    template = str(_penny_chat_details_blocks(penny_chat, user_name, mode=pennychat_constants.INVITE))
     assert '*John Berryman* invited you to a new Penny Chat' in template, 'wrong header_text'
     assert '*Title*\\nChat 1' in template
     assert '*Description*\\nsome_description' in template
@@ -191,7 +191,7 @@ def test_penny_chat_details_template(mocker):
     assert 'I can\'t make it' in template, 'should be there when include_rsvp is True'
     assert 'calendar.google.com' in template, 'should have calendar link when include_calendar_link is True'
 
-    template = str(_penny_chat_details_template(penny_chat, user_name, mode=pennychat_constants.UPDATE))
+    template = str(_penny_chat_details_blocks(penny_chat, user_name, mode=pennychat_constants.UPDATE))
     assert '*John Berryman* has updated their Penny Chat' in template, 'wrong header_text'
     assert '*Title*\\nChat 1' in template
     assert '*Description*\\nsome_description' in template
@@ -199,7 +199,7 @@ def test_penny_chat_details_template(mocker):
     assert 'I can\'t make it' in template, 'should be there when include_rsvp is True'
     assert 'calendar.google.com' in template, 'should have calendar link when include_calendar_link is True'
 
-    template = str(_penny_chat_details_template(penny_chat, user_name, mode=pennychat_constants.REMIND))
+    template = str(_penny_chat_details_blocks(penny_chat, user_name, mode=pennychat_constants.REMIND))
     assert '*John Berryman\'s* Penny Chat is coming up soon! We hope you can still make it' in template, \
         'wrong header_text'
     assert '*Title*\\nChat 1' in template

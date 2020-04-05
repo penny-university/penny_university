@@ -27,7 +27,7 @@ PENNY_CHAT_ID = 'penny_chat_id'
 
 
 PREVIEW, INVITE, UPDATE, REMIND = 'review', 'invite', 'update', 'remind'
-PENNY_CHAT_DETAILS_TEMPLATE_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
+PENNY_CHAT_DETAILS_BLOCKS_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
 
 
 def _get_slack_client():
@@ -38,13 +38,13 @@ def _get_slack_client():
 
 
 @background
-def post_organizer_edit_after_share_template(penny_chat_view_id):
+def post_organizer_edit_after_share_blocks(penny_chat_view_id):
     slack_client = _get_slack_client()
 
     penny_chat_invitation = PennyChatInvitation.objects.get(view=penny_chat_view_id)
     slack_client.chat_postMessage(
         channel=penny_chat_invitation.organizer_slack_id,
-        blocks=organizer_edit_after_share_template(slack_client, penny_chat_invitation),
+        blocks=organizer_edit_after_share_blocks(slack_client, penny_chat_invitation),
     )
 
 
@@ -65,7 +65,7 @@ def share_penny_chat_invitation(penny_chat_id):
         except:  # noqa
             # can't do anything about it anyway... might as well continue
             pass
-    invitation_blocks = _penny_chat_details_template(penny_chat_invitation, organizer.real_name, mode=INVITE)
+    invitation_blocks = _penny_chat_details_blocks(penny_chat_invitation, organizer.real_name, mode=INVITE)
     shares = {}
     for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
         resp = slack_client.chat_postMessage(
@@ -78,19 +78,14 @@ def share_penny_chat_invitation(penny_chat_id):
 
 #     post_penny_chat_reminder(penny_chat_id)  TODO!
 #
-#
-# def post_penny_chat_reminder(penny_chat_id):
-#
+##
+# @background
+# def _post_penny_chat_reminder(penny_chat_id):
 
 
-def datetime_template(penny_chat):
-    timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-    date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
-    return date_text
-
-
-def _penny_chat_details_template(penny_chat, organizer_name, mode=None):
-    assert mode in PENNY_CHAT_DETAILS_TEMPLATE_MODES
+def _penny_chat_details_blocks(penny_chat, organizer_name, mode=None):
+    """Creates blocks"""
+    assert mode in PENNY_CHAT_DETAILS_BLOCKS_MODES
 
     include_calendar_link = mode in {PREVIEW, INVITE, UPDATE}
     include_rsvp = mode in {INVITE, UPDATE}
@@ -103,23 +98,24 @@ def _penny_chat_details_template(penny_chat, organizer_name, mode=None):
     elif mode == REMIND:
         header_text = f'_*{organizer_name}\'s* Penny Chat is coming up soon! We hope you can still make it._'
 
-    start_date = penny_chat.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
-    end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
-    google_cal_url = 'https://calendar.google.com/calendar/render?' \
-                     'action=TEMPLATE&text=' \
-        f'{urllib.parse.quote(penny_chat.title)}&dates=' \
-        f'{start_date}/{end_date}&details=' \
-        f'{urllib.parse.quote(penny_chat.description)}'
-
+    date_text = f'<!date^{int(penny_chat.date.astimezone(utc).timestamp())}^{{date_pretty}} at {{time}}|{penny_chat.date}>'  # noqa
     date_time_block = {
         'type': 'section',
         'text': {
             'type': 'mrkdwn',
-            'text': f'*Date and Time*\n{datetime_template(penny_chat)}'
+            'text': f'*Date and Time*\n{date_text}'
         },
     }
 
     if include_calendar_link:
+        start_date = penny_chat.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
+        end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
+        google_cal_url = 'https://calendar.google.com/calendar/render?' \
+                         'action=TEMPLATE&text=' \
+            f'{urllib.parse.quote(penny_chat.title)}&dates=' \
+            f'{start_date}/{end_date}&details=' \
+            f'{urllib.parse.quote(penny_chat.description)}'
+
         date_time_block['accessory'] = {
             'type': 'button',
             'text': {
@@ -190,7 +186,7 @@ def _penny_chat_details_template(penny_chat, organizer_name, mode=None):
     return body
 
 
-def organizer_edit_after_share_template(slack_client, penny_chat_invitation):
+def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
     shares = []
     users = get_or_create_user_profile_from_slack_ids(
         comma_split(penny_chat_invitation.invitees),
@@ -216,7 +212,7 @@ def organizer_edit_after_share_template(slack_client, penny_chat_invitation):
         shares[-1] = f'and {shares[-1]}'
         share_string = ', '.join(shares)
 
-    shared_message_preview_blocks = _penny_chat_details_template(
+    shared_message_preview_blocks = _penny_chat_details_blocks(
         penny_chat_invitation,
         organizer.real_name,
         mode=PREVIEW,

@@ -5,7 +5,7 @@ from pytz import timezone, utc
 import requests
 
 from bot.tasks import (
-    post_organizer_edit_after_share_template,
+    post_organizer_edit_after_share_blocks,
     share_penny_chat_invitation,
 )
 from bot.utils import chat_postEphemeral_with_fallback
@@ -303,7 +303,7 @@ class PennyChatBotModule(BotModule):
                 }
             }
 
-        post_organizer_edit_after_share_template.now(view['id'])
+        post_organizer_edit_after_share_blocks.now(view['id'])
 
         # Ready to share
         penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']

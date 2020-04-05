@@ -7,9 +7,9 @@ from pytz import timezone
 import slack
 
 from bot.processors.pennychat import (
-    shared_message_preview_template,
+    shared_message_preview_blocks,
 )
-from bot.tasks import organizer_edit_after_share_template, _penny_chat_details_template, INVITE
+from bot.tasks import organizer_edit_after_share_blocks, _penny_chat_details_blocks, INVITE
 from pennychat.models import PennyChatInvitation
 from users.models import get_or_create_user_profile_from_slack_id
 
@@ -18,12 +18,12 @@ class Command(BaseCommand):
     help = """DEV ONLY: Send faked slack interactions from `/penny chat` flow.
 
     Supposedly supports templates:
-    * shared_message_preview_template
-    * shared_message_template
-    * organizer_edit_after_share_template
+    * shared_message_preview_blocks
+    * shared_message_blocks
+    * organizer_edit_after_share_blocks
 
     Example usage:
-    $ ./manage.py send_penny_chat_template organizer_edit_after_share_template \
+    $ ./manage.py send_penny_chat_blocks organizer_edit_after_share_blocks \
         --slack_user_id=UNKEQA7CK --channel=CNQG95KG9
     """
 
@@ -55,21 +55,21 @@ class Command(BaseCommand):
         )
 
         template = options['template_name']
-        if template == 'shared_message_preview_template':
-            blocks = shared_message_preview_template(slack_client, penny_chat_invitation)
+        if template == 'shared_message_preview_blocks':
+            blocks = shared_message_preview_blocks(slack_client, penny_chat_invitation)
             slack_client.chat_postMessage(
                 channel=organizer.slack_id,
                 blocks=blocks,
             )
-        elif template == 'shared_message_template':
-            blocks = _penny_chat_details_template(penny_chat_invitation, 'DefaultName', mode=INVITE)
+        elif template == 'shared_message_blocks':
+            blocks = _penny_chat_details_blocks(penny_chat_invitation, 'DefaultName', mode=INVITE)
             slack_client.chat_postMessage(
                 channel=organizer.slack_id,
                 blocks=blocks,
             )
 
-        elif template == 'organizer_edit_after_share_template':
-            blocks = organizer_edit_after_share_template(penny_chat_invitation)
+        elif template == 'organizer_edit_after_share_blocks':
+            blocks = organizer_edit_after_share_blocks(penny_chat_invitation)
             slack_client.chat_postMessage(
                 channel=organizer.slack_id,
                 blocks=blocks,
