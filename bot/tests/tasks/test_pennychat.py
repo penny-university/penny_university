@@ -6,8 +6,13 @@ from django.utils import timezone
 import pytest
 from pytz import utc
 
-from bot.tasks import share_penny_chat_invitation, post_organizer_edit_after_share_template, \
-    organizer_edit_after_share_template, shared_message_template
+from bot.tasks.pennychat import (
+    share_penny_chat_invitation,
+    post_organizer_edit_after_share_template,
+    _penny_chat_details_template,
+    organizer_edit_after_share_template,
+)
+import bot.tasks.pennychat as pennychat_constants
 from pennychat.models import PennyChatInvitation, PennyChat
 from users.models import UserProfile
 
@@ -154,14 +159,14 @@ def test_organizer_edit_after_share_template(mocker):
     slack_client = mocker.Mock()
 
     with mocker.patch('bot.tasks.pennychat.get_or_create_user_profile_from_slack_ids', side_effect=ids_mock),\
-            mocker.patch('bot.tasks.pennychat.shared_message_template', return_value=['some_blocks']):
+            mocker.patch('bot.tasks.pennychat._penny_chat_details_template', return_value=['some_blocks']):
         template = str(organizer_edit_after_share_template(slack_client, penny_chat))
 
     assert 'some_blocks' in template
     assert 'You just shared this invitation with:* user_1, user_2, <#Chan1>, and <#Chan2>.' in template
 
 
-def test_shared_message_template(mocker):
+def test_penny_chat_details_template(mocker):
     penny_chat = PennyChat(
         id=1,
         title='Chat 1',
@@ -170,16 +175,35 @@ def test_shared_message_template(mocker):
     )
     user_name = 'John Berryman'
 
-    template = str(shared_message_template(penny_chat, user_name, include_rsvp=True))
-    assert '*John Berryman* invited you to a new Penny Chat' in template
-    assert '*Title*\\nChat 1' in template
-    assert '*Description*\\nsome_description' in template
-    assert 'Count me in' in template, 'should be there when include_rsvp is true'
-    assert 'I can\'t make it' in template, 'should be there when include_rsvp is True'
-
-    template = str(shared_message_template(penny_chat, user_name, include_rsvp=False))
-    assert '*John Berryman* invited you to a new Penny Chat' in template
+    template = str(_penny_chat_details_template(penny_chat, user_name, mode=pennychat_constants.PREVIEW))
+    assert '*John Berryman* invited you to a new Penny Chat' in template, 'wrong header_text'
     assert '*Title*\\nChat 1' in template
     assert '*Description*\\nsome_description' in template
     assert 'Count me in' not in template, 'should not be there when include_rsvp is False'
     assert 'I can\'t make it' not in template, 'should not be there when include_rsvp is False'
+    assert 'calendar.google.com' in template, 'should have calendar link when include_calendar_link is True'
+
+    template = str(_penny_chat_details_template(penny_chat, user_name, mode=pennychat_constants.INVITE))
+    assert '*John Berryman* invited you to a new Penny Chat' in template, 'wrong header_text'
+    assert '*Title*\\nChat 1' in template
+    assert '*Description*\\nsome_description' in template
+    assert 'Count me in' in template, 'should be there when include_rsvp is True'
+    assert 'I can\'t make it' in template, 'should be there when include_rsvp is True'
+    assert 'calendar.google.com' in template, 'should have calendar link when include_calendar_link is True'
+
+    template = str(_penny_chat_details_template(penny_chat, user_name, mode=pennychat_constants.UPDATE))
+    assert '*John Berryman* has updated their Penny Chat' in template, 'wrong header_text'
+    assert '*Title*\\nChat 1' in template
+    assert '*Description*\\nsome_description' in template
+    assert 'Count me in' in template, 'should be there when include_rsvp is True'
+    assert 'I can\'t make it' in template, 'should be there when include_rsvp is True'
+    assert 'calendar.google.com' in template, 'should have calendar link when include_calendar_link is True'
+
+    template = str(_penny_chat_details_template(penny_chat, user_name, mode=pennychat_constants.REMIND))
+    assert '*John Berryman\'s* Penny Chat is coming up soon! We hope you can still make it' in template, \
+        'wrong header_text'
+    assert '*Title*\\nChat 1' in template
+    assert '*Description*\\nsome_description' in template
+    assert 'Count me in' not in template, 'should not be there when include_rsvp is False'
+    assert 'I can\'t make it' not in template, 'should not be there when include_rsvp is False'
+    assert 'calendar.google.com'not in template, 'should not have calendar link when include_calendar_link is False'

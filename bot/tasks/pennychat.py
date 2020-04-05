@@ -26,6 +26,10 @@ PENNY_CHAT_CAN_NOT_ATTEND = 'penny_chat_can_not_attend'
 PENNY_CHAT_ID = 'penny_chat_id'
 
 
+PREVIEW, INVITE, UPDATE, REMIND = 'review', 'invite', 'update', 'remind'
+PENNY_CHAT_DETAILS_TEMPLATE_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
+
+
 def _get_slack_client():
     # TODO memoize the slack_client, but remember that it has to be thread safe, so figure out some way to memoize
     # per-thread
@@ -54,14 +58,14 @@ def share_penny_chat_invitation(penny_chat_id):
     # unshare the old shares
     old_shares = json.loads(penny_chat_invitation.shares or '{}')
     for channel, ts in old_shares.items():
-        # TODO https://github.com/penny-university/penny_university/issues/140 might
+        # TODO https://github.com/penny-university/penny_university/issues/140
         # until this is resolved we will not be able to remove shared messages in private channels
         try:
             slack_client.chat_delete(channel=channel, ts=ts)
         except:  # noqa
             # can't do anything about it anyway... might as well continue
             pass
-    invitation_blocks = shared_message_template(penny_chat_invitation, organizer.real_name, include_rsvp=True)
+    invitation_blocks = _penny_chat_details_template(penny_chat_invitation, organizer.real_name, mode=INVITE)
     shares = {}
     for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
         resp = slack_client.chat_postMessage(
@@ -72,6 +76,12 @@ def share_penny_chat_invitation(penny_chat_id):
     penny_chat_invitation.shares = json.dumps(shares)
     penny_chat_invitation.save()
 
+#     post_penny_chat_reminder(penny_chat_id)  TODO!
+#
+#
+# def post_penny_chat_reminder(penny_chat_id):
+#
+
 
 def datetime_template(penny_chat):
     timestamp = int(penny_chat.date.astimezone(utc).timestamp())
@@ -79,7 +89,20 @@ def datetime_template(penny_chat):
     return date_text
 
 
-def shared_message_template(penny_chat, user_name, include_rsvp=False):
+def _penny_chat_details_template(penny_chat, organizer_name, mode=None):
+    assert mode in PENNY_CHAT_DETAILS_TEMPLATE_MODES
+
+    include_calendar_link = mode in {PREVIEW, INVITE, UPDATE}
+    include_rsvp = mode in {INVITE, UPDATE}
+
+    header_text = ''
+    if mode in {PREVIEW, INVITE}:
+        header_text = f'_*{organizer_name}* invited you to a new Penny Chat!_'
+    elif mode == UPDATE:
+        header_text = f'_*{organizer_name}* has updated their Penny Chat._'
+    elif mode == REMIND:
+        header_text = f'_*{organizer_name}\'s* Penny Chat is coming up soon! We hope you can still make it._'
+
     start_date = penny_chat.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
     end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
     google_cal_url = 'https://calendar.google.com/calendar/render?' \
@@ -88,12 +111,31 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
         f'{start_date}/{end_date}&details=' \
         f'{urllib.parse.quote(penny_chat.description)}'
 
+    date_time_block = {
+        'type': 'section',
+        'text': {
+            'type': 'mrkdwn',
+            'text': f'*Date and Time*\n{datetime_template(penny_chat)}'
+        },
+    }
+
+    if include_calendar_link:
+        date_time_block['accessory'] = {
+            'type': 'button',
+            'text': {
+                'type': 'plain_text',
+                'text': 'Add to Google Calendar :calendar:',
+                'emoji': True
+            },
+            'url': google_cal_url
+        }
+
     body = [
         {
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'_*{user_name}* invited you to a new Penny Chat!_'
+                'text': header_text,
             }
         },
         {
@@ -110,22 +152,7 @@ def shared_message_template(penny_chat, user_name, include_rsvp=False):
                 'text': f'*Description*\n{penny_chat.description}'
             }
         },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': f'*Date and Time*\n{datetime_template(penny_chat)}'
-            },
-            'accessory': {
-                'type': 'button',
-                'text': {
-                    'type': 'plain_text',
-                    'text': 'Add to Google Calendar :calendar:',
-                    'emoji': True
-                },
-                'url': google_cal_url
-            }
-        },
+        date_time_block
     ]
 
     if include_rsvp:
@@ -189,7 +216,11 @@ def organizer_edit_after_share_template(slack_client, penny_chat_invitation):
         shares[-1] = f'and {shares[-1]}'
         share_string = ', '.join(shares)
 
-    shared_message_preview_blocks = shared_message_template(penny_chat_invitation, organizer.real_name) + [
+    shared_message_preview_blocks = _penny_chat_details_template(
+        penny_chat_invitation,
+        organizer.real_name,
+        mode=PREVIEW,
+    ) + [
         {
             'type': 'divider'
         },

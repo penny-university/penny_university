@@ -9,7 +9,7 @@ import slack
 from bot.processors.pennychat import (
     shared_message_preview_template,
 )
-from bot.tasks import organizer_edit_after_share_template, shared_message_template
+from bot.tasks import organizer_edit_after_share_template, _penny_chat_details_template, INVITE
 from pennychat.models import PennyChatInvitation
 from users.models import get_or_create_user_profile_from_slack_id
 
@@ -62,8 +62,7 @@ class Command(BaseCommand):
                 blocks=blocks,
             )
         elif template == 'shared_message_template':
-            include_rsvp = True
-            blocks = shared_message_template(penny_chat_invitation, 'DefaultName', include_rsvp)
+            blocks = _penny_chat_details_template(penny_chat_invitation, 'DefaultName', mode=INVITE)
             slack_client.chat_postMessage(
                 channel=organizer.slack_id,
                 blocks=blocks,
