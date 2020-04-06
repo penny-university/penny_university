@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from background_task import background
 from django.conf import settings
-from pytz import utc
+from pytz import timezone, utc
 from slack import WebClient
 
 from pennychat.models import PennyChatInvitation
@@ -80,20 +80,23 @@ def send_penny_chat_reminders():
     """This sends out reminders for any chat that is about to happen."""
     slack_client = _get_slack_client()
 
+    now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
     imminent_chats = PennyChatInvitation.objects.filter(
         status__gte=PennyChatInvitation.SHARED,
-        status__le=PennyChatInvitation.REMINDED,
-        date__lte=datetime.now() + timedelta(minutes=settings.REMINDER_BEFORE_PENNY_CHAT_MINUTES),
+        status__lt=PennyChatInvitation.REMINDED,
+        date__gte=now,
+        date__lt=now + timedelta(minutes=settings.REMINDER_BEFORE_PENNY_CHAT_MINUTES),
     )
     for penny_chat_invitation in imminent_chats:
         penny_chat_invitation.status = PennyChatInvitation.REMINDED
         penny_chat_invitation.save()  # TODO! test
         reminder_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=REMIND)
         participants = penny_chat_invitation.get_participants()
-        slack_client.chat_postMessage(
-            channel=participants.slack_id,
-            blocks=reminder_blocks,
-        )
+        for participant in participants:
+            slack_client.chat_postMessage(
+                channel=participant.slack_id,
+                blocks=reminder_blocks,
+            )
 
 
 def _penny_chat_details_blocks(penny_chat_invitation, mode=None):

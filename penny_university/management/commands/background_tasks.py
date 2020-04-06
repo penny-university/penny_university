@@ -8,6 +8,7 @@ from bot.tasks import send_penny_chat_reminders
 class Command(ProcessTasks):
     def handle(self, *args, **options):
         send_penny_chat_reminders()
+        # TODO this is a good place to update events and mark them as completed
         run_process_tasks()
 
 

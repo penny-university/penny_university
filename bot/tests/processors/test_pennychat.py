@@ -15,7 +15,7 @@ from pennychat.models import (
 from unittest.mock import call
 from users.models import UserProfile
 
-TZ = timezone('America/Chicago')
+TIMEZONE = timezone('America/Chicago')
 
 
 def create_penny_chat():
@@ -56,7 +56,7 @@ def test_date_select(mocker):
     bot_module(event)
 
     penny_chat = PennyChatInvitation.objects.get(id=chat_id)
-    assert penny_chat.date.astimezone(TZ).date() == datetime(2019, 1, 1).date()
+    assert penny_chat.date.astimezone(TIMEZONE).date() == datetime(2019, 1, 1).date()
 
 
 @pytest.mark.django_db
@@ -88,7 +88,7 @@ def test_time_select(mocker):
     bot_module(event)
     penny_chat = PennyChatInvitation.objects.get(id=chat_id)
     test_time = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0).time()
-    assert penny_chat.date.astimezone(TZ).time() == test_time
+    assert penny_chat.date.astimezone(TIMEZONE).time() == test_time
 
 
 @pytest.mark.django_db

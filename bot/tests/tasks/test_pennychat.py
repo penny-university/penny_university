@@ -3,19 +3,23 @@ from contextlib import contextmanager
 import json
 from unittest.mock import call
 
-from django.utils import timezone
+from pytz import timezone
 import pytest
 from pytz import utc
 
+import bot.tasks.pennychat as pennychat_constants
 from bot.tasks.pennychat import (
     share_penny_chat_invitation,
     post_organizer_edit_after_share_blocks,
     _penny_chat_details_blocks,
     organizer_edit_after_share_blocks,
+    send_penny_chat_reminders,
 )
-import bot.tasks.pennychat as pennychat_constants
 from pennychat.models import PennyChatInvitation, Participant
 from users.models import UserProfile
+
+
+TIMEZONE = timezone('America/Chicago')
 
 
 @contextmanager
@@ -37,7 +41,7 @@ def test_share_penny_chat_invitation(mocker):
     penny_chat_invitation = PennyChatInvitation.objects.create(
         title='Chat 1',
         description='The first test chat',
-        date=timezone.now() - timedelta(weeks=4),
+        date=datetime.now().astimezone(TIMEZONE) - timedelta(weeks=4),
         invitees='foo,man,choo',
         channels='itsy,bitsy,spider',
         organizer_slack_id='slack_id',
@@ -120,6 +124,114 @@ def test_share_penny_chat_invitation(mocker):
         'foo': 5678,
         'man': 5678,
     }
+
+
+@pytest.mark.django_db
+def test_send_penny_chat_reminders__send_message_to_addendees_of_imminent_events(mocker):
+    imminent_chat = PennyChatInvitation.objects.create(
+        title='Chat 1',
+        description='The first test chat',
+        date=datetime.now().astimezone(TIMEZONE) + timedelta(minutes=10),
+        status=PennyChatInvitation.SHARED,
+        organizer_slack_id='organizer',
+    )
+    organizer = UserProfile.objects.create(slack_id='organizer', display_name='organizer')
+    invitee_1 = UserProfile.objects.create(slack_id='invitee_1', display_name='invitee_1')
+    invitee_2 = UserProfile.objects.create(slack_id='invitee_2', display_name='invitee_2')
+    imminent_chat.save_participant(organizer, Participant.ORGANIZER)
+    imminent_chat.save_participant(invitee_1, Participant.ATTENDEE)
+    imminent_chat.save_participant(invitee_2, Participant.ATTENDEE)
+
+    slack_client = mocker.Mock()
+
+    with mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value='<blocks>'), \
+            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+        send_penny_chat_reminders()
+
+    actual = {call[1]['channel'] for call in slack_client.chat_postMessage.call_args_list}
+    expected = {'organizer', 'invitee_1', 'invitee_2'}
+    assert expected == actual
+
+
+@pytest.mark.django_db
+def test_send_penny_chat_reminders__send_NO_message_to_addendees_of_past_events(mocker):
+    imminent_chat = PennyChatInvitation.objects.create(
+        title='Chat 1',
+        description='The first test chat',
+        date=datetime.now().astimezone(TIMEZONE) - timedelta(minutes=10),
+        status=PennyChatInvitation.SHARED,
+        organizer_slack_id='organizer',
+    )
+    organizer = UserProfile.objects.create(slack_id='organizer', display_name='organizer')
+    invitee_1 = UserProfile.objects.create(slack_id='invitee_1', display_name='invitee_1')
+    invitee_2 = UserProfile.objects.create(slack_id='invitee_2', display_name='invitee_2')
+    imminent_chat.save_participant(organizer, Participant.ORGANIZER)
+    imminent_chat.save_participant(invitee_1, Participant.ATTENDEE)
+    imminent_chat.save_participant(invitee_2, Participant.ATTENDEE)
+
+    slack_client = mocker.Mock()
+
+    with mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value='<blocks>'), \
+            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+        send_penny_chat_reminders()
+
+    actual = {call[1]['channel'] for call in slack_client.chat_postMessage.call_args_list}
+    expected = set()
+    assert expected == actual
+
+
+@pytest.mark.django_db
+def test_send_penny_chat_reminders__send_NO_message_to_addendees_of_distant_future_events(mocker):
+    imminent_chat = PennyChatInvitation.objects.create(
+        title='Chat 1',
+        description='The first test chat',
+        date=datetime.now().astimezone(TIMEZONE) + timedelta(hours=10),
+        status=PennyChatInvitation.SHARED,
+        organizer_slack_id='organizer',
+    )
+    organizer = UserProfile.objects.create(slack_id='organizer', display_name='organizer')
+    invitee_1 = UserProfile.objects.create(slack_id='invitee_1', display_name='invitee_1')
+    invitee_2 = UserProfile.objects.create(slack_id='invitee_2', display_name='invitee_2')
+    imminent_chat.save_participant(organizer, Participant.ORGANIZER)
+    imminent_chat.save_participant(invitee_1, Participant.ATTENDEE)
+    imminent_chat.save_participant(invitee_2, Participant.ATTENDEE)
+
+    slack_client = mocker.Mock()
+
+    with mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value='<blocks>'), \
+            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+        send_penny_chat_reminders()
+
+    actual = {call[1]['channel'] for call in slack_client.chat_postMessage.call_args_list}
+    expected = set()
+    assert expected == actual
+
+
+@pytest.mark.django_db
+def test_send_penny_chat_reminders__send_NO_message_if_chat_is_already_reminded(mocker):
+    imminent_chat = PennyChatInvitation.objects.create(
+        title='Chat 1',
+        description='The first test chat',
+        date=datetime.now().astimezone(TIMEZONE) + timedelta(minutes=10),
+        status=PennyChatInvitation.REMINDED,
+        organizer_slack_id='organizer',
+    )
+    organizer = UserProfile.objects.create(slack_id='organizer', display_name='organizer')
+    invitee_1 = UserProfile.objects.create(slack_id='invitee_1', display_name='invitee_1')
+    invitee_2 = UserProfile.objects.create(slack_id='invitee_2', display_name='invitee_2')
+    imminent_chat.save_participant(organizer, Participant.ORGANIZER)
+    imminent_chat.save_participant(invitee_1, Participant.ATTENDEE)
+    imminent_chat.save_participant(invitee_2, Participant.ATTENDEE)
+
+    slack_client = mocker.Mock()
+
+    with mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value='<blocks>'), \
+            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+        send_penny_chat_reminders()
+
+    actual = {call[1]['channel'] for call in slack_client.chat_postMessage.call_args_list}
+    expected = set()
+    assert expected == actual
 
 
 @pytest.mark.django_db
