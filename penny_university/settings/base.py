@@ -96,31 +96,19 @@ DATABASES['default'] = dj_database_url.config(default='sqlite:///db.sqlite3', co
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -150,6 +138,13 @@ LOGGING = {
     },
 }
 
+
+############################################
+# Put basic django stove above
+# Put stuff more specific to our app below
+############################################
+
+# Slack
 SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 if SLACK_API_KEY is None:
     print('WARNING: SLACK_API_KEY is None')
@@ -157,8 +152,14 @@ PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
 
 SLACK_TEAM_ID = 'T41DZFW4T'
 
+
 # Django Rest Framework
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
+
+
+# Background Tasks
+PROCESS_TASKS_DURATION_SECONDS = 600
+REMINDER_BEFORE_PENNY_CHAT_MINUTES = 70  # to make sure we remind them an hour in advance

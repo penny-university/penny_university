@@ -1,6 +1,6 @@
 import json
 import urllib.parse
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from background_task import background
 from django.conf import settings
@@ -8,7 +8,7 @@ from pytz import utc
 from slack import WebClient
 
 from pennychat.models import PennyChatInvitation
-from users.models import get_or_create_user_profile_from_slack_ids
+from users.models import get_or_create_user_profile_from_slack_id, get_or_create_user_profile_from_slack_ids
 
 VIEW_SUBMISSION = 'view_submission'
 VIEW_CLOSED = 'view_closed'
@@ -52,7 +52,6 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
 def share_penny_chat_invitation(penny_chat_id):
     """Shares penny chat invitations with people and channels in the invitee list"""
     penny_chat_invitation = PennyChatInvitation.objects.get(id=penny_chat_id)
-    organizer = penny_chat_invitation.get_organizer()
     slack_client = _get_slack_client()
 
     # unshare the old shares
@@ -65,7 +64,7 @@ def share_penny_chat_invitation(penny_chat_id):
         except:  # noqa
             # can't do anything about it anyway... might as well continue
             pass
-    invitation_blocks = _penny_chat_details_blocks(penny_chat_invitation, organizer.real_name, mode=INVITE)
+    invitation_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=INVITE)
     shares = {}
     for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
         resp = slack_client.chat_postMessage(
@@ -76,29 +75,48 @@ def share_penny_chat_invitation(penny_chat_id):
     penny_chat_invitation.shares = json.dumps(shares)
     penny_chat_invitation.save()
 
-#     post_penny_chat_reminder(penny_chat_id)  TODO!
-#
-##
-# @background
-# def _post_penny_chat_reminder(penny_chat_id):
+
+def send_penny_chat_reminders():
+    """This sends out reminders for any chat that is about to happen."""
+    slack_client = _get_slack_client()
+
+    imminent_chats = PennyChatInvitation.objects.filter(
+        status__gte=PennyChatInvitation.SHARED,
+        status__le=PennyChatInvitation.REMINDED,
+        date__lte=datetime.now() + timedelta(minutes=settings.REMINDER_BEFORE_PENNY_CHAT_MINUTES),
+    )
+    for penny_chat_invitation in imminent_chats:
+        penny_chat_invitation.status = PennyChatInvitation.REMINDED
+        penny_chat_invitation.save()  # TODO! test
+        reminder_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=REMIND)
+        participants = penny_chat_invitation.get_participants()
+        slack_client.chat_postMessage(
+            channel=participants.slack_id,
+            blocks=reminder_blocks,
+        )
 
 
-def _penny_chat_details_blocks(penny_chat, organizer_name, mode=None):
-    """Creates blocks"""
+def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
+    """Creates blocks for penny chat details"""
     assert mode in PENNY_CHAT_DETAILS_BLOCKS_MODES
 
     include_calendar_link = mode in {PREVIEW, INVITE, UPDATE}
     include_rsvp = mode in {INVITE, UPDATE}
 
+    organizer = get_or_create_user_profile_from_slack_id(
+        penny_chat_invitation.organizer_slack_id,
+        slack_client=_get_slack_client(),
+    )
+
     header_text = ''
     if mode in {PREVIEW, INVITE}:
-        header_text = f'_*{organizer_name}* invited you to a new Penny Chat!_'
+        header_text = f'_*{organizer.display_name}* invited you to a new Penny Chat!_'
     elif mode == UPDATE:
-        header_text = f'_*{organizer_name}* has updated their Penny Chat._'
+        header_text = f'_*{organizer.display_name}* has updated their Penny Chat._'
     elif mode == REMIND:
-        header_text = f'_*{organizer_name}\'s* Penny Chat is coming up soon! We hope you can still make it._'
+        header_text = f'_*{organizer.display_name}\'s* Penny Chat is coming up soon! We hope you can still make it._'
 
-    date_text = f'<!date^{int(penny_chat.date.astimezone(utc).timestamp())}^{{date_pretty}} at {{time}}|{penny_chat.date}>'  # noqa
+    date_text = f'<!date^{int(penny_chat_invitation.date.astimezone(utc).timestamp())}^{{date_pretty}} at {{time}}|{penny_chat_invitation.date}>'  # noqa
     date_time_block = {
         'type': 'section',
         'text': {
@@ -108,13 +126,13 @@ def _penny_chat_details_blocks(penny_chat, organizer_name, mode=None):
     }
 
     if include_calendar_link:
-        start_date = penny_chat.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
-        end_date = (penny_chat.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
+        start_date = penny_chat_invitation.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
+        end_date = (penny_chat_invitation.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
         google_cal_url = 'https://calendar.google.com/calendar/render?' \
                          'action=TEMPLATE&text=' \
-            f'{urllib.parse.quote(penny_chat.title)}&dates=' \
+            f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
             f'{start_date}/{end_date}&details=' \
-            f'{urllib.parse.quote(penny_chat.description)}'
+            f'{urllib.parse.quote(penny_chat_invitation.description)}'
 
         date_time_block['accessory'] = {
             'type': 'button',
@@ -138,14 +156,14 @@ def _penny_chat_details_blocks(penny_chat, organizer_name, mode=None):
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'*Title*\n{penny_chat.title}'
+                'text': f'*Title*\n{penny_chat_invitation.title}'
             }
         },
         {
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'*Description*\n{penny_chat.description}'
+                'text': f'*Description*\n{penny_chat_invitation.description}'
             }
         },
         date_time_block
@@ -164,7 +182,7 @@ def _penny_chat_details_blocks(penny_chat, organizer_name, mode=None):
                             'emoji': True,
                         },
                         'action_id': PENNY_CHAT_CAN_ATTEND,
-                        'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),  # TODO should this be a helper function?
+                        'value': json.dumps({PENNY_CHAT_ID: penny_chat_invitation.id}),  # TODO should this be a helper function?  # noqa
                         'style': 'primary',
                     },
                     {
@@ -175,7 +193,7 @@ def _penny_chat_details_blocks(penny_chat, organizer_name, mode=None):
                             'emoji': True,
                         },
                         'action_id': PENNY_CHAT_CAN_NOT_ATTEND,
-                        'value': json.dumps({PENNY_CHAT_ID: penny_chat.id}),
+                        'value': json.dumps({PENNY_CHAT_ID: penny_chat_invitation.id}),
                         'style': 'primary',
                     }
 
@@ -195,11 +213,6 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
     for slack_user_id in comma_split(penny_chat_invitation.invitees):
         shares.append(users[slack_user_id].real_name)
 
-    organizer = get_or_create_user_profile_from_slack_ids(
-        [penny_chat_invitation.organizer_slack_id],
-        slack_client=slack_client,
-    ).get(penny_chat_invitation.organizer_slack_id)
-
     if len(penny_chat_invitation.channels) > 0:
         for channel in comma_split(penny_chat_invitation.channels):
             shares.append(f'<#{channel}>')
@@ -212,11 +225,7 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
         shares[-1] = f'and {shares[-1]}'
         share_string = ', '.join(shares)
 
-    shared_message_preview_blocks = _penny_chat_details_blocks(
-        penny_chat_invitation,
-        organizer.real_name,
-        mode=PREVIEW,
-    ) + [
+    shared_message_preview_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=PREVIEW) + [
         {
             'type': 'divider'
         },
