@@ -75,7 +75,7 @@ def share_penny_chat_invitation(penny_chat_id):
 
 def datetime_template(penny_chat):
     timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-    date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
+    date_text = f'<!date^{timestamp}^{{date}} at {{time}}|{penny_chat.date}>'
     return date_text
 
 
