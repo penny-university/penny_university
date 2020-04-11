@@ -303,13 +303,13 @@ class PennyChatBotModule(BotModule):
                 }
             }
 
-        post_organizer_edit_after_share_blocks.now(view['id'])
-
         # Ready to share
         penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
         penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
         penny_chat_invitation.status = PennyChatInvitation.SHARED
         penny_chat_invitation.save()
+
+        post_organizer_edit_after_share_blocks.now(view['id'])
 
         penny_chat_invitation.save_organizer_from_slack_id(penny_chat_invitation.organizer_slack_id)
 
