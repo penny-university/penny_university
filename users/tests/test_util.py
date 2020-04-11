@@ -81,7 +81,7 @@ def test_update_user_profile_from_slack_user__creates_new_user():
     assert user.email == slack_user['profile']['email']
     assert user.slack_id == slack_user['id']
     assert user.slack_team_id == slack_user['team_id']
-    assert user.display_name == slack_user['profile']['display_name']
+    assert user.real_name == slack_user['profile']['real_name']
     assert user.real_name == slack_user['profile']['real_name']
 
 
@@ -98,7 +98,7 @@ def test_update_user_profile_from_slack_user__safely_updates_existing_user():
 
     update_user_profile_from_slack_user(slack_user)
     user = UserProfile.objects.get(slack_id=slack_user['id'])
-    assert user.display_name == slack_user['profile']['display_name'], 'the display name should be replaced'
+    assert user.real_name == slack_user['profile']['real_name'], 'the real name should be replaced'
     assert user.metro_name == 'original_metro_name', 'the metro name should not be replaced'
 
 
@@ -124,13 +124,13 @@ def test_update_user_profile_from_slack_user__does_not_update_same_email_in_othe
         email=slack_user['profile']['email'],
         slack_id=slack_user['id'],
         slack_team_id=slack_user['profile']['team'],
-        display_name='original_display_name',
+        real_name='original_real_name',
     )
     UserProfile.objects.create(
         email=slack_user['profile']['email'],
         slack_id='other_slack_id',
         slack_team_id='some_other_team',
-        display_name='original_display_name',
+        real_name='original_real_name',
     )
 
     update_user_profile_from_slack_user(slack_user)
@@ -138,8 +138,8 @@ def test_update_user_profile_from_slack_user__does_not_update_same_email_in_othe
     correct_user = UserProfile.objects.get(slack_id=slack_user['id'])
     wrong_user = UserProfile.objects.get(slack_id='other_slack_id')
 
-    assert correct_user.display_name == slack_user['profile']['display_name'], 'the display name should be replaced'
-    assert wrong_user.display_name == 'original_display_name', 'the other team user should not be changed'
+    assert correct_user.real_name == slack_user['profile']['real_name'], 'the real name should be replaced'
+    assert wrong_user.real_name == 'original_real_name', 'the other team user should not be changed'
 
 
 @pytest.mark.django_db

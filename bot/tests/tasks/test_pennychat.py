@@ -304,7 +304,7 @@ def test_penny_chat_details_blocks(mocker):
         date=datetime(1979, 10, 12, 1, 1, 1, tzinfo=utc),
         organizer_slack_id=organizer_slack_id,
     )
-    organizer = UserProfile(slack_id=organizer_slack_id, display_name='John Berryman')
+    organizer = UserProfile(slack_id=organizer_slack_id, real_name='John Berryman')
 
     with _make_get_or_create_user_profile_from_slack_id_mocks(mocker, 'bot.tasks.pennychat', [organizer]):
         preview_blocks = str(_penny_chat_details_blocks(penny_chat, mode=pennychat_constants.PREVIEW))
