@@ -382,7 +382,7 @@ class PennyChatBotModule(BotModule):
 
             # create organizer notification message (even if we choose not to use it below)
             timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-            date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
+            date_text = f'<!date^{timestamp}^{{date}} at {{time}}|{penny_chat.date}>'
             _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
             notification = f'<@{user.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
             we_will_notify_organizer = 'Thank you. We will notify the organizer.'
