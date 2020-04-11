@@ -161,5 +161,4 @@ REST_FRAMEWORK = {
 
 
 # Background Tasks
-PROCESS_TASKS_DURATION_SECONDS = 600
 REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # to make sure we remind them MORE than an hour in advance

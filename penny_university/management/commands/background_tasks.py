@@ -10,18 +10,20 @@ class Command(ProcessTasks):
 
     The background tasks either 1) run periodically, such as posting reminders for upcoming meetings or 2) run too slow
     to be executed in the normal request cycle.
+
+    Note that this Command subclasses ProcessTasks (background_task/management/commands/process_tasks.py). See that file
+    and the documentation for django-background-tasks for further information.
+    https://django-background-tasks.readthedocs.io/en/latest/
     """
     def handle(self, *args, **options):
         send_penny_chat_reminders()
         # TODO this is a good place to update events and mark them as completed
-        run_process_tasks()
+        run_process_tasks(*args, **options)
 
 
-def run_process_tasks():
+def run_process_tasks(*args, **options):
     """Runs background tasks such as those in bot/tasks/pennychat
-
-    See the document for how this works here https://django-background-tasks.readthedocs.io/en/latest/
     """
     process_tasks = ProcessTasks()
     process_tasks.sig_manager = SignalManager()
-    process_tasks.run(duration=settings.PROCESS_TASKS_DURATION_SECONDS)
+    process_tasks.run(*args, **options)
