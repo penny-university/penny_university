@@ -1,17 +1,22 @@
 import {normalize, schema} from 'normalizr'
 import {camelizeKeys, decamelizeKeys} from 'humps'
+import * as selectors from '../selectors'
 
 const API_ROOT = 'http://localhost:8000/api/'
 
 // Makes an API call, and properly formats the response.
-const callApi = (endpoint, schema, method, payload) => {
+const callApi = (endpoint, schema, method, payload, token) => {
   const url = (endpoint.indexOf(API_ROOT) === -1) ? API_ROOT + endpoint : endpoint
-
+  let authHeader = {}
+  if (token) {
+    authHeader = {'Authorization': `Token ${token}`}
+  }
+  const headers = Object.assign({}, {'Content-Type': 'application/json'}, authHeader)
   switch (method) {
     case 'POST':
     case 'PUT':
       const jsonPayload = JSON.stringify(decamelizeKeys(payload))
-      return fetch(url, {method, body: jsonPayload, headers: {'Content-Type': 'application/json'}})
+      return fetch(url, {method, body: jsonPayload, headers})
         .then(response =>
           response.json().then(json => {
             if (!response.ok) {
@@ -82,6 +87,10 @@ export default store => next => action => {
     return next(action)
   }
 
+  if (action.type) {
+    next(action)
+  }
+
   let {endpoint} = callApiAction
   const {schema, types, method, payload} = callApiAction
 
@@ -112,7 +121,8 @@ export default store => next => action => {
   const [requestType, successType, failureType] = types
   next(actionWith({type: requestType}))
 
-  return callApi(endpoint, schema, method, payload).then(
+  const token = selectors.user.getToken(store.getState())
+  return callApi(endpoint, schema, method, payload, token).then(
     response => next(actionWith({
       response,
       type: successType

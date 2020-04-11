@@ -1,24 +1,14 @@
 import thunk from 'redux-thunk'
-import api from '../middleware/api'
 import configureMockStore from 'redux-mock-store'
+import api from '../middleware/api'
+import user from '../middleware/user'
+import { initialState } from '../reducers'
 
 export const baseUrl = "http://localhost:8000/api/"
 
-export const mockStore = configureMockStore([thunk, api])
 
-export const initialState = {
-  entities: {
-    chats: {},
-    followUps: {},
-    users: {}
-  },
-  pagination: {
-    chatsByFilter: {},
-    followUpsByChat: {}
-  }
-}
-
-export const makeMockStore = (state = {}) => {
+export const makeMockStore = (state = {}, middleware = [api]) => {
+  const mockStore = configureMockStore([thunk, ...middleware])
   return mockStore({
     ...initialState,
     ...state,
