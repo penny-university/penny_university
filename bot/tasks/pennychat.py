@@ -119,7 +119,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     elif mode == REMIND:
         header_text = f'_*{organizer.display_name}\'s* Penny Chat is coming up soon! We hope you can still make it._'
 
-    date_text = f'<!date^{int(penny_chat_invitation.date.astimezone(utc).timestamp())}^{{date_pretty}} at {{time}}|{penny_chat_invitation.date}>'  # noqa
+    date_text = f'<!date^{int(penny_chat_invitation.date.astimezone(utc).timestamp())}^{{date}} at {{time}}|{penny_chat_invitation.date}>'  # noqa
     date_time_block = {
         'type': 'section',
         'text': {
