@@ -39,7 +39,7 @@ def test_penny_chat_detail(test_chats_1):
 
 @pytest.mark.django_db
 def test_create_penny_chat(test_chats_1):
-    user = test_chats_1[0].get_organizer().user_profile.user
+    user = test_chats_1[0].get_organizer().user
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -71,7 +71,7 @@ def test_create_penny_chat_unauthorized(test_chats_1):
 @pytest.mark.django_db
 def test_update_penny_chat(test_chats_1):
     penny_chat = test_chats_1[0]
-    user = penny_chat.get_organizer().user_profile.user
+    user = penny_chat.get_organizer().user
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -122,7 +122,7 @@ def test_update_penny_chat_wrong_user(test_chats_1):
 @pytest.mark.django_db
 def test_partial_update_penny_chat(test_chats_1):
     penny_chat = test_chats_1[0]
-    user = penny_chat.get_organizer().user_profile.user
+    user = penny_chat.get_organizer().user
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -166,7 +166,7 @@ def test_partial_update_penny_chat_wrong_user(test_chats_1):
 @pytest.mark.django_db
 def test_delete_penny_chat(test_chats_1):
     penny_chat = test_chats_1[0]
-    user = penny_chat.get_organizer().user_profile.user
+    user = penny_chat.get_organizer().user
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)

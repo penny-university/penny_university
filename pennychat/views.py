@@ -28,14 +28,14 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         if not self.request.auth:
             raise NotAuthenticated
-        if self.get_object().get_organizer().user_profile.user != self.request.user:
+        if self.get_object().get_organizer().user != self.request.user:
             raise PermissionDenied
         super().perform_update(serializer)
 
     def perform_destroy(self, instance):
         if not self.request.auth:
             raise NotAuthenticated
-        if self.get_object().get_organizer().user_profile.user != self.request.user:
+        if self.get_object().get_organizer().user != self.request.user:
             raise PermissionDenied
         super().perform_destroy(instance)
 

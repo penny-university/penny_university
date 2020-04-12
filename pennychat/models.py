@@ -42,12 +42,15 @@ class PennyChat(models.Model):
         assert role in [role[0] for role in Participant.ROLE_CHOICES]  # get out ids
         Participant.objects.update_or_create(
             penny_chat=self,
-            user=participant,
+            user_profile=participant,
             defaults=dict(role=role),
         )
 
     def get_organizer(self):
-        return self.participants.get(role=Participant.ORGANIZER)
+        return UserProfile.objects.get(
+            user_chats__penny_chat=self,
+            user_chats__role=Participant.ORGANIZER,
+        )
 
     def get_participants(self):
         return UserProfile.objects.filter(user_chats__penny_chat=self)
