@@ -4,7 +4,7 @@ import {combineReducers} from 'redux'
 import deepmerge from 'deepmerge'
 
 // Updates an entity cache in response to any action with response.entities, such as a CHATS_LIST_SUCCESS
-const entities = (state = { chats: {}, followUps: {}, users: {} }, action) => {
+const entities = (state = { chats: {}, followUps: {}, userProfiles: {} }, action) => {
   if (action.response && action.response.entities) {
     return deepmerge(state, action.response.entities)
   }
@@ -14,8 +14,6 @@ const entities = (state = { chats: {}, followUps: {}, users: {} }, action) => {
 
 const error = (state = null, action) => {
   const { type, error } = action
-
-  console.log(error)
 
   if (type === ActionTypes.CLEAR_ERROR_MESSAGE) {
     return null
