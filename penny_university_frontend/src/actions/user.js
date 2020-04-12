@@ -25,11 +25,11 @@ export const checkAuth = () => ({
 })
 
 export const fetchUser = () => ({
-    [CALL_API]: {
-      types: [FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE],
-      endpoint: 'me',
-      schema: Schemas.USER
-    },
+  [CALL_API]: {
+    types: [FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE],
+    endpoint: 'me',
+    schema: Schemas.USER
+  },
 })
 
 const login = () => ({
