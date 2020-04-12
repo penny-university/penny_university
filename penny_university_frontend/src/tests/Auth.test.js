@@ -1,7 +1,5 @@
 import {checkAuth, FETCH_USER_REQUEST, SET_TOKEN, CHECK_AUTH} from '../actions/user'
 import fetchMock from 'fetch-mock'
-import user from '../middleware/user'
-import api from '../middleware/api'
 import {makeMockStore, baseUrl} from './config'
 
 describe('auth flow', () => {
