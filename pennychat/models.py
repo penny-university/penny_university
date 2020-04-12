@@ -2,17 +2,22 @@ from django.db import models
 from django.utils import timezone
 
 from common.utils import pprint_obj
-from users.models import UserProfile
+from users.models import (
+    UserProfile,
+    get_or_create_user_profile_from_slack_id,
+)
 
 
 class PennyChat(models.Model):
-    DRAFT = 10
-    SHARED = 20
-    COMPLETED = 30
-    ABANDONED = 40
+    DRAFT = 10  # not shared with anyone
+    SHARED = 20  # invitation sent to all specified channels and users
+    REMINDED = 25  # participants reminded of upcoming penny chat
+    COMPLETED = 30  # penny chat is over
+    ABANDONED = 40  # penny chat abandoned
     STATUS_CHOICES = (
         (DRAFT, 'Draft'),
         (SHARED, 'Shared'),
+        (REMINDED, 'Reminded'),
         (COMPLETED, 'Completed'),
         (ABANDONED, 'Abandoned'),
     )
@@ -29,8 +34,23 @@ class PennyChat(models.Model):
     def __repr__(self):
         return pprint_obj(self)
 
+    def save_organizer_from_slack_id(self, slack_user_id):
+        organizer = get_or_create_user_profile_from_slack_id(slack_user_id, ignore_user_not_found=False)
+        self.save_participant(organizer, Participant.ORGANIZER)
+
+    def save_participant(self, participant, role):
+        assert role in [role[0] for role in Participant.ROLE_CHOICES]  # get out ids
+        Participant.objects.update_or_create(
+            penny_chat=self,
+            user=participant,
+            defaults=dict(role=role),
+        )
+
     def get_organizer(self):
         return self.participants.get(role=Participant.ORGANIZER)
+
+    def get_participants(self):
+        return UserProfile.objects.filter(user_chats__penny_chat=self)
 
 
 class PennyChatInvitation(PennyChat):
