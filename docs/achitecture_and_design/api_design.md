@@ -11,18 +11,24 @@ The following are the RESTful endpoints needed to support basic chat and follow-
     "id": 2,
     "participants": [
         {
-            "user": {
+            "user_profile": {
                 "id": 1,
                 "url": "http://pennyuniversity.org/api/users/1",
-                "name": "Joe"
+                "real_name": "Joe",
+                "user": {
+                    "id": 1,
+                    "username": "joe@email.com"
+                },
+                "chats": "http://pennyuniversity.org/api/users/1/chats/"
             },
             "role": "organizer"
         },
         {
-            "user": {
+            "user_profile": {
                 "id": 2,
                 "url": "http://pennyuniversity.org/api/users/2",
-                "name": "Jenny"
+                "real_name": "Jenny",
+                "chats": "http://pennyuniversity.org/api/users/2/chats/"
             },
             "role": "attendee"
         }
@@ -47,10 +53,15 @@ The following are the RESTful endpoints needed to support basic chat and follow-
             "id": 1,
             "participants": [
                 {
-                    "user": {
+                    "user_profile": {
                         "id": 1,
                         "url": "http://pennyuniversity.org/api/users/1",
-                        "name": "Joe"
+                        "real_name": "Joe",
+                        "user": {
+                            "id": 1,
+                            "username": "joe@email.com"
+                        },
+                        "chats": "http://pennyuniversity.org/api/users/1/chats/"
                     },
                     "role": "organizer"
                 },
@@ -58,7 +69,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
                     "user": {
                         "id": 2,
                         "url": "http://pennyuniversity.org/api/users/2",
-                        "name": "Jenny"
+                        "real_name": "Jenny"
                     },
                     "role": "attendee"
                 }
@@ -110,7 +121,9 @@ The following are the RESTful endpoints needed to support basic chat and follow-
         {
             "user": {
                 "id": 1,
-                "name": "..."
+                "real_name": "...",
+                "user": {...},
+                "chats": "http://pennyuniversity.org/api/users/1/chats/"
             },
             "date": "...",
             "content": "...",
