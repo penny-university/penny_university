@@ -10,12 +10,12 @@ import {Navigation} from './components/nav'
 import AlertContainer from './containers/AlertContainer'
 import ChatsPage from './containers/ChatsPage'
 import ChatDetailPage from './containers/ChatDetailPage'
-import {dispatchCheckAuth} from './actions/user'
+import {checkAuth} from './actions/user'
 
 const App = (props) => {
-  const { dispatchCheckAuth} = props
+  const {checkAuth} = props
   useEffect(() => {
-    dispatchCheckAuth()
+    checkAuth()
   })
   return (
     <>
@@ -38,10 +38,10 @@ const App = (props) => {
   )
 }
 
-const mapStateToProps = (store) => {}
+const mapStateToProps = () => {}
 
-const mapDispatchToProps = {
-  dispatchCheckAuth,
-}
+const mapDispatchToProps = (dispatch) => ({
+  checkAuth: () => dispatch(checkAuth())
+})
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

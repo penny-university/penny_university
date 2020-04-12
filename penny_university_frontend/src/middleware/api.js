@@ -87,10 +87,6 @@ export default store => next => action => {
     return next(action)
   }
 
-  if (action.type) {
-    next(action)
-  }
-
   let {endpoint} = callApiAction
   const {schema, types, method, payload} = callApiAction
 

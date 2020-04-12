@@ -27,7 +27,7 @@ export const checkAuth = () => ({
 export const fetchUser = () => ({
   [CALL_API]: {
     types: [FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE],
-    endpoint: 'me',
+    endpoint: 'me/',
     schema: Schemas.USER
   },
 })
@@ -35,7 +35,7 @@ export const fetchUser = () => ({
 const login = () => ({
   [CALL_API]: {
     types: [LOGIN_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE],
-    endpoint: 'login',
+    endpoint: 'login/',
     schema: Schemas.USER
   }
 })
@@ -43,7 +43,7 @@ const login = () => ({
 const signup = () => ({
   [CALL_API]: {
     types: [SIGNUP_REQUEST, SIGNUP_SUCCESS, SIGNUP_FAILURE],
-    endpoint: 'signup',
+    endpoint: 'signup/',
     schema: Schemas.USER
   }
 })
@@ -51,14 +51,6 @@ const signup = () => ({
 const logout = () => ({
   type: LOGOUT_USER
 })
-
-export const dispatchSetToken = (token) => async (dispatch) => {
-  return dispatch(setToken(token))
-}
-
-export const dispatchCheckAuth = () => async (dispatch) => {
-  return dispatch(checkAuth())
-}
 
 export const dispatchFetchUser = () => async (dispatch) => {
   return dispatch(fetchUser())
