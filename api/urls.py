@@ -7,7 +7,7 @@ from users.views import RegisterUser
 follow_up_detail = UpdateDeleteFollowUp.as_view()
 
 urlpatterns = [
-    path('auth/registration/', RegisterUser.as_view(), name='register-user'),
+    path('auth/register/', RegisterUser.as_view(), name='register-user'),
     path('auth/', include('dj_rest_auth.urls')),
     path('chats/', include('pennychat.urls')),
     path('follow-ups/<int:pk>/', follow_up_detail, name='followup-detail'),
