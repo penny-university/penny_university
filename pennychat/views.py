@@ -7,6 +7,7 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer
+from .permissions import IsOwner
 from users.models import UserProfile
 
 
@@ -74,19 +75,13 @@ class UpdateDeleteFollowUp(mixins.UpdateModelMixin, mixins.DestroyModelMixin, ge
     """
     queryset = FollowUp.objects.all()
     serializer_class = FollowUpSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def put(self, request, *args, **kwargs):
-        if self.get_object().user_profile.user != request.user:
-            raise PermissionDenied
         return self.update(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
-        if self.get_object().user_profile.user != request.user:
-            raise PermissionDenied
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        if self.get_object().user_profile.user != request.user:
-            raise PermissionDenied
         return self.destroy(request, *args, **kwargs)
