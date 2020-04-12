@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
+    'dj_rest_auth',
     'bot.apps.BotConfig',
     'api.apps.ApiConfig',
     'home.apps.HomeConfig',

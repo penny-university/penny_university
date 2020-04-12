@@ -11,7 +11,7 @@ from .serializers import UserSerializer, UserProfileSerializer
 from pennychat.models import Participant
 
 
-class CreateUser(generics.CreateAPIView):
+class RegisterUser(generics.CreateAPIView):
     queryset = User.objects.all()
 
     def post(self, request, format=None, **kwargs):
@@ -24,7 +24,7 @@ class CreateUser(generics.CreateAPIView):
                 profile.user = user
                 profile.save()
             token = Token.objects.create(user=user)
-            return Response(data={'token': token.key, 'user': serializer.data})
+            return Response(data={'key': token.key, 'user': serializer.data})
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
