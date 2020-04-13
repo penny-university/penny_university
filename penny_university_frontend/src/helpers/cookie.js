@@ -1,9 +1,9 @@
 // @flow
 const Cookies = {
-    token: 'token',
-    user: 'user',
-  }
-  
+  token: 'token',
+  user: 'user',
+}
+
 const AUTH_EXPIRATION = 60 * 24 * 7 * 4 // 4 weeks
 
 const CookieHelper = () => {
@@ -56,4 +56,3 @@ const CookieHelper = () => {
   }
 }
 export default CookieHelper()
-  

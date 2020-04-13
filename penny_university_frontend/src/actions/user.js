@@ -1,4 +1,4 @@
-import {CALL_API, Schemas} from '../middleware/api'
+import { CALL_API, Schemas } from '../middleware/api'
 
 export const HYDRATE_USER = 'HYDRATE_USER'
 export const LOGOUT_USER = 'LOGOUT_USER'
@@ -31,7 +31,7 @@ export const fetchUser = () => ({
   [CALL_API]: {
     types: [FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE],
     endpoint: 'me/',
-    schema: Schemas.USER
+    schema: Schemas.USER,
   },
 })
 
@@ -39,16 +39,16 @@ const login = () => ({
   [CALL_API]: {
     types: [LOGIN_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE],
     endpoint: 'auth/login/',
-    schema: Schemas.USER
-  }
+    schema: Schemas.USER,
+  },
 })
 
 const signup = () => ({
   [CALL_API]: {
     types: [SIGNUP_REQUEST, SIGNUP_SUCCESS, SIGNUP_FAILURE],
     endpoint: 'auth/register/',
-    schema: Schemas.USER
-  }
+    schema: Schemas.USER,
+  },
 })
 
 const logout = () => ({
@@ -56,22 +56,14 @@ const logout = () => ({
   [CALL_API]: {
     types: [LOGOUT_REQUEST, LOGOUT_SUCCESS, LOGOUT_FAILURE],
     endpoint: 'auth/logout/',
-    schema: Schemas.USER
-  }
+    schema: Schemas.USER,
+  },
 })
 
-export const dispatchFetchUser = () => async (dispatch) => {
-  return dispatch(fetchUser())
-}
+export const dispatchFetchUser = () => async (dispatch) => dispatch(fetchUser())
 
-export const dispatchSignup = () => async (dispatch) => {
-  return dispatch(signup())
-}
+export const dispatchSignup = () => async (dispatch) => dispatch(signup())
 
-export const dispatchLogin = () => async (dispatch) => {
-  return dispatch(login())
-}
+export const dispatchLogin = () => async (dispatch) => dispatch(login())
 
-export const dispatchLogout = () => async (dispatch) => {
-  return dispatch(logout())
-}
+export const dispatchLogout = () => async (dispatch) => dispatch(logout())
