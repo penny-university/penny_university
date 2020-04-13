@@ -37,12 +37,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "lint": "eslint src/ --ext .js,.jsx",
+    "lint:fix": "yarn lint --fix",
     "lint:scss": "sass-lint -v $npm_package_config_src_css",
     "lint:scss:fix": "sass-lint-auto-fix",
     "compile:css": "npm run lint:scss:fix && node-sass -o $npm_package_config_dest_css $npm_package_config_src_css"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
   },
   "browserslist": {
     "production": [
@@ -59,6 +58,7 @@
   "devDependencies": {
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
+    "eslint-config-airbnb": "^18.1.0",
     "fetch-mock": "^9.0.0-beta.2",
     "sass-lint": "^1.13.1",
     "sass-lint-auto-fix": "^0.20.0"

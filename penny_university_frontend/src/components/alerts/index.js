@@ -1,3 +1,3 @@
 import ErrorAlert from './ErrorAlert'
 
-export {ErrorAlert}
+export { ErrorAlert }
