@@ -87,7 +87,7 @@ def greeting_blocks(user_id):
     return message
 
 
-def onboarding_template(user=None):
+def onboarding_blocks(user=None):
     template = {
         'callback_id': 'interests',
         'title': 'Let\'s get to know you',
@@ -153,7 +153,7 @@ class GreetingBotModule(BotModule):
     def show_interests_dialog(self, event):
         slack_id = event['user']['id']
         user = UserProfile.objects.filter(slack_id=slack_id).first()
-        template = onboarding_template(user)
+        template = onboarding_blocks(user)
         self.slack.dialog_open(dialog=template, trigger_id=event['trigger_id'])
 
     @has_event_type('dialog_submission')

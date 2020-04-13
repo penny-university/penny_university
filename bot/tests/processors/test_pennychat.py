@@ -15,7 +15,7 @@ from pennychat.models import (
 from unittest.mock import call
 from users.models import UserProfile
 
-TZ = timezone('America/Chicago')
+TIMEZONE = timezone('America/Chicago')
 
 
 def create_penny_chat():
@@ -56,7 +56,7 @@ def test_date_select(mocker):
     bot_module(event)
 
     penny_chat = PennyChatInvitation.objects.get(id=chat_id)
-    assert penny_chat.date.astimezone(TZ).date() == datetime(2019, 1, 1).date()
+    assert penny_chat.date.astimezone(TIMEZONE).date() == datetime(2019, 1, 1).date()
 
 
 @pytest.mark.django_db
@@ -88,7 +88,7 @@ def test_time_select(mocker):
     bot_module(event)
     penny_chat = PennyChatInvitation.objects.get(id=chat_id)
     test_time = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0).time()
-    assert penny_chat.date.astimezone(TZ).time() == test_time
+    assert penny_chat.date.astimezone(TIMEZONE).time() == test_time
 
 
 @pytest.mark.django_db
@@ -143,17 +143,17 @@ def test_PennyChatBotModule_share(mocker):
     }
 
     share_penny_chat_invitation = mocker.patch('bot.processors.pennychat.share_penny_chat_invitation')
-    post_organizer_edit_after_share_template = mocker.patch(
-        'bot.processors.pennychat.post_organizer_edit_after_share_template'
+    post_organizer_edit_after_share_blocks = mocker.patch(
+        'bot.processors.pennychat.post_organizer_edit_after_share_blocks'
     )
 
     # The Actual Test
     with mocker.patch('pennychat.models.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
-            post_organizer_edit_after_share_template:
+            post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_args == call(penny_chat_invitation.id)
-    assert post_organizer_edit_after_share_template.now.call_args == call(view_id)
+    assert post_organizer_edit_after_share_blocks.now.call_args == call(view_id)
 
     penny_chat_invitation.refresh_from_db()
     penny_chat = penny_chat_invitation.penny_chat

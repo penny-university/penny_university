@@ -5,7 +5,7 @@ from pytz import timezone, utc
 import requests
 
 from bot.tasks import (
-    post_organizer_edit_after_share_template,
+    post_organizer_edit_after_share_blocks,
     share_penny_chat_invitation,
 )
 from bot.utils import chat_postEphemeral_with_fallback
@@ -303,13 +303,13 @@ class PennyChatBotModule(BotModule):
                 }
             }
 
-        post_organizer_edit_after_share_template.now(view['id'])
-
         # Ready to share
         penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
         penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
         penny_chat_invitation.status = PennyChatInvitation.SHARED
         penny_chat_invitation.save()
+
+        post_organizer_edit_after_share_blocks.now(view['id'])
 
         penny_chat_invitation.save_organizer_from_slack_id(penny_chat_invitation.organizer_slack_id)
 
@@ -382,7 +382,7 @@ class PennyChatBotModule(BotModule):
 
             # create organizer notification message (even if we choose not to use it below)
             timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-            date_text = f'<!date^{timestamp}^{{date_pretty}} at {{time}}|{penny_chat.date}>'
+            date_text = f'<!date^{timestamp}^{{date}} at {{time}}|{penny_chat.date}>'
             _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
             notification = f'<@{user.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
             we_will_notify_organizer = 'Thank you. We will notify the organizer.'
