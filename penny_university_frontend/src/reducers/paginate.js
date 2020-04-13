@@ -25,7 +25,7 @@ const paginate = ({ types, mapActionToKey }) => {
     pageCount: 0,
     ids: [],
   }, action) => {
-    const { result } = action.response
+    const { result } = action.response || {}
     switch (action.type) {
       case requestType:
         return {
