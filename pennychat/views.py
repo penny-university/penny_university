@@ -7,7 +7,7 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer
-from .permissions import IsOwner
+from .permissions import IsOwner, method_is_authenticated, perform_is_authenticated
 from users.models import UserProfile
 
 
@@ -18,24 +18,21 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     queryset = PennyChat.objects.all().order_by('-date')
     serializer_class = PennyChatSerializer
 
+    @perform_is_authenticated
     def perform_create(self, serializer):
-        if not self.request.auth:
-            raise NotAuthenticated
         chat = serializer.save()
         profile = UserProfile.objects.get(user=self.request.user)
         participant = Participant.objects.create(user_profile=profile, penny_chat=chat, role=Participant.ORGANIZER)
         participant.save()
 
+    @perform_is_authenticated
     def perform_update(self, serializer):
-        if not self.request.auth:
-            raise NotAuthenticated
         if self.get_object().get_organizer().user != self.request.user:
             raise PermissionDenied
         super().perform_update(serializer)
 
+    @perform_is_authenticated
     def perform_destroy(self, instance):
-        if not self.request.auth:
-            raise NotAuthenticated
         if self.get_object().get_organizer().user != self.request.user:
             raise PermissionDenied
         super().perform_destroy(instance)
@@ -54,9 +51,8 @@ class ListCreateFollowUps(generics.GenericAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    @method_is_authenticated
     def post(self, request, pk, format=None):
-        if not request.auth:
-            raise NotAuthenticated
         follow_up_data = dict(request.data)
         penny_chat_url = reverse('pennychat-detail', args=[pk], request=request)
         follow_up_data['penny_chat'] = penny_chat_url
