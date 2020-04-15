@@ -1,4 +1,4 @@
-django>=2.1.10
+django==2.2
 dj-database-url==0.5.0
 django-background-tasks==1.2.5
 gunicorn==19.9.0
@@ -9,6 +9,7 @@ uwsgi==2.0.18
 whitenoise==4.1.4
 djangorestframework>=3.10.3
 django-cors-headers>=3.2.1
+dj-rest-auth==1.0.1
 
 # I had a little trouble installing psycopg2, this finally worked
 # brew install postgres

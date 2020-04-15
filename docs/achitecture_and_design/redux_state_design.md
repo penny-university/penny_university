@@ -14,11 +14,11 @@ state = {
         date: "2020-01-01 12:00:00.000",
         participants: [
           {
-            user: 1,
+            userProfile: 1,
             role: "Organizer"
           },
           {
-            user: 2,
+            userProfile: 2,
             role: "Invitee"
           }
         ],
@@ -30,11 +30,11 @@ state = {
         date: "2020-12-01 20:00:00.000",
         participants: [
           {
-            user: 2,
+            userProfile: 2,
             role: "Organizer"
           },
           {
-            user: 1,
+            userProfile: 1,
             role: "Attendee"
           }
         ],
@@ -45,25 +45,25 @@ state = {
       1: {
         content: "This was a great Penny Chat. I loved it!",
         date: "2020-01-01 15:00:00.000",
-        user: 1
+        userProfile: 1
       },
       2: {
         content: "We learned a lot. Trust me.",
         date: "2020-12-01 21:00:00.000",
-        user: 2
+        userProfile: 2
       },
       3: {
         content: "I have nothing more to add.",
         date: "2020-12-01 21:30:00.000",
-        user: 1
+        userProfile: 1
       }
     },
-    users: {
+    userProfiles: {
       1: {
-        real_name: "Nick Chouard"
+        realName: "Nick Chouard"
       },
       2: {
-        real_name: "John Berryman"
+        realName: "John Berryman"
       }
     }
   },

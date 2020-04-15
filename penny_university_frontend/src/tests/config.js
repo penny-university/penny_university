@@ -10,7 +10,7 @@ export const initialState = {
   entities: {
     chats: {},
     followUps: {},
-    users: {}
+    userProfiles: {}
   },
   pagination: {
     chatsByFilter: {},

@@ -1,7 +1,9 @@
 import pytest
 import logging
 
+from django.contrib.auth.models import User
 from rest_framework.test import APIClient
+from rest_framework.authtoken.models import Token
 
 from pennychat.models import PennyChat
 
@@ -19,7 +21,7 @@ def test_penny_chat_list(test_chats_1):
     # first chat should be most recent chat
     assert 'participants' in response.data['results'][0]
     assert response.data['results'][0]['participants'][0]['role'] == 'Organizer'
-    assert response.data['results'][0]['participants'][0]['user']['real_name'] == 'three'
+    assert response.data['results'][0]['participants'][0]['user_profile']['real_name'] == 'three'
     assert chats[0]['title'] == most_recent_chat.title
 
 
@@ -31,13 +33,16 @@ def test_penny_chat_detail(test_chats_1):
     assert response.status_code == 200
     assert 'participants' in response.data
     assert response.data['participants'][0]['role'] == 'Organizer'
-    assert response.data['participants'][0]['user']['real_name'] == 'one'
+    assert response.data['participants'][0]['user_profile']['real_name'] == 'one'
     assert response.data['title'] == penny_chat.title
 
 
 @pytest.mark.django_db
 def test_create_penny_chat(test_chats_1):
+    user = test_chats_1[0].get_organizer().user
+    token = Token.objects.create(user=user)
     client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     data = {
         'title': 'Create Chat',
         'description': 'Testing creating a chat',
@@ -52,9 +57,24 @@ def test_create_penny_chat(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_update_penny_chat(test_chats_1):
+def test_create_penny_chat_unauthorized(test_chats_1):
     client = APIClient()
+    data = {
+        'title': 'Create Chat',
+        'description': 'Testing creating a chat',
+        'date': '2020-01-01T00:00'
+    }
+    response = client.post('/api/chats/', data=data, format='json')
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_update_penny_chat(test_chats_1):
     penny_chat = test_chats_1[0]
+    user = penny_chat.get_organizer().user
+    token = Token.objects.create(user=user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     before = client.get(f'/api/chats/{penny_chat.id}/').data
     data = {
         'title': 'Update Chat',
@@ -71,9 +91,41 @@ def test_update_penny_chat(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_partial_update_penny_chat(test_chats_1):
-    client = APIClient()
+def test_update_penny_chat_unauthorized(test_chats_1):
     penny_chat = test_chats_1[0]
+    client = APIClient()
+    data = {
+        'title': 'Update Chat',
+        'description': 'Testing updating a chat',
+        'date': '2020-01-03T12:00:00Z'
+    }
+    response = client.put(f'/api/chats/{penny_chat.id}/', data=data, format='json')
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_update_penny_chat_wrong_user(test_chats_1):
+    penny_chat = test_chats_1[0]
+    user = User.objects.create_user("wronguser")
+    token = Token.objects.create(user=user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    data = {
+        'title': 'Update Chat',
+        'description': 'Testing updating a chat',
+        'date': '2020-01-03T12:00:00Z'
+    }
+    response = client.put(f'/api/chats/{penny_chat.id}/', data=data, format='json')
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_partial_update_penny_chat(test_chats_1):
+    penny_chat = test_chats_1[0]
+    user = penny_chat.get_organizer().user
+    token = Token.objects.create(user=user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     before = client.get(f'/api/chats/{penny_chat.id}/').data
     data = {
         'title': 'Update Chat'
@@ -87,13 +139,60 @@ def test_partial_update_penny_chat(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_delete_penny_chat(test_chats_1):
-    client = APIClient()
+def test_partial_update_penny_chat_unauthorized(test_chats_1):
     penny_chat = test_chats_1[0]
+    client = APIClient()
+    data = {
+        'title': 'Update Chat'
+    }
+    response = client.patch(f'/api/chats/{penny_chat.id}/', data=data, format='json')
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_partial_update_penny_chat_wrong_user(test_chats_1):
+    penny_chat = test_chats_1[0]
+    user = User.objects.create_user("wronguser")
+    token = Token.objects.create(user=user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    data = {
+        'title': 'Update Chat'
+    }
+    response = client.patch(f'/api/chats/{penny_chat.id}/', data=data, format='json')
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_delete_penny_chat(test_chats_1):
+    penny_chat = test_chats_1[0]
+    user = penny_chat.get_organizer().user
+    token = Token.objects.create(user=user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     response = client.delete(f'/api/chats/{penny_chat.id}/')
     assert response.status_code == 204
     response = client.get(f'/api/chats/{penny_chat.id}/')
     assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_delete_penny_chat_unauthorized(test_chats_1):
+    penny_chat = test_chats_1[0]
+    client = APIClient()
+    response = client.delete(f'/api/chats/{penny_chat.id}/')
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_delete_penny_chat_wrong_user(test_chats_1):
+    penny_chat = test_chats_1[0]
+    user = User.objects.create_user("wronguser")
+    token = Token.objects.create(user=user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    response = client.delete(f'/api/chats/{penny_chat.id}/')
+    assert response.status_code == 403
 
 
 @pytest.mark.django_db
