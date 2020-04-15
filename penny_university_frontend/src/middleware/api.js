@@ -39,17 +39,15 @@ const callApi = (endpoint, schema, method, payload) => {
           })
         )
   }
-
-
 }
 
-const userSchema = new schema.Entity('users', {}, {
-  idAttribute: user => user.id
+const userProfileSchema = new schema.Entity('userProfiles', {}, {
+  idAttribute: userProfile => userProfile.id
 })
 
 const chatSchema = new schema.Entity('chats', {
   participants: [{
-    user: userSchema
+    userProfile: userProfileSchema
   }]
 }, {
   idAttribute: chat => chat.id
@@ -57,7 +55,7 @@ const chatSchema = new schema.Entity('chats', {
 
 const followUpSchema = new schema.Entity('followUps', {
   pennyChat: chatSchema,
-  user: userSchema
+  userProfile: userProfileSchema
 }, {
   idAttribute: followUp => followUp.id
 })
@@ -66,8 +64,8 @@ const followUpSchema = new schema.Entity('followUps', {
 export const Schemas = {
   CHAT: chatSchema,
   CHAT_ARRAY: [chatSchema],
-  USER: userSchema,
-  USER_ARRAY: [userSchema],
+  USER: userProfileSchema,
+  USER_ARRAY: [userProfileSchema],
   FOLLOW_UP: followUpSchema,
   FOLLOW_UP_ARRAY: [followUpSchema]
 }

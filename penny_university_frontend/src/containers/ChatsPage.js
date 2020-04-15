@@ -26,7 +26,7 @@ ChatsPage.propTypes = {
 const mapStateToProps = (state) => {
   const {
     pagination: {chatsByFilter},
-    entities: {chats, users}
+    entities: {chats, userProfiles}
   } = state
 
   const chatsPagination = chatsByFilter['all'] || {ids: []}
@@ -35,8 +35,8 @@ const mapStateToProps = (state) => {
     .map(id => chats[id])
     .map(c => {
       c.participants = c.participants.map(c => {
-        // if user is just an ID, populate the full user
-        return (typeof(c.user) === 'number') ? {user: users[c.user], role: c.role} : c
+        // if userProfile is just an ID, populate the full userProfile
+        return (typeof(c.userProfile) === 'number') ? {userProfile: userProfiles[c.userProfile], role: c.role} : c
       }).sort((a, b) => {
         if (a.role === 'Organizer') return -1
         else if (b.role === 'Organizer') return -1

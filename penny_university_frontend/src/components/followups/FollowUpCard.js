@@ -16,7 +16,7 @@ const FollowUpCard = ({followUp, updateFollowUp}) => {
   return (
     <div className='pt-2'>
       <div className='d-flex justify-content-between'>
-        <FollowUpUserInfo user={followUp.userInfo} date={followUp.date}/>
+        <FollowUpUserInfo userProfile={followUp.userProfile} date={followUp.date}/>
         {editMode ?
           <SaveButton className='align-self-start' type='Changes' onClick={saveFollowUp}/> :
           <EditButton className='align-self-start' type='Follow Up' onClick={() => toggleEditMode(true)}/>
