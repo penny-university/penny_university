@@ -1,27 +1,29 @@
-staticfiles/*
+# OSX
+.DS_Store
 
-!staticfiles/.gitignore
+# Editors
+*.sublime-project
+*.sublime-workspace
+.idea
+.vscode
 
+# Python
+*.pickle
 credentials.json
-token.pickle
-
 messages.log
 __pycache__
 *.pyc
 db.sqlite3
 .pytest_cache
-.DS_Store
 venv
-.idea
-.DS_Store
-.vscode
-node_modules
-package-lock.json
+staticfiles/*
+!staticfiles/.gitignore
 .envrc
 .direnv
 
-credentials.json
+#  Javascript
+node_modules
 
-*.pickle
 
+#  MISC
 NOT_COMMITTED
