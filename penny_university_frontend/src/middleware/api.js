@@ -32,7 +32,7 @@ const callApi = (endpoint, responseSchema, method, payload) => {
           const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
 
           // normalize the response into our defined schemas
-          return { ...normalize(camelJson, schema), nextPageUrl: json.next }
+          return { ...normalize(camelJson, responseSchema), nextPageUrl: json.next }
         }))
   }
 }

@@ -162,6 +162,12 @@ describe('chat reducers', () => {
         email: 'test1@example.com',
         realName: 'Test User 1',
       },
+      2: {
+        id: 2,
+        url: 'http://localhost:8000/api/users/2/',
+        email: 'test2@example.com',
+        realName: 'Test User 2',
+      },
     }
 
     return store.dispatch(loadChatDetail('1')).then(() => {
