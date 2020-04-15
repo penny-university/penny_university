@@ -1,9 +1,10 @@
+import { combineReducers } from 'redux'
+import deepmerge from 'deepmerge'
 import * as ActionTypes from '../actions'
 import paginate from './paginate'
-import {combineReducers} from 'redux'
-import deepmerge from 'deepmerge'
 
-// Updates an entity cache in response to any action with response.entities, such as a CHATS_LIST_SUCCESS
+// Updates an entity cache in response to any action
+// with response.entities, such as a CHATS_LIST_SUCCESS
 const entities = (state = { chats: {}, followUps: {}, userProfiles: {} }, action) => {
   if (action.response && action.response.entities) {
     return deepmerge(state, action.response.entities)
@@ -12,12 +13,12 @@ const entities = (state = { chats: {}, followUps: {}, userProfiles: {} }, action
   return state
 }
 
-const error = (state = null, action) => {
+const errorReducer = (state = null, action) => {
   const { type, error } = action
 
   if (type === ActionTypes.CLEAR_ERROR_MESSAGE) {
     return null
-  } else if (error) {
+  } if (error) {
     return error
   }
 
@@ -30,23 +31,23 @@ const pagination = combineReducers({
     types: [
       ActionTypes.CHATS_LIST_REQUEST,
       ActionTypes.CHATS_LIST_SUCCESS,
-      ActionTypes.CHATS_LIST_FAILURE
-    ]
+      ActionTypes.CHATS_LIST_FAILURE,
+    ],
   }),
   followUpsByChat: paginate({
-    mapActionToKey: action => action.chatId,
+    mapActionToKey: (action) => action.chatId,
     types: [
       ActionTypes.FOLLOW_UPS_REQUEST,
       ActionTypes.FOLLOW_UPS_SUCCESS,
-      ActionTypes.FOLLOW_UPS_FAILURE
-    ]
-  })
+      ActionTypes.FOLLOW_UPS_FAILURE,
+    ],
+  }),
 })
 
 const rootReducer = combineReducers({
   entities,
-  error,
-  pagination
+  error: errorReducer,
+  pagination,
 })
 
 export default rootReducer

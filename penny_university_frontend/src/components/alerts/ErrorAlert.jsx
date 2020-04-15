@@ -1,7 +1,7 @@
-import React, {useState} from 'react'
-import {Alert} from 'reactstrap'
+import React, { useState } from 'react'
+import { Alert } from 'reactstrap'
 
-const ErrorAlert = ({message, dismiss}) => {
+const ErrorAlert = ({ message, dismiss }) => {
   const [visible, setVisible] = useState(true)
 
   const onDismiss = () => {

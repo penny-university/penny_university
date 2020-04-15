@@ -1,8 +1,8 @@
-import {loadFollowUps} from '../actions'
-import reducer from '../reducers'
 import fetchMock from 'fetch-mock'
-import {makeMockStore, initialState, baseUrl} from './config'
-import {followUps} from './data'
+import { loadFollowUps } from '../actions'
+import reducer from '../reducers'
+import { makeMockStore, initialState, baseUrl } from './config'
+import { followUps } from './data'
 
 describe('follow up actions', () => {
   afterEach(() => {
@@ -10,9 +10,9 @@ describe('follow up actions', () => {
   })
 
   it('should dispatch FOLLOW_UPS_REQUEST and FOLLOW_UPS_SUCCESS', () => {
-    fetchMock.getOnce(baseUrl + 'chats/1/follow-ups/', {
-      body: {results: followUps['http://localhost:8000/api/chats/1/follow-ups']},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
+      body: { results: followUps['http://localhost:8000/api/chats/1/follow-ups'] },
+      headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore()
@@ -20,12 +20,12 @@ describe('follow up actions', () => {
     const expectedActionTypes = ['FOLLOW_UPS_REQUEST', 'FOLLOW_UPS_SUCCESS']
 
     return store.dispatch(loadFollowUps('1')).then(() => {
-      expect(store.getActions().map(a => a.type)).toEqual(expectedActionTypes)
+      expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
     })
   })
 
   it('should dispatch FOLLOW_UPS_REQUEST and FOLLOW_UPS_FAILURE', () => {
-    fetchMock.getOnce(baseUrl + 'chats/1/follow-ups/', () => {
+    fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, () => {
       throw new Error('It failed!')
     })
 
@@ -33,14 +33,14 @@ describe('follow up actions', () => {
 
     const expectedActions = [
       {
-        chatId: "1",
+        chatId: '1',
         type: 'FOLLOW_UPS_REQUEST',
       },
       {
-        chatId: "1",
+        chatId: '1',
         type: 'FOLLOW_UPS_FAILURE',
-        error: 'It failed!'
-      }
+        error: 'It failed!',
+      },
     ]
 
     return store.dispatch(loadFollowUps('1')).then(() => {
@@ -56,13 +56,13 @@ describe('follow up reducers', () => {
 
   it('should add follow ups to entities', () => {
     const followUpsForChat = followUps['http://localhost:8000/api/chats/1/follow-ups']
-    fetchMock.getOnce(baseUrl + 'chats/1/follow-ups/', {
-      body: {results: followUpsForChat},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
+      body: { results: followUpsForChat },
+      headers: { 'content-type': 'application/json' },
     })
 
     // user will be normalized in response
-    const expectedFollowUp = Object.assign({}, followUpsForChat[0], {userProfile: 1})
+    const expectedFollowUp = { ...followUpsForChat[0], userProfile: 1 }
 
     const store = makeMockStore()
 
@@ -74,9 +74,9 @@ describe('follow up reducers', () => {
 
   it('should add user profile to entities', () => {
     const followUpsForChat = followUps['http://localhost:8000/api/chats/1/follow-ups']
-    fetchMock.getOnce(baseUrl + 'chats/1/follow-ups/', {
-      body: {results: followUpsForChat},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
+      body: { results: followUpsForChat },
+      headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore()
@@ -89,14 +89,14 @@ describe('follow up reducers', () => {
 
   it('should paginate follow up ids', () => {
     const followUpsForChat = followUps['http://localhost:8000/api/chats/1/follow-ups']
-    fetchMock.getOnce(baseUrl + 'chats/1/follow-ups/', {
-      body: {results: followUpsForChat},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
+      body: { results: followUpsForChat },
+      headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore(initialState)
 
-    const expectedFollowUpIds = followUpsForChat.map(f => f.id)
+    const expectedFollowUpIds = followUpsForChat.map((f) => f.id)
 
     return store.dispatch(loadFollowUps('1')).then(() => {
       const state = reducer(initialState, store.getActions()[1])

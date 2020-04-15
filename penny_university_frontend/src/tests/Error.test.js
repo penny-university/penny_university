@@ -1,7 +1,7 @@
-import reducer from '../reducers'
 import fetchMock from 'fetch-mock'
-import {makeMockStore, initialState} from './config'
-import {loadChatsList} from '../actions'
+import reducer from '../reducers'
+import { makeMockStore, initialState } from './config'
+import { loadChatsList } from '../actions'
 
 describe('error reducer', () => {
   fetchMock.get('*', () => {

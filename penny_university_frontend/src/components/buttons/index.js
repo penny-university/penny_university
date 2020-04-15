@@ -4,4 +4,6 @@ import EditButton from './EditButton'
 import SaveButton from './SaveButton'
 import CancelButton from './CancelButton'
 
-export {HeartButton, CreateButton, EditButton, SaveButton, CancelButton}
+export {
+  HeartButton, CreateButton, EditButton, SaveButton, CancelButton,
+}

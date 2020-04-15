@@ -1,8 +1,8 @@
-import {loadChatDetail, loadChatsList} from '../actions'
-import reducer from '../reducers'
 import fetchMock from 'fetch-mock'
-import {makeMockStore, initialState, baseUrl} from './config'
-import {chats, chats_next} from './data'
+import { loadChatDetail, loadChatsList } from '../actions'
+import reducer from '../reducers'
+import { makeMockStore, initialState, baseUrl } from './config'
+import { chats, chatsNext } from './data'
 
 describe('chat actions', () => {
   afterEach(() => {
@@ -10,9 +10,9 @@ describe('chat actions', () => {
   })
 
   it('should dispatch CHAT_LIST_REQUEST and CHAT_LIST_SUCCESS', () => {
-    fetchMock.getOnce(baseUrl + 'chats/', {
-      body: {results: chats},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/`, {
+      body: { results: chats },
+      headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore()
@@ -20,12 +20,12 @@ describe('chat actions', () => {
     const expectedActionTypes = ['CHATS_LIST_REQUEST', 'CHATS_LIST_SUCCESS']
 
     return store.dispatch(loadChatsList('all')).then(() => {
-      expect(store.getActions().map(a => a.type)).toEqual(expectedActionTypes)
+      expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
     })
   })
 
   it('should dispatch CHAT_LIST_REQUEST and CHAT_LIST_FAILURE', () => {
-    fetchMock.getOnce(baseUrl + 'chats/', () => {
+    fetchMock.getOnce(`${baseUrl}chats/`, () => {
       throw new Error('It failed!')
     })
 
@@ -33,12 +33,12 @@ describe('chat actions', () => {
 
     const expectedActions = [
       {
-        type: 'CHATS_LIST_REQUEST'
+        type: 'CHATS_LIST_REQUEST',
       },
       {
         type: 'CHATS_LIST_FAILURE',
-        error: 'It failed!'
-      }
+        error: 'It failed!',
+      },
     ]
 
     return store.dispatch(loadChatsList('all')).then(() => {
@@ -47,9 +47,9 @@ describe('chat actions', () => {
   })
 
   it('should dispatch CHAT_DETAIL_REQUEST and CHAT_DETAIL_SUCCESS', () => {
-    fetchMock.getOnce(baseUrl + 'chats/1/', {
-      body: {results: chats[1]},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/1/`, {
+      body: { results: chats[1] },
+      headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore()
@@ -57,12 +57,12 @@ describe('chat actions', () => {
     const expectedActionTypes = ['CHAT_DETAIL_REQUEST', 'CHAT_DETAIL_SUCCESS']
 
     return store.dispatch(loadChatDetail('1')).then(() => {
-      expect(store.getActions().map(a => a.type)).toEqual(expectedActionTypes)
+      expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
     })
   })
 
   it('should dispatch CHAT_DETAIL_REQUEST and CHAT_DETAIL_FAILURE', () => {
-    fetchMock.getOnce(baseUrl + 'chats/1/', () => {
+    fetchMock.getOnce(`${baseUrl}chats/1/`, () => {
       throw new Error('It failed!')
     })
 
@@ -70,12 +70,12 @@ describe('chat actions', () => {
 
     const expectedActions = [
       {
-        type: 'CHAT_DETAIL_REQUEST'
+        type: 'CHAT_DETAIL_REQUEST',
       },
       {
         type: 'CHAT_DETAIL_FAILURE',
-        error: 'It failed!'
-      }
+        error: 'It failed!',
+      },
     ]
 
     return store.dispatch(loadChatDetail('1')).then(() => {
@@ -90,26 +90,26 @@ describe('chat reducers', () => {
   })
 
   it('should add chats to entities', () => {
-    fetchMock.getOnce(baseUrl + 'chats/', {
-      body: {results: chats},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/`, {
+      body: { results: chats },
+      headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore()
 
     const expectedChat = {
-      "id": 2,
-      "url": "http://localhost:8000/api/chats/2/",
-      "title": "React Hooks",
-      "description": "Learn to make your components functional using hooks",
-      "date": "2020-02-02T12:00:00Z",
-      "followups": "http://localhost:8000/api/chats/2/follow-ups",
-      "participants": [
+      id: 2,
+      url: 'http://localhost:8000/api/chats/2/',
+      title: 'React Hooks',
+      description: 'Learn to make your components functional using hooks',
+      date: '2020-02-02T12:00:00Z',
+      followups: 'http://localhost:8000/api/chats/2/follow-ups',
+      participants: [
         {
-          "userProfile": 3,
-          "role": "Organizer"
-        }
-      ]
+          userProfile: 3,
+          role: 'Organizer',
+        },
+      ],
     }
 
     return store.dispatch(loadChatsList('all')).then(() => {
@@ -119,24 +119,25 @@ describe('chat reducers', () => {
   })
 
   it('should properly merge more chats in to entities', () => {
-    fetchMock.getOnce(baseUrl + 'chats/', {
-      body: {results: chats_next},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/`, {
+      body: { results: chatsNext },
+      headers: { 'content-type': 'application/json' },
     })
 
     // populate what we need from chats
-    let state = Object.assign({}, initialState, {
-      'entities': {
-        'chats': {
-          '1': {
-            'id': 1
+    let state = {
+      ...initialState,
+      entities: {
+        chats: {
+          1: {
+            id: 1,
           },
-          '2': {
-            'id': 2
-          }
-        }
-      }
-    })
+          2: {
+            id: 2,
+          },
+        },
+      },
+    }
 
     const store = makeMockStore(state)
 
@@ -147,26 +148,26 @@ describe('chat reducers', () => {
   })
 
   it('should add participants to the store as user profiles', () => {
-    fetchMock.getOnce(baseUrl + 'chats/1/', {
-      body: {results: chats[1]},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/1/`, {
+      body: { results: chats[1] },
+      headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore(initialState)
 
     const expectedUserProfiles = {
-      '1': {
-        'id': 1,
-        'url': 'http://localhost:8000/api/users/1/',
-        'email': 'test1@example.com',
-        'realName': 'Test User 1'
+      1: {
+        id: 1,
+        url: 'http://localhost:8000/api/users/1/',
+        email: 'test1@example.com',
+        realName: 'Test User 1',
       },
-      '2': {
-        'id': 2,
-        'url': 'http://localhost:8000/api/users/2/',
-        'email': 'test2@example.com',
-        'realName': 'Test User 2'
-      }
+      2: {
+        id: 2,
+        url: 'http://localhost:8000/api/users/2/',
+        email: 'test2@example.com',
+        realName: 'Test User 2',
+      },
     }
 
     return store.dispatch(loadChatDetail('1')).then(() => {
@@ -176,17 +177,17 @@ describe('chat reducers', () => {
   })
 
   it('should paginate chat ids', () => {
-    fetchMock.getOnce(baseUrl + 'chats/', {
-      body: {results: chats},
-      headers: {'content-type': 'application/json'}
+    fetchMock.getOnce(`${baseUrl}chats/`, {
+      body: { results: chats },
+      headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore()
 
     return store.dispatch(loadChatsList('all')).then(() => {
       const state = reducer(initialState, store.getActions()[1])
-      const expected = chats.map(c => c.id)
-      expect(state.pagination.chatsByFilter['all'].ids).toEqual(expected)
+      const expected = chats.map((c) => c.id)
+      expect(state.pagination.chatsByFilter.all.ids).toEqual(expected)
     })
   })
 })

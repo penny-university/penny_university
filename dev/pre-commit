@@ -30,5 +30,15 @@ if __name__ == '__main__':
         except subprocess.CalledProcessError as e:
             frontend_errors = 1
             print(NO_COMMIT_MSG)
+        
+        print('\CHECKING ESLINT')
+        try:
+            subprocess.check_call('cd penny_university_frontend && yarn lint', shell=True)
+            print('\nPROCEEDING WITH COMMIT\n')
+        except subprocess.CalledProcessError as e:
+            print('\RUNNING ESLINT --FIX')
+            subprocess.check_call('cd penny_university_frontend && yarn lint --fix', shell=True)
+            frontend_errors = 1
+            print(NO_COMMIT_MSG)
 
     sys.exit(max(pytest_errors, flake8_errors, frontend_errors))

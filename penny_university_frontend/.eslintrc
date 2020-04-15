@@ -1,0 +1,26 @@
+{
+  "extends": [
+    "react-app",
+    "airbnb",
+    "airbnb/hooks"
+  ],
+  "env": {
+    "jest": true,
+    "browser": true
+  },
+  "parser": "babel-eslint",
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "semi": 0,
+    "import/prefer-default-export": 0,
+    "no-shadow": 1,
+    "react/prop-types": 1,
+    "react/forbid-prop-types": 1,
+    "react/require-default-props": 1,
+    "react/default-props-match-prop-types": 1
+
+  },
+  "globals": {}
+}
