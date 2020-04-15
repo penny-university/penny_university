@@ -1,66 +1,10 @@
-# penny_university
+# Penny University
 
-Run tests with `pytest`
-
-## Requirements
-* `python >= 3.7` & `pip3`
-* `node >= 8.0` & `npm >= 6.3`
-
-Using a virtual environment is highly recommended. One way you can create one is by using: `python3 -m venv venv`. 
-Then activate it with: `source venv/bin/activate`.
-
-Install the pip requirements using: `pip install -r requirements.txt` and `pip install -r dev-requirements.txt`.
-
-Install the npm requirements by first navigating to the `src` directory (`cd src` from the root project directory), 
-and then using: `npm install`.
-
-## Compiling Sass Files
-Penny University uses SCSS as a CSS preprocessor. SCSS files must be compiled into CSS before they can be used.
-
-To compile the SCSS files to CSS, navigate into the `src` folder and use the following command: `npm run compile:css`.
-If you want the files to compile automatically as they change, use: `npm run compile:css:watch`.
-
-_Note: You must refresh the web page in order to see the changes._
-
-### File Structure
-
-SCSS files that start with an underscore will not be compiled into CSS. 
-Instead, you can import them into the main `style.scss` file. 
-
-Example:
-
-```scss
-/* _text_utils.scss */
-.green-text {
-  color: green;
-}
-```
-
-```scss
-/* styles.scss */
-@import("text_utils");
-```
-
-## Create A Tunneling Pass Through (Local Development)
-
-*ONLY USE FOR LOCAL DEVELOPMENT*
-
-Steps:
-
-1. deploy app to https://yourapp.herokuapp.com
-2. visit https://yourapp.herokuapp.com/bot and see default response "at least something worked"
-3. modify the bot index endpoint to say "something else"
-4. set up local tunnel (ngrock, etc.)
-5. visit http://yourapp.herokuapp.com/forward?host=yourngrockhost&port=8001 (only use port if needed)
-6. now visit https://yourapp.herokuapp.com/bot and see "something else"
-
-Based upon this you can automatically forward all traffic over the tunnel.
-
-To cancel just visit http://yourapp.herokuapp.com/forward
-
-
-## Pull in data from forum or slack
-* Pull chats and follow ups from Google Group by getting a dump of the data from https://takeout.google.com, unzipping it, and then running `cat /wherever/topics.mbox | ./manage.py import_google_forum --to_database`. To run it remotely against our Heroku app run `cat /wherever/topics.mbox | heroku run --no-tty -a <your-app> ./manage.py import_google_forum --to_database`.
-* Pull users from slack (most importantly their real_name) using `./manage.py import_users_from_slack`
-* As stated above, these will only run dry runs. To actually commit the data to the database, add the `--live_run` parameter.
-
+Welcome! This is the main project for all things Penny University.
+ 
+Here's are some things you might find useful:
+* [Dev Environment Setup](docs/development_environment.md)
+* [Architecture and Design Docs](docs/achitecture_and_design)
+* [Code Deployment](docs/deployment.md)
+* [General Maintenance Guide](docs/maintenance_guide.md)
+* [Production Catalog](docs/product_catalog.md)
