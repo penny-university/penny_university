@@ -79,7 +79,7 @@ def test_show_interests_dialog(mocker):
         }
     }
 
-    with mocker.patch('bot.processors.greeting.onboarding_template', return_value='welcome'):
+    with mocker.patch('bot.processors.greeting.onboarding_blocks', return_value='welcome'):
         bot_module(event)
     assert slack.dialog_open.call_args == mocker.call(dialog='welcome', trigger_id='whatevs')
 

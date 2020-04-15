@@ -5,13 +5,15 @@ import api from '../middleware/api'
 import user from '../middleware/user'
 import { initialState } from '../reducers'
 
-export const baseUrl = "http://localhost:8000/api/"
+export const baseUrl = 'http://localhost:8000/api/'
 
 const mockStore = configureMockStore(compose([thunk, user, api]))
 
-export const makeMockStore = (state = {}) => {
-  return mockStore({
-    ...initialState,
-    ...state,
-  })
+export const makeMockStore = (state = {}) => mockStore({
+  ...initialState,
+  ...state,
+})
+
+export {
+  initialState,
 }

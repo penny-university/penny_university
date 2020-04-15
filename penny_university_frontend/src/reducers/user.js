@@ -6,7 +6,7 @@ export const initialState = {
 }
 
 const user = (state = initialState, action) => {
-  const newState = {...state}
+  const newState = { ...state }
   const { payload, type } = action
   switch (type) {
     case ActionTypes.LOGIN_SUCCESS:

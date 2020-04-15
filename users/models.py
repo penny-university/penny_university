@@ -1,5 +1,6 @@
 import slack
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models, IntegrityError
 from django.db.models import Q
@@ -9,6 +10,7 @@ from common.utils import pprint_obj
 
 
 class UserProfile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     # slack-related
     email = models.CharField(max_length=200)
     slack_id = models.CharField(max_length=20, unique=True, null=True)
@@ -25,9 +27,6 @@ class UserProfile(models.Model):
     # meta
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'user'
 
     def __repr__(self):
         return pprint_obj(self)
