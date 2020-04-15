@@ -106,7 +106,7 @@ describe('chat reducers', () => {
       "followups": "http://localhost:8000/api/chats/2/follow-ups",
       "participants": [
         {
-          "user": 3,
+          "userProfile": 3,
           "role": "Organizer"
         }
       ]
@@ -146,7 +146,7 @@ describe('chat reducers', () => {
     })
   })
 
-  it('should add participants to the store as users', () => {
+  it('should add participants to the store as user profiles', () => {
     fetchMock.getOnce(baseUrl + 'chats/1/', {
       body: {results: chats[1]},
       headers: {'content-type': 'application/json'}
@@ -154,7 +154,7 @@ describe('chat reducers', () => {
 
     const store = makeMockStore(initialState)
 
-    const expectedUsers = {
+    const expectedUserProfiles = {
       '1': {
         'id': 1,
         'url': 'http://localhost:8000/api/users/1/',
@@ -171,7 +171,7 @@ describe('chat reducers', () => {
 
     return store.dispatch(loadChatDetail('1')).then(() => {
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.entities.users).toEqual(expectedUsers)
+      expect(state.entities.userProfiles).toEqual(expectedUserProfiles)
     })
   })
 
