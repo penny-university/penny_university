@@ -38,20 +38,20 @@ const mapStateToProps = (state, ownProps) => {
   const { id } = ownProps.match.params
 
   const {
-    entities: { chats, followUps, users },
+    entities: { chats, followUps, userProfiles },
     pagination,
   } = state
 
   const chat = chats[id]
   if (chat) {
-    // if user is just an ID, populate the full user
-    chat.participants = chat.participants.map((c) => ((typeof (c.user) === 'number') ? { user: users[c.user], role: c.role } : c))
+    // if userProfile is just an ID, populate the full userProfile
+    chat.participants = chat.participants.map((c) => ((typeof (c.userProfile) === 'number') ? { userProfile: userProfiles[c.userProfile], role: c.role } : c))
   }
   const followUpsPagination = pagination.followUpsByChat[id] || { ids: [] }
 
-  const decorateUserWithRole = (user) => {
+  const decorateUserProfileWithRole = (userProfile) => {
     if (chat) {
-      const participant = chat.participants.find((p) => p.user.id === user.id)
+      const participant = chat.participants.find((p) => p.userProfile.id === userProfile.id)
       return participant ? participant.role : null
     }
     return null
@@ -59,9 +59,9 @@ const mapStateToProps = (state, ownProps) => {
 
   const followUpsList = followUpsPagination.ids.map((id) => {
     const followUp = followUps[id]
-    followUp.userInfo = {
-      ...users[followUp.user],
-      role: decorateUserWithRole(users[followUp.user]),
+    followUp.userProfile = {
+      ...userProfiles[followUp.userProfile],
+      role: decorateUserProfileWithRole(userProfiles[followUp.userProfile]),
     }
     return followUp
   })

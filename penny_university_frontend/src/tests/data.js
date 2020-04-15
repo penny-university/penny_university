@@ -8,7 +8,7 @@ export const chats = [
     followups: 'http://localhost:8000/api/chats/2/follow-ups',
     participants: [
       {
-        user: {
+        userProfile: {
           id: 3,
           url: 'http://localhost:8000/api/users/3/',
           email: 'test3@gmail.com',
@@ -27,7 +27,7 @@ export const chats = [
     followups: 'http://localhost:8000/api/chats/1/follow-ups',
     participants: [
       {
-        user: {
+        userProfile: {
           id: 1,
           url: 'http://localhost:8000/api/users/1/',
           email: 'test1@example.com',
@@ -36,7 +36,7 @@ export const chats = [
         role: 'Organizer',
       },
       {
-        user: {
+        userProfile: {
           id: 2,
           url: 'http://localhost:8000/api/users/2/',
           email: 'test2@example.com',
@@ -58,7 +58,7 @@ export const chatsNext = [
     followups: 'http://localhost:8000/api/chats/4/follow-ups',
     participants: [
       {
-        user: {
+        userProfile: {
           id: 3,
           url: 'http://localhost:8000/api/users/3/',
           email: 'test3@gmail.com',
@@ -77,7 +77,7 @@ export const chatsNext = [
     followups: 'http://localhost:8000/api/chats/3/follow-ups',
     participants: [
       {
-        user: {
+        userProfile: {
           id: 1,
           url: 'http://localhost:8000/api/users/1/',
           email: 'test1@example.com',
@@ -96,7 +96,7 @@ export const followUps = {
       pennyChat: 'http://localhost:8000/api/chats/1/',
       content: 'In this chat we learned how to user Jest to test our React and Redux apps.',
       date: '2020-01-01T13:00:00Z',
-      user: {
+      userProfile: {
         id: 1,
         url: 'http://localhost:8000/api/users/1/',
         email: 'test1@example.com',
@@ -108,7 +108,7 @@ export const followUps = {
       pennyChat: 'http://localhost:8000/api/chats/1/',
       content: 'Test User 1 had great insight into this topic.',
       date: '2020-01-01T14:00:00Z',
-      user: {
+      userProfile: {
         id: 2,
         url: 'http://localhost:8000/api/users/2/',
         email: 'test2@example.com',
@@ -122,7 +122,7 @@ export const followUps = {
       pennyChat: 'http://localhost:8000/api/chats/2/',
       content: 'I learned that hooks can replace lots of the boilerplate I used to have in my class components!',
       date: '2019-11-20T22:30:34Z',
-      user: {
+      userProfile: {
         id: 3,
         url: 'http://localhost:8000/api/users/3/',
         email: 'test3@gmail.com',

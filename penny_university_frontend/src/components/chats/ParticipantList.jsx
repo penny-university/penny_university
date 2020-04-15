@@ -27,8 +27,8 @@ const ParticipantList = ({ className, participants, chatId }) => {
         <PopoverHeader>Participants</PopoverHeader>
         <PopoverBody>
           {participants.slice(0, DISPLAYED_PARTICIPANTS).map((p) => (
-            <p key={p.user.id} className="mb-0">
-              {p.user.realName}
+            <p key={p.userProfile.id} className="mb-0">
+              {p.userProfile.realName}
               {p.role === 'Organizer' ? ` - ${p.role}` : ''}
             </p>
           ))}

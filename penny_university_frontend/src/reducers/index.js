@@ -3,9 +3,9 @@ import deepmerge from 'deepmerge'
 import * as ActionTypes from '../actions'
 import paginate from './paginate'
 
-// Updates an entity cache in response to any action with
-// response.entities, such as a CHATS_LIST_SUCCESS
-const entities = (state = { chats: {}, followUps: {}, users: {} }, action) => {
+// Updates an entity cache in response to any action
+// with response.entities, such as a CHATS_LIST_SUCCESS
+const entities = (state = { chats: {}, followUps: {}, userProfiles: {} }, action) => {
   if (action.response && action.response.entities) {
     return deepmerge(state, action.response.entities)
   }

@@ -62,7 +62,7 @@ describe('follow up reducers', () => {
     })
 
     // user will be normalized in response
-    const expectedFollowUp = { ...followUpsForChat[0], user: 1 }
+    const expectedFollowUp = { ...followUpsForChat[0], userProfile: 1 }
 
     const store = makeMockStore()
 
@@ -72,7 +72,7 @@ describe('follow up reducers', () => {
     })
   })
 
-  it('should add user to entities', () => {
+  it('should add user profile to entities', () => {
     const followUpsForChat = followUps['http://localhost:8000/api/chats/1/follow-ups']
     fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
       body: { results: followUpsForChat },
@@ -83,7 +83,7 @@ describe('follow up reducers', () => {
 
     return store.dispatch(loadFollowUps('1')).then(() => {
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.entities.users['1']).toEqual(followUpsForChat[0].user)
+      expect(state.entities.userProfiles['1']).toEqual(followUpsForChat[0].userProfile)
     })
   })
 

@@ -42,7 +42,7 @@ class PennyChat(models.Model):
         assert role in [role[0] for role in Participant.ROLE_CHOICES]  # get out ids
         Participant.objects.update_or_create(
             penny_chat=self,
-            user=participant,
+            user_profile=participant,
             defaults=dict(role=role),
         )
 
@@ -81,7 +81,7 @@ class FollowUp(models.Model):
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='follow_ups')
     content = models.TextField()
     date = models.DateTimeField(default=timezone.now)
-    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='follow_ups')
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='follow_ups')
 
     def __repr__(self):
         return pprint_obj(self)
@@ -96,11 +96,11 @@ class Participant(models.Model):
     )
 
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_chats')
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_chats')
     role = models.IntegerField(choices=ROLE_CHOICES)
 
     class Meta:
-        unique_together = ('penny_chat', 'user',)
+        unique_together = ('penny_chat', 'user_profile',)
         ordering = ['role']
 
     def __repr__(self):
