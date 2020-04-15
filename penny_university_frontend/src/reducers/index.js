@@ -2,6 +2,7 @@ import { combineReducers } from 'redux'
 import deepmerge from 'deepmerge'
 import * as ActionTypes from '../actions'
 import paginate from './paginate'
+import user, { initialState as userInitialState } from './user'
 
 // Updates an entity cache in response to any action
 // with response.entities, such as a CHATS_LIST_SUCCESS
@@ -44,10 +45,24 @@ const pagination = combineReducers({
   }),
 })
 
+export const initialState = {
+  user: userInitialState,
+  entities: {
+    chats: {},
+    followUps: {},
+    users: {},
+  },
+  pagination: {
+    chatsByFilter: {},
+    followUpsByChat: {},
+  },
+}
+
 const rootReducer = combineReducers({
   entities,
   error: errorReducer,
   pagination,
+  user,
 })
 
 export default rootReducer
