@@ -78,6 +78,7 @@ instead.
         * chat:write
         * commands
         * users:read
+        * users:read.email
     * User Token Scopes:
         * channel:history
         * chat:write
