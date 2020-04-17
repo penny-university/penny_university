@@ -30,7 +30,7 @@ Clone the repo: `git clone https://github.com/penny-university/penny_university.
 * Install requirements:
     * `pip3 install -r requirements.txt`
     * `pip3 install -r dev-requirements.txt`
-* Stick this in your environment: `export DJANGO_SETTINGS_MODULE="penny_university.slack.dev"`
+* Stick this in your environment: `export DJANGO_SETTINGS_MODULE="penny_university.settings.dev"`
 * Run migrations: `./manage.py migrate`
 * Bootstrap database with forum data: `cat dev/penny-university.mbox | ./manage.py import_google_forum --to_database --live_run`
 * **Check:**
