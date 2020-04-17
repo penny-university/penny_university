@@ -7180,6 +7180,19 @@ pre {
 h1, h2, h3, .navbar-brand {
   text-transform: capitalize; }
 
+/* Set a specific color for each brand */
+.fa-facebook {
+  background: #3b5998;
+  color: #fff; }
+
+.fa-instagram {
+  background: #d30f62;
+  color: #fff; }
+
+.fa-twitter {
+  background: #55acee;
+  color: #fff; }
+
 /* Style all font awesome icons */
 .social-icons .fa {
   border-radius: 50%;
@@ -7194,19 +7207,6 @@ h1, h2, h3, .navbar-brand {
     color: #fff;
     opacity: 0.7;
     text-decoration: none; }
-
-/* Set a specific color for each brand */
-.fa-facebook {
-  background: #3b5998;
-  color: #fff; }
-
-.fa-instagram {
-  background: #d30f62;
-  color: #fff; }
-
-.fa-twitter {
-  background: #55acee;
-  color: #fff; }
 
 .icon__user {
   align-items: center;

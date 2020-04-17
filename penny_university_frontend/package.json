@@ -42,7 +42,7 @@
     "lint:fix": "yarn lint --fix",
     "lint:scss": "sass-lint -v $npm_package_config_src_css",
     "lint:scss:fix": "sass-lint-auto-fix",
-    "compile:css": "node-sass-chokidar --include-path ./src --include-path ../scss --include-path ./node_modules $npm_package_config_src_css -o $npm_package_config_dest_css",
+    "compile:css": "node-sass-chokidar --include-path ./src --include-path ../scss --include-path ./node_modules $npm_package_config_src_css -o $npm_package_config_dest_css && cp ./home.css ../../penny_university/static/css/styles.css",
     "watch:css": "yarn run compile:css && node-sass-chokidar --include-path ../scss --include-path ./src --include-path ./node_modules $npm_package_config_src_css -o $npm_package_config_dest_css --watch --recursive"
   },
   "browserslist": {
