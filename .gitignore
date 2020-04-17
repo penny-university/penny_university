@@ -24,6 +24,8 @@ staticfiles/*
 #  Javascript
 node_modules
 
+# css
+**/*.css
 
 #  MISC
 NOT_COMMITTED
