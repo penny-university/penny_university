@@ -7,12 +7,13 @@
     "@fortawesome/free-solid-svg-icons": "^5.11.2",
     "@fortawesome/react-fontawesome": "^0.1.7",
     "bootstrap": "^4.4.0",
+    "classnames": "^2.2.6",
     "cross-fetch": "^3.0.4",
     "deepmerge": "^4.2.2",
     "enzyme-to-json": "^3.4.4",
     "humps": "^2.0.1",
     "moment": "^2.24.0",
-    "node-sass": "^4.13.1",
+    "node-sass-chokidar": "^1.4.0",
     "normalizr": "^3.4.1",
     "prop-types": "^15.7.2",
     "react": "^16.12.0",
@@ -29,8 +30,8 @@
     "showdown": "^1.9.1"
   },
   "config": {
-    "src_css": "src/scss",
-    "dest_css": "src"
+    "src_css": "./src",
+    "dest_css": "./src"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -41,7 +42,8 @@
     "lint:fix": "yarn lint --fix",
     "lint:scss": "sass-lint -v $npm_package_config_src_css",
     "lint:scss:fix": "sass-lint-auto-fix",
-    "compile:css": "npm run lint:scss:fix && node-sass -o $npm_package_config_dest_css $npm_package_config_src_css"
+    "compile:css": "node-sass-chokidar --include-path ./src --include-path ../scss --include-path ./node_modules $npm_package_config_src_css -o $npm_package_config_dest_css",
+    "watch:css": "yarn run compile:css && node-sass-chokidar --include-path ../scss --include-path ./src --include-path ./node_modules $npm_package_config_src_css -o $npm_package_config_dest_css --watch --recursive"
   },
   "browserslist": {
     "production": [
