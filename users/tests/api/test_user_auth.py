@@ -29,13 +29,12 @@ def test_checking_user_exists():
     data_does_not_exist = {
         'email': 'test@profile.com',
     }
-    user = User.objects.create_user(username='test@profile.com', email='test@profile.com', password='password')
+    User.objects.create_user(username='test@profile.com', email='test@profile.com', password='password')
     response = client.post('/api/auth/exists/', data_does_exist, format='json')
     assert response.status_code == 200
 
     response = client.post('/api/auth/exists/', data_does_not_exist, format='json')
     assert response.status_code == 200
-    
 
 
 @pytest.mark.django_db
