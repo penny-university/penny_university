@@ -28,7 +28,8 @@ class RegisterUser(generics.CreateAPIView):
             token = Token.objects.create(user=user)
             return Response(data={'key': token.key, 'user': UserSerializer(user).data})
         return Response(form.errors, status=HTTP_400_BAD_REQUEST)
-    
+
+
 class UserExists(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer

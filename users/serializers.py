@@ -13,6 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = ['id', 'username', 'password']
 
+
 class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
     chats = serializers.HyperlinkedIdentityField(view_name='user-chat-list')
     user = UserSerializer(read_only=True)
