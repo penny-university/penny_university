@@ -1,4 +1,5 @@
-import { CALL_API, Schemas } from '../middleware/api'
+import { CALL_API } from '../middleware/api'
+import ApiRoutes from '../constants'
 
 export const HYDRATE_USER = 'HYDRATE_USER'
 export const LOGOUT_USER = 'LOGOUT_USER'
@@ -16,6 +17,9 @@ export const SIGNUP_FAILURE = 'SIGNUP_FAILURE'
 export const LOGOUT_REQUEST = 'LOGOUT_REQUEST'
 export const LOGOUT_SUCCESS = 'LOGOUT_SUCCESS'
 export const LOGOUT_FAILURE = 'LOGOUT_FAILURE'
+export const USER_EXISTS_REQUEST = 'USER_EXISTS_REQUEST'
+export const USER_EXISTS_SUCCESS = 'USER_EXISTS_SUCCESS'
+export const USER_EXISTS_FAILURE = 'USER_EXISTS_FAILURE'
 
 
 export const setToken = (token) => ({
@@ -30,40 +34,56 @@ export const checkAuth = () => ({
 export const fetchUser = () => ({
   [CALL_API]: {
     types: [FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE],
-    endpoint: 'me/',
-    schema: Schemas.USER,
+    endpoint: ApiRoutes.user,
+    method: 'GET',
   },
 })
 
-const login = () => ({
+const login = (payload) => ({
   [CALL_API]: {
     types: [LOGIN_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE],
-    endpoint: 'auth/login/',
-    schema: Schemas.USER,
+    endpoint: ApiRoutes.login,
+    method: 'POST',
+    payload,
   },
 })
 
-const signup = () => ({
+const signup = (payload) => ({
   [CALL_API]: {
     types: [SIGNUP_REQUEST, SIGNUP_SUCCESS, SIGNUP_FAILURE],
-    endpoint: 'auth/register/',
-    schema: Schemas.USER,
+    endpoint: ApiRoutes.register,
+    method: 'POST',
+    payload,
   },
 })
 
-const logout = () => ({
+
+const userExists = (username) => ({
+  [CALL_API]: {
+    types: [USER_EXISTS_REQUEST, USER_EXISTS_SUCCESS, USER_EXISTS_FAILURE],
+    endpoint: ApiRoutes.exists,
+    method: 'POST',
+    payload: { username },
+  },
+})
+
+export const logout = () => ({
   type: LOGOUT_USER,
+})
+export const logoutRequest = () => ({
   [CALL_API]: {
     types: [LOGOUT_REQUEST, LOGOUT_SUCCESS, LOGOUT_FAILURE],
-    endpoint: 'auth/logout/',
-    schema: Schemas.USER,
+    endpoint: ApiRoutes.logout,
+    method: 'POST',
   },
 })
 
 export const dispatchFetchUser = () => async (dispatch) => dispatch(fetchUser())
 
-export const dispatchSignup = () => async (dispatch) => dispatch(signup())
+export const dispatchSignup = (payload) => async (dispatch) => dispatch(signup(payload))
 
-export const dispatchLogin = () => async (dispatch) => dispatch(login())
+export const dispatchLogin = (payload) => async (dispatch) => dispatch(login(payload))
 
 export const dispatchLogout = () => async (dispatch) => dispatch(logout())
+
+export const dispatchUserExists = (email) => async (dispatch) => dispatch(userExists(email))

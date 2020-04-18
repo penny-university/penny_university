@@ -50,8 +50,8 @@ const mapStateToProps = (state, ownProps) => {
   const followUpsPagination = pagination.followUpsByChat[id] || { ids: [] }
 
   const decorateUserProfileWithRole = (userProfile) => {
-    if (chat) {
-      const participant = chat.participants.find((p) => p.userProfile.id === userProfile.id)
+    if (chat && userProfile) {
+      const participant = chat.participants.find((p) => p.userProfile?.id === userProfile?.id)
       return participant ? participant.role : null
     }
     return null

@@ -1,7 +1,7 @@
 import fetchMock from 'fetch-mock'
 import {
   checkAuth, dispatchLogout, FETCH_USER_REQUEST,
-  SET_TOKEN, CHECK_AUTH, LOGOUT_REQUEST, LOGOUT_SUCCESS,
+  SET_TOKEN, CHECK_AUTH, LOGOUT_REQUEST, LOGOUT_USER,
 } from '../actions/user'
 import { makeMockStore, baseUrl } from './config'
 
@@ -26,7 +26,7 @@ describe('auth flow', () => {
 
   it('should fetch user if token exists', () => {
     document.cookie = 'token=token;'
-    fetchMock.getOnce(`${baseUrl}me/`, {
+    fetchMock.getOnce(`${baseUrl}auth/user/`, {
       body: { user: {} },
       headers: { 'content-type': 'application/json' },
     })
@@ -40,14 +40,14 @@ describe('auth flow', () => {
 
   it('should delete token on logout', () => {
     document.cookie = 'token=token;'
-    fetchMock.getOnce(`${baseUrl}auth/logout/`, {
+    fetchMock.postOnce(`${baseUrl}auth/logout/`, {
       body: { user: {} },
       headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore()
 
-    const expectedActionTypes = [LOGOUT_REQUEST, LOGOUT_SUCCESS]
+    const expectedActionTypes = [LOGOUT_REQUEST, LOGOUT_USER]
     return store.dispatch(dispatchLogout()).then(() => {
       expect(document.cookie).toEqual('')
       expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)

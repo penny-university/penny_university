@@ -1,38 +1,46 @@
 import { normalize, schema } from 'normalizr'
 import { camelizeKeys, decamelizeKeys } from 'humps'
+import * as selectors from '../selectors'
 
 const API_ROOT = 'http://localhost:8000/api/'
 
 // Makes an API call, and properly formats the response.
-const callApi = (endpoint, responseSchema, method, payload) => {
+const callApi = (endpoint, responseSchema, method, payload, token) => {
   const url = (endpoint.indexOf(API_ROOT) === -1) ? API_ROOT + endpoint : endpoint
 
   const jsonPayload = JSON.stringify(decamelizeKeys(payload))
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) {
+    headers.Authorization = `Token ${token}`
+  }
   switch (method) {
     case 'POST':
     case 'PUT':
-      return fetch(url, { method, body: jsonPayload, headers: { 'Content-Type': 'application/json' } })
+      return fetch(url, { method, body: jsonPayload, headers })
         .then((response) => response.json().then((json) => {
           if (!response.ok) {
-            return Promise.reject(json)
+            return Promise.reject(response)
           }
-
           const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
-
-          // normalize the response into our defined schemas
-          return { ...normalize(camelJson, responseSchema), nextPageUrl: json.next }
+          if (responseSchema) {
+            // normalize the response into our defined schemas
+            return { ...normalize(camelJson, responseSchema), nextPageUrl: json.next }
+          }
+          return camelJson
         }))
     default:
-      return fetch(url)
+      return fetch(url, { headers })
         .then((response) => response.json().then((json) => {
           if (!response.ok) {
-            return Promise.reject(json)
+            return Promise.reject(response)
           }
 
           const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
-
-          // normalize the response into our defined schemas
-          return { ...normalize(camelJson, responseSchema), nextPageUrl: json.next }
+          if (responseSchema) {
+            // normalize the response into our defined schemas
+            return { ...normalize(camelJson, responseSchema), nextPageUrl: json.next }
+          }
+          return camelJson
         }))
   }
 }
@@ -72,7 +80,7 @@ export const CALL_API = 'Call API'
 // Performs the call and promises when such actions are dispatched.
 export default (store) => (next) => (action) => {
   const callApiAction = action[CALL_API]
-  if (typeof callApiAction === 'undefined') {
+  if (callApiAction === undefined) {
     return next(action)
   }
 
@@ -87,9 +95,6 @@ export default (store) => (next) => (action) => {
 
   if (typeof endpoint !== 'string') {
     throw new Error('Specify a string endpoint URL.')
-  }
-  if (!responseSchema) {
-    throw new Error('Specify one of the exported Schemas.')
   }
   // We will always pass a request, success, and failure action type
   if (!Array.isArray(types) || types.length !== 3) {
@@ -107,15 +112,15 @@ export default (store) => (next) => (action) => {
 
   const [requestType, successType, failureType] = types
   next(actionWith({ type: requestType }))
-
-  return callApi(endpoint, responseSchema, method, payload).then(
+  const token = selectors.user.getToken(store.getState())
+  return callApi(endpoint, responseSchema, method, payload, token).then(
     (response) => next(actionWith({
       response,
       type: successType,
     })),
     (error) => next(actionWith({
       type: failureType,
-      error: error.message || 'An error occurred.',
+      payload: { message: error.message || 'An error occurred.', status: error.status },
     })),
   )
 }

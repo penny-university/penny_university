@@ -1,31 +1,44 @@
 from django.contrib.auth.models import User
-
+from rest_framework.decorators import action
 from rest_framework import mixins, generics
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.authtoken.models import Token
 
 from pennychat.serializers import UserChatSerializer
 from .models import UserProfile
+from .forms import UserRegistrationForm
 from .serializers import UserSerializer, UserProfileSerializer
 from pennychat.models import Participant
 
 
 class RegisterUser(generics.CreateAPIView):
     queryset = User.objects.all()
+    serializer_class = UserSerializer
 
     def post(self, request, format=None, **kwargs):
         user_data = request.data
-        serializer = UserSerializer(data=user_data, context={'request': request})
-        if serializer.is_valid():
-            user = serializer.save()
+        form = UserRegistrationForm(data=user_data)
+        if form.is_valid():
+            user = form.save()
             user_profiles = UserProfile.objects.filter(email=user.email)
             for profile in user_profiles:
                 profile.user = user
                 profile.save()
             token = Token.objects.create(user=user)
-            return Response(data={'key': token.key, 'user': serializer.data})
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            return Response(data={'key': token.key, 'user': UserSerializer(user).data})
+        return Response(form.errors, status=HTTP_400_BAD_REQUEST)
+    
+class UserExists(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def post(self, request):
+        data = request.data
+        user = self.get_queryset().filter(username=data.get('username', ''))
+        if user.exists():
+            return Response({}, status=HTTP_200_OK)
+        return Response({}, status=HTTP_400_BAD_REQUEST)
 
 
 class UserProfileDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
