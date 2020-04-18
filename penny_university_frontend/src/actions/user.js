@@ -58,12 +58,12 @@ const signup = (payload) => ({
 })
 
 
-const userExists = (username) => ({
+const userExists = (email) => ({
   [CALL_API]: {
     types: [USER_EXISTS_REQUEST, USER_EXISTS_SUCCESS, USER_EXISTS_FAILURE],
     endpoint: ApiRoutes.exists,
     method: 'POST',
-    payload: { username },
+    payload: { email },
   },
 })
 

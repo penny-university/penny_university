@@ -19,23 +19,23 @@ const modalDispatch = () => {
   const authUsername = () => ({
     type: Actions.OPEN_MODAL,
     payload: {
-      name: ModalNames.AUTH_USERNAME,
+      name: ModalNames.AUTH_EMAIL,
     },
   })
 
-  const authPassword = (username) => ({
+  const authPassword = (email) => ({
     type: Actions.OPEN_MODAL,
     payload: {
       name: ModalNames.AUTH_PASSWORD,
-      props: { username },
+      props: { email },
     },
   })
 
-  const authSignup = (username) => ({
+  const authSignup = (email) => ({
     type: Actions.OPEN_MODAL,
     payload: {
       name: ModalNames.AUTH_SIGNUP,
-      props: { username },
+      props: { email },
     },
   })
 

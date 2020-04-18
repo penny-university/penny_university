@@ -5,7 +5,7 @@ import React, { useReducer, useEffect } from 'react'
 import { Modal as ModalStrap } from 'reactstrap'
 import modalDispatch from './dispatch'
 import Actions, { ModalNames } from './constants'
-import { AuthUsername, AuthPassword, AuthSignup } from './auth'
+import { AuthEmail, AuthPassword, AuthSignup } from './auth'
 
 const initialState = {
   name: null,
@@ -25,7 +25,7 @@ function reducer(state, action) {
 }
 
 const Modals = {
-  [ModalNames.AUTH_USERNAME]: AuthUsername,
+  [ModalNames.AUTH_EMAIL]: AuthEmail,
   [ModalNames.AUTH_PASSWORD]: AuthPassword,
   [ModalNames.AUTH_SIGNUP]: AuthSignup,
 }

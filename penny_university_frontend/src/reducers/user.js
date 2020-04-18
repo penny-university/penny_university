@@ -13,7 +13,7 @@ const user = (state = initialState, action) => {
       newState.token = payload
       break
     case ActionTypes.FETCH_USER_SUCCESS:
-      newState.user = action
+      newState.user = action.response
       break
     case ActionTypes.LOGOUT_SUCCESS:
       newState.token = null

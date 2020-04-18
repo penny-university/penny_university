@@ -4,7 +4,7 @@ const Actions = {
 }
 
 const ModalNames = {
-  AUTH_USERNAME: 'AUTH_USERNAME',
+  AUTH_EMAIL: 'AUTH_EMAIL',
   AUTH_PASSWORD: 'AUTH_PASSWORD',
   AUTH_SIGNUP: 'AUTH_SIGNUP',
 }

@@ -8,24 +8,26 @@ from rest_framework.test import APIClient
 def test_register_user(test_user_profile):
     client = APIClient()
     data = {
-        'username': 'test@profile.com',
-        'password': 'password'
+        'email': 'test@profile.com',
+        'password': 'password',
+        'first_name': 'test',
+        'last_name': 'profile',
     }
     response = client.post('/api/auth/register/', data=data, format='json')
     assert response.status_code == 200
     assert response.data['key'] is not None
-    user = User.objects.get(username='test@profile.com')
+    user = User.objects.get(email='test@profile.com')
     assert test_user_profile in user.userprofile_set.all()
 
 
 @pytest.mark.django_db
 def test_user_log_in_and_protected_request(test_user_profile):
     client = APIClient()
-    user = User.objects.create_user(username='test@profile.com', password='password')
+    user = User.objects.create_user(username='test@profile.com', email='test@profile.com', password='password')
     test_user_profile.user = user
     test_user_profile.save()
     data = {
-        'username': 'test@profile.com',
+        'email': 'test@profile.com',
         'password': 'password'
     }
     response = client.post('/api/auth/login/', data=data, format='json')

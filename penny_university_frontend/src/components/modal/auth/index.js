@@ -1,11 +1,11 @@
 // @flow
-import AuthUsername from './username'
+import AuthEmail from './email'
 import AuthPassword from './password'
 import AuthSignup from './signup'
 
 
 export {
-  AuthUsername,
+  AuthEmail,
   AuthPassword,
   AuthSignup,
 }
