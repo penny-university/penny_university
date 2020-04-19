@@ -57,6 +57,21 @@ def test_create_penny_chat(test_chats_1):
 
 
 @pytest.mark.django_db
+def test_create_penny_chat_without_date(test_chats_1):
+    user = test_chats_1[0].get_organizer().user
+    token = Token.objects.create(user=user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    data = {
+        'title': 'Create Chat',
+        'description': 'Testing creating a chat'
+    }
+    response = client.post('/api/chats/', data=data, format='json')
+    assert response.status_code == 400
+    assert response.data['date'][0].code == 'required'
+
+
+@pytest.mark.django_db
 def test_create_penny_chat_unauthorized(test_chats_1):
     client = APIClient()
     data = {
