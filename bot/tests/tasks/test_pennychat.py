@@ -107,14 +107,16 @@ def test_share_penny_chat_invitation(mocker):
 
     shared_with = set([cal[1]['channel'] for cal in slack_client.chat_postMessage.call_args_list])
     assert shared_with == {'man', 'itsy', 'bitsy', 'foo'}
-    assert slack_client.chat_delete.call_args_list == [
+    # share_penny_chat_invitation will not necessarily always share (and thus, delete) in the same order, so we have to
+    # just check if all the calls were made.
+    assert all(elem in slack_client.chat_delete.call_args_list for elem in [
         call(channel='itsy', ts=1234),
         call(channel='bitsy', ts=1234),
         call(channel='spider', ts=1234),
         call(channel='foo', ts=1234),
         call(channel='man', ts=1234),
-        call(channel='choo', ts=1234),
-    ]
+        call(channel='choo', ts=1234)
+    ])
 
     penny_chat_invitation.refresh_from_db()
 
@@ -123,6 +125,59 @@ def test_share_penny_chat_invitation(mocker):
         'bitsy': 5678,
         'foo': 5678,
         'man': 5678,
+    }
+
+
+@pytest.mark.django_db
+def test_share_penny_chat_invitation_with_non_invited_attendee(mocker):
+    slack_id = 'slack_id'
+    penny_chat_invitation = PennyChatInvitation.objects.create(
+        title='Chat 1',
+        description='The first test chat',
+        date=datetime.now().astimezone(TIMEZONE) - timedelta(weeks=4),
+        invitees='',
+        channels='itsy',
+        organizer_slack_id='slack_id',
+    )
+    user_profile = UserProfile.objects.create(slack_id=slack_id, display_name='booger')
+    penny_chat_invitation.save_participant(user_profile, Participant.ORGANIZER)
+
+    # This person was not invited to the chat, but clicked to attend
+    attendee_profile = UserProfile.objects.create(slack_id='foo')
+    penny_chat_invitation.save_participant(attendee_profile, Participant.ATTENDEE)
+
+    slack_client = mocker.Mock()
+
+    class chat_postMessage:
+        def __init__(self, timestamp):
+            self.call_num = -1
+            self.timestamp = timestamp
+
+        def __call__(self, channel, blocks):
+            self.call_num += 1
+            chat_postMessage_resp = mocker.Mock()
+            chat_postMessage_resp.data = {
+                'channel': channel,
+                'ts': self.timestamp,
+            }
+            return chat_postMessage_resp
+
+    slack_client.chat_postMessage.side_effect = chat_postMessage(1234)
+
+    # test 1 - on first call it should send all the invitations
+    with _make_get_or_create_user_profile_from_slack_id_mocks(mocker, 'bot.tasks.pennychat', [user_profile]), \
+            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+        share_penny_chat_invitation.now(penny_chat_invitation.id)
+
+    shared_with = set([cal[1]['channel'] for cal in slack_client.chat_postMessage.call_args_list])
+    assert shared_with == {'itsy', 'foo'}
+    assert not slack_client.chat_delete.called
+
+    penny_chat_invitation.refresh_from_db()
+
+    assert json.loads(penny_chat_invitation.shares) == {
+        'itsy': 1234,
+        'foo': 1234
     }
 
 
