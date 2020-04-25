@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Alert } from 'reactstrap'
-import propTypes from 'prop-types'
+import PropTypes from 'prop-types'
 
 const ErrorAlert = ({ message, dismiss }) => {
   const [visible, setVisible] = useState(true)
@@ -18,8 +18,8 @@ const ErrorAlert = ({ message, dismiss }) => {
 }
 
 ErrorAlert.propTypes = {
-  message: propTypes.string.isRequired,
-  dismiss: propTypes.func.isRequired,
+  message: PropTypes.string,
+  dismiss: PropTypes.func.isRequired,
 }
 
 export default ErrorAlert

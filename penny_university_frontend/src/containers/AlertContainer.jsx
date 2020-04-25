@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import propTypes from 'prop-types'
+import PropTypes from 'prop-types'
 import { CLEAR_ERROR_MESSAGE } from '../actions'
 import { ErrorAlert } from '../components/alerts'
 
@@ -20,8 +20,11 @@ const mapDispatchToProps = (dispatch) => ({
 })
 
 AlertContainer.propTypes = {
-  error: propTypes.string.isRequired,
-  dismissError: propTypes.func.isRequired,
+  error: PropTypes.exact({
+    message: PropTypes.string,
+    status: PropTypes.number,
+  }).isRequired,
+  dismissError: PropTypes.func.isRequired,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlertContainer)
