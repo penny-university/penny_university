@@ -7,7 +7,7 @@ from django.conf import settings
 from pytz import timezone, utc
 from slack import WebClient
 
-from pennychat.models import PennyChatInvitation
+from pennychat.models import PennyChatInvitation, Participant
 from users.models import get_or_create_user_profile_from_slack_id, get_or_create_user_profile_from_slack_ids
 
 VIEW_SUBMISSION = 'view_submission'
@@ -66,7 +66,13 @@ def share_penny_chat_invitation(penny_chat_id):
             pass
     invitation_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=INVITE)
     shares = {}
-    for share_to in comma_split(penny_chat_invitation.channels) + comma_split(penny_chat_invitation.invitees):
+    channel_ids = comma_split(penny_chat_invitation.channels)
+    invitee_ids = comma_split(penny_chat_invitation.invitees)
+    participant_ids = []
+    for p in penny_chat_invitation.participants.all():
+        if p.role != Participant.ORGANIZER:
+            participant_ids.append(p.user_profile.slack_id)
+    for share_to in set(channel_ids + invitee_ids + participant_ids):
         resp = slack_client.chat_postMessage(
             channel=share_to,
             blocks=invitation_blocks,
