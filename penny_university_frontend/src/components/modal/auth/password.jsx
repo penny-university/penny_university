@@ -14,7 +14,7 @@ const AuthPasswordModal = ({ email, login }) => {
   const [password, setPassword] = useState('')
   return (
     <>
-      <ModalHeader toggle={modalDispatch.close}>Sign up or log in</ModalHeader>
+      <ModalHeader toggle={modalDispatch.close}>Welcome back!</ModalHeader>
       <ModalBody>
         <Form onSubmit={(e) => {
           e.preventDefault()

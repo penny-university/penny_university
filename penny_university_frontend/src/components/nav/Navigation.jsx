@@ -12,14 +12,13 @@ const Navigation = ({ authed, logout }) => (
     <NavbarBrand href="/">Penny University</NavbarBrand>
     {authed ? (
       <Button
-        outline
         onClick={logout}
       >
         Logout
       </Button>
     )
       : (
-        <Button outline onClick={modalDispatch.auth}>Login</Button>
+        <Button onClick={modalDispatch.auth}>Login</Button>
       )}
   </Navbar>
 )

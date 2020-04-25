@@ -25,10 +25,10 @@ const AuthEmailModal = ({ userExists }) => {
               modalDispatch.authPassword(email)
             }
           })
-          return false;
+          return false
         }}
         >
-          <Input label="Email" type="email" name="email" id="email" placeholder="" onChange={setEmail} value={email} />
+          <Input label="Email" type="email" name="email" id="email" placeholder="" required onChange={setEmail} value={email} />
           <div className="text-center">
             <Button>
               Let&rsquo;s Go
