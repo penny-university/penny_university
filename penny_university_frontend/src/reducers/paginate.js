@@ -1,3 +1,4 @@
+import { normalize } from 'normalizr'
 // Takes two arrays and returns the union between them as a new array
 const union = (a, b) => (
   [...new Set([...a, ...b])]
@@ -25,7 +26,7 @@ const paginate = ({ types, mapActionToKey }) => {
     pageCount: 0,
     ids: [],
   }, action) => {
-    const { result } = action.response || {}
+    const { result, responseSchema } = action.payload || {}
     switch (action.type) {
       case requestType:
         return {
@@ -33,11 +34,12 @@ const paginate = ({ types, mapActionToKey }) => {
           isFetching: true,
         }
       case successType:
+        const { result: resultIds } = normalize(result, responseSchema)
         return {
           ...state,
           isFetching: false,
-          ids: union(state.ids, result),
-          nextPageUrl: action.response.nextPageUrl,
+          ids: union(state.ids, resultIds),
+          nextPageUrl: action.payload.nextPageUrl,
           pageCount: state.pageCount + 1,
         }
       case failureType:

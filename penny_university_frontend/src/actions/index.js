@@ -24,7 +24,8 @@ export const CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE'
 
 // Creates an action that will fetch the chats list
 const fetchChats = (nextPageUrl) => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [CHATS_LIST_REQUEST, CHATS_LIST_SUCCESS, CHATS_LIST_FAILURE],
     endpoint: nextPageUrl,
     schema: Schemas.CHAT_ARRAY,
@@ -33,7 +34,8 @@ const fetchChats = (nextPageUrl) => ({
 
 // Creates an action that will fetch a chat
 const fetchChat = (url) => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [CHAT_DETAIL_REQUEST, CHAT_DETAIL_SUCCESS, CHAT_DETAIL_FAILURE],
     endpoint: url,
     schema: Schemas.CHAT,
@@ -42,8 +44,9 @@ const fetchChat = (url) => ({
 
 // Creates an action that will fetch the follow ups associated with a chat
 const fetchFollowUps = (chatId, nextPageUrl) => ({
-  chatId,
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
+    meta: { chatId },
     types: [FOLLOW_UPS_REQUEST, FOLLOW_UPS_SUCCESS, FOLLOW_UPS_FAILURE],
     endpoint: nextPageUrl,
     schema: Schemas.FOLLOW_UP_ARRAY,
@@ -51,7 +54,8 @@ const fetchFollowUps = (chatId, nextPageUrl) => ({
 })
 
 const putFollowUp = (url, followUp) => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [UPDATE_FOLLOW_UP_REQUEST, UPDATE_FOLLOW_UP_SUCCESS, UPDATE_FOLLOW_UP_FAILURE],
     endpoint: url,
     schema: Schemas.FOLLOW_UP,
@@ -61,7 +65,8 @@ const putFollowUp = (url, followUp) => ({
 })
 
 const postFollowUp = (url, followUp) => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [CREATE_FOLLOW_UP_REQUEST, CREATE_FOLLOW_UP_SUCCESS, CREATE_FOLLOW_UP_FAILURE],
     endpoint: url,
     schema: Schemas.FOLLOW_UP,
@@ -99,7 +104,6 @@ export const loadFollowUps = (chatId, nextPage) => (dispatch, getState) => {
     nextPageUrl = `chats/${chatId}/follow-ups/`,
     pageCount = 0,
   } = getState().pagination.followUpsByChat[chatId] || {}
-
   if (pageCount > 0 && !nextPage) {
     return null
   }

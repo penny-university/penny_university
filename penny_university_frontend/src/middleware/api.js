@@ -22,10 +22,6 @@ const callApi = (endpoint, responseSchema, method, payload, token) => {
             return Promise.reject(response)
           }
           const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
-          if (responseSchema) {
-            // normalize the response into our defined schemas
-            return { ...normalize(camelJson, responseSchema), nextPageUrl: json.next }
-          }
           return camelJson
         }))
     default:
@@ -36,10 +32,6 @@ const callApi = (endpoint, responseSchema, method, payload, token) => {
           }
 
           const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
-          if (responseSchema) {
-            // normalize the response into our defined schemas
-            return { ...normalize(camelJson, responseSchema), nextPageUrl: json.next }
-          }
           return camelJson
         }))
   }
@@ -74,53 +66,44 @@ export const Schemas = {
   FOLLOW_UP_ARRAY: [followUpSchema],
 }
 
-export const CALL_API = 'Call API'
+export const CALL_API = 'CALL_API'
 
 // A Redux middleware that interprets actions with CALL_API info specified.
 // Performs the call and promises when such actions are dispatched.
 export default (store) => (next) => (action) => {
-  const callApiAction = action[CALL_API]
-  if (callApiAction === undefined) {
+  if (action.type === CALL_API) {
+    let { endpoint } = action.payload
+    const {
+      schema: responseSchema, types, method, payload, meta,
+    } = action.payload
+    if (typeof endpoint === 'function') {
+      endpoint = endpoint(store.getState())
+    }
+
+    if (typeof endpoint !== 'string') {
+      throw new Error('Specify a string endpoint URL.')
+    }
+    // We will always pass a request, success, and failure action type
+    if (!Array.isArray(types) || types.length !== 3) {
+      throw new Error('Expected an array of three action types.')
+    }
+    if (!types.every((type) => typeof type === 'string')) {
+      throw new Error('Expected action types to be strings.')
+    }
+
+    const [requestType, successType, failureType] = types
+    next({ type: requestType, payload: { meta } })
+    const token = selectors.user.getToken(store.getState())
+    return callApi(endpoint, responseSchema, method, payload, token).then(
+      (response) => next({
+        payload: { result: response, responseSchema, meta },
+        type: successType,
+      }),
+      (error) => next({
+        type: failureType,
+        payload: { message: error.message || 'An error occurred.', status: error.status, meta },
+      }),
+      )
+    }
     return next(action)
-  }
-
-  let { endpoint } = callApiAction
-  const {
-    schema: responseSchema, types, method, payload,
-  } = callApiAction
-
-  if (typeof endpoint === 'function') {
-    endpoint = endpoint(store.getState())
-  }
-
-  if (typeof endpoint !== 'string') {
-    throw new Error('Specify a string endpoint URL.')
-  }
-  // We will always pass a request, success, and failure action type
-  if (!Array.isArray(types) || types.length !== 3) {
-    throw new Error('Expected an array of three action types.')
-  }
-  if (!types.every((type) => typeof type === 'string')) {
-    throw new Error('Expected action types to be strings.')
-  }
-
-  const actionWith = (data) => {
-    const finalAction = { ...action, ...data }
-    delete finalAction[CALL_API]
-    return finalAction
-  }
-
-  const [requestType, successType, failureType] = types
-  next(actionWith({ type: requestType }))
-  const token = selectors.user.getToken(store.getState())
-  return callApi(endpoint, responseSchema, method, payload, token).then(
-    (response) => next(actionWith({
-      response,
-      type: successType,
-    })),
-    (error) => next(actionWith({
-      type: failureType,
-      payload: { message: error.message || 'An error occurred.', status: error.status },
-    })),
-  )
 }
