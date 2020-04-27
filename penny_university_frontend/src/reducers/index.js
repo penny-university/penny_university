@@ -15,12 +15,11 @@ const entities = (state = { chats: {}, followUps: {}, userProfiles: {} }, action
 }
 
 const errorReducer = (state = null, action) => {
-  const { type, error } = action
-
+  const { type, payload } = action
   if (type === ActionTypes.CLEAR_ERROR_MESSAGE) {
     return null
-  } if (error) {
-    return error
+  } if (payload) {
+    return payload
   }
 
   return state

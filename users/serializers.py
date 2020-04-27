@@ -6,19 +6,23 @@ from .models import UserProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.EmailField(required=True)
+    email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'username', 'password']
+        fields = ['id', 'email', 'password', 'first_name', 'last_name']
 
     def create(self, validated_data):
         user = get_user_model().objects.create_user(
-            username=validated_data['username'],
+            username=validated_data['email'],
             # All of our usernames are emails, but we still need the email field for other uses.
-            email=validated_data['username'],
+            email=validated_data['email'],
             password=validated_data['password'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
         )
 
         return user

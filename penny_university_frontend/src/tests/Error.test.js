@@ -13,7 +13,7 @@ describe('error reducer', () => {
 
     return store.dispatch(loadChatsList('1')).then(() => {
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.error).toEqual('It failed!')
+      expect(state.error).toEqual({ message: 'It failed!', status: undefined })
     })
   })
 })

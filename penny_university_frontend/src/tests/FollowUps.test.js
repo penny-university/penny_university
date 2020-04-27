@@ -39,7 +39,7 @@ describe('follow up actions', () => {
       {
         chatId: '1',
         type: 'FOLLOW_UPS_FAILURE',
-        error: 'It failed!',
+        payload: { message: 'It failed!', status: undefined },
       },
     ]
 

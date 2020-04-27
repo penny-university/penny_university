@@ -29,7 +29,7 @@ const CookieHelper = () => {
   }
 
   const deleteCookie = (name) => {
-    document.cookie = `${name}=; Max-Age=-99999999;`
+    document.cookie = `${name}=; Max-Age=-99999999; path=/`
   }
 
   const setToken = (data) => setCookie(Cookies.token, data, AUTH_EXPIRATION)

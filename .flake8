@@ -1,7 +1,8 @@
 [flake8]
 exclude =
     .git,
-    __pycache__
+    __pycache__,
+    node_modules
 max-line-length = 121
 ignore =
     F401,F403 penny_university/settings/

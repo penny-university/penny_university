@@ -37,7 +37,7 @@ describe('chat actions', () => {
       },
       {
         type: 'CHATS_LIST_FAILURE',
-        error: 'It failed!',
+        payload: { message: 'It failed!', status: undefined },
       },
     ]
 
@@ -74,7 +74,7 @@ describe('chat actions', () => {
       },
       {
         type: 'CHAT_DETAIL_FAILURE',
-        error: 'It failed!',
+        payload: { message: 'It failed!', status: undefined },
       },
     ]
 
