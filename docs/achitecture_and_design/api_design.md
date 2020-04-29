@@ -15,10 +15,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
                 "id": 1,
                 "url": "http://pennyuniversity.org/api/users/profiles/1",
                 "real_name": "Joe",
-                "user": {
-                    "id": 1,
-                    "username": "joe.example@email.com"
-                }
+                "user": "http://pennyuniversity.org/api/users/1"
             },
             "role": "organizer"
         },
@@ -76,7 +73,7 @@ The following are the RESTful endpoints needed to support basic chat and follow-
             "user_profile": {
                 "id": 1,
                 "real_name": "...",
-                "user": {...}
+                "user": "http://pennyuniversity.org/api/users/1"
             },
             "date": "...",
             "content": "...",
@@ -112,10 +109,7 @@ Same payload as POST
     "id": 1,
     "url": "http://pennyuniversity.org/api/users/profiles/1",
     "real_name": "Joe",
-    "user": {
-        "id": 1,
-        "username": "joe.example@email.com"
-    }
+    "user": "http://pennyuniversity.org/api/users/1"
 }
 ```
 
@@ -162,10 +156,7 @@ Same payload as POST
                         "id": 1,
                         "url": "http://pennyuniversity.org/api/users/profiles/1",
                         "real_name": "Joe",
-                        "user": {
-                            "id": 1,
-                            "username": "joe.example@email.com"
-                        },
+                        "user": "http://pennyuniversity.org/api/users/1",
                         "chats": "http://pennyuniversity.org/api/users/1/chats/"
                     },
                     "role": "organizer"
@@ -202,7 +193,7 @@ Same payload as POST
             "user_profile": {
                 "id": 1,
                 "real_name": "...",
-                "user": {...}
+                "user": "http://pennyuniversity.org/api/users/1"
             },
             "date": "...",
             "content": "...",
