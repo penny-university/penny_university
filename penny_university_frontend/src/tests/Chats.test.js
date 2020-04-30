@@ -34,6 +34,9 @@ describe('chat actions', () => {
     const expectedActions = [
       {
         type: 'CHATS_LIST_REQUEST',
+        payload: {
+          meta: undefined,
+        },
       },
       {
         type: 'CHATS_LIST_FAILURE',
@@ -71,6 +74,7 @@ describe('chat actions', () => {
     const expectedActions = [
       {
         type: 'CHAT_DETAIL_REQUEST',
+        payload: { meta: undefined }
       },
       {
         type: 'CHAT_DETAIL_FAILURE',

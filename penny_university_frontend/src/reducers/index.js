@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux'
 import deepmerge from 'deepmerge'
+import { normalize } from 'normalizr'
 import * as ActionTypes from '../actions'
 import paginate from './paginate'
 import user, { initialState as userInitialState } from './user'
@@ -7,8 +8,10 @@ import user, { initialState as userInitialState } from './user'
 // Updates an entity cache in response to any action
 // with response.entities, such as a CHATS_LIST_SUCCESS
 const entities = (state = { chats: {}, followUps: {}, userProfiles: {} }, action) => {
-  if (action.response && action.response.entities) {
-    return deepmerge(state, action.response.entities)
+  const { result, responseSchema } = action.payload || {}
+  if (result) {
+    const { entities = {} } = normalize(result, responseSchema)
+    return deepmerge(state, entities)
   }
 
   return state
@@ -35,7 +38,7 @@ const pagination = combineReducers({
     ],
   }),
   followUpsByChat: paginate({
-    mapActionToKey: (action) => action.chatId,
+    mapActionToKey: (action) => action.payload?.meta?.chatId,
     types: [
       ActionTypes.FOLLOW_UPS_REQUEST,
       ActionTypes.FOLLOW_UPS_SUCCESS,

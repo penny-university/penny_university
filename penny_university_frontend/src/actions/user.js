@@ -32,7 +32,8 @@ export const checkAuth = () => ({
 })
 
 export const fetchUser = () => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE],
     endpoint: ApiRoutes.user,
     method: 'GET',
@@ -40,7 +41,8 @@ export const fetchUser = () => ({
 })
 
 const login = (payload) => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [LOGIN_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE],
     endpoint: ApiRoutes.login,
     method: 'POST',
@@ -49,7 +51,8 @@ const login = (payload) => ({
 })
 
 const signup = (payload) => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [SIGNUP_REQUEST, SIGNUP_SUCCESS, SIGNUP_FAILURE],
     endpoint: ApiRoutes.register,
     method: 'POST',
@@ -59,7 +62,8 @@ const signup = (payload) => ({
 
 
 const userExists = (email) => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [USER_EXISTS_REQUEST, USER_EXISTS_SUCCESS, USER_EXISTS_FAILURE],
     endpoint: ApiRoutes.exists,
     method: 'POST',
@@ -71,7 +75,8 @@ export const logout = () => ({
   type: LOGOUT_USER,
 })
 export const logoutRequest = () => ({
-  [CALL_API]: {
+  type: CALL_API,
+  payload: {
     types: [LOGOUT_REQUEST, LOGOUT_SUCCESS, LOGOUT_FAILURE],
     endpoint: ApiRoutes.logout,
     method: 'POST',

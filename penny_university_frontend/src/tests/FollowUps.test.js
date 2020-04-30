@@ -33,13 +33,12 @@ describe('follow up actions', () => {
 
     const expectedActions = [
       {
-        chatId: '1',
         type: 'FOLLOW_UPS_REQUEST',
+        payload: { meta: { chatId: '1' } },
       },
       {
-        chatId: '1',
         type: 'FOLLOW_UPS_FAILURE',
-        payload: { message: 'It failed!', status: undefined },
+        payload: { message: 'It failed!', status: undefined, meta: { chatId: '1' } },
       },
     ]
 
