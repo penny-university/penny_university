@@ -2,7 +2,7 @@ name: CI
 # This is patterned after https://medium.com/@michaelekpang/creating-a-ci-cd-pipeline-using-github-actions-b65bb248edfe
 
 on:
-  pull_request:
+  push:
     branches:
     - *
 
