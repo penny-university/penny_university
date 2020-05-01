@@ -1,18 +1,16 @@
 name: CI
+# This is patterned after https://medium.com/@michaelekpang/creating-a-ci-cd-pipeline-using-github-actions-b65bb248edfe
 
 on:
-  push:
+  pull_request:
     branches:
-      - staging
+    - *
 
 jobs:
-  deploy:
+  stuff:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Add remote origin
+      - name: hello
         run: |
-          git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/penny-stage.git
-      - name: Deploy to Heroku
-        run: |
-          git push heroku HEAD:master -f
+          echo hello world
