@@ -39,6 +39,6 @@ jobs:
         pip install -r dev-requirements.txt
     - name: trash
       run: |
-        ./manage.py runserver &
+        SECRET_KEY=whaever./manage.py runserver &
         curl localhost:8000
         kill %1
