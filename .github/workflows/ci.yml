@@ -13,43 +13,46 @@ jobs:
       matrix:
         python-version: [3.7]
 
-    services:
-      postgres:
-        image: postgres:11.5
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+#    services:
+#      postgres:
+#        image: postgres:11.5
+#        env:
+#          POSTGRES_USER: postgres
+#          POSTGRES_PASSWORD: postgres
+#          POSTGRES_DB: postgres
+#        ports:
+#          - 5432:5432
+#        # needed because the postgres container does not provide a healthcheck
+#        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-    - uses: actions/cache@v1
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
-    - name: Install dependencies
+    - name: sudoable
       run: |
-        sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r dev-requirements.txt
-    - name: trash
-      env:
-        SECRET_KEY: literally_anything
-        DJANGO_SETTINGS_MODULE: penny_university.settings.base
-        DJANGO_PORT: 12345
-      run: |
-        echo $DJANGO_PORT $SECRET_KEY #TODO! remove
-        export SECRET_KEY=$SECRET_KEY #TODO! remove
-        ./manage.py runserver 12345 &
-        while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:$DJANGO_PORT)" != "200" ]]; do sleep 5; done
-        curl localhost:$DJANGO_PORT
-        kill %1
+        sudo ls /etc
+        sudo cat /etc/hosts
+#    - uses: actions/checkout@v1
+#    - name: Set up Python ${{ matrix.python-version }}
+#      uses: actions/setup-python@v1
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#    - uses: actions/cache@v1
+#      with:
+#        path: ~/.cache/pip
+#        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
+#    - name: Install dependencies
+#      run: |
+#        sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
+#        python -m pip install --upgrade pip
+#        pip install -r requirements.txt
+#        pip install -r dev-requirements.txt
+#    - name: trash
+#      env:
+#        SECRET_KEY: literally_anything
+#        DJANGO_SETTINGS_MODULE: penny_university.settings.base
+#        DJANGO_PORT: 12345
+#      run: |
+#        ./manage.py runserver $DJANGO_PORT &
+#        # Add timeout
+#        while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:$DJANGO_PORT)" != "200" ]]; do sleep 5; done
+#        curl localhost:$DJANGO_PORT
+#        kill %1
