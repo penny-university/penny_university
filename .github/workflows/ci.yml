@@ -42,7 +42,9 @@ jobs:
         pip install -r requirements.txt
         pip install -r dev-requirements.txt
     - name: trash
+      # TODO! set env w/ port num
       run: |
-        SECRET_KEY=whaever./manage.py runserver 12345 &
+        SECRET_KEY=whatever ./manage.py runserver 12345 &
+        while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:12345)" != "200" ]]; do sleep 5; done
         curl localhost:12345
         kill %1
