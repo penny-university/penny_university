@@ -31,18 +31,18 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-#    - uses: actions/cache@v1
-#      with:
-#        path: ~/.cache/pip
-#        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
-#    - name: Install dependencies
-#      run: |
-#        sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
-#        python -m pip install --upgrade pip
-#        pip install -r requirements.txt
-#        pip install -r dev-requirements.txt
+    - uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
+    - name: Install dependencies
+      run: |
+        sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r dev-requirements.txt
     - name: trash
       run: |
-        socat TCP4-LISTEN:12345,fork EXEC:cat &
+        SECRET_KEY=whaever./manage.py runserver 12345 &
         curl localhost:12345
         kill %1
