@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from bot.utils import notify_admins
+from bot.utils import notify_admins, channel_lookup
 from users.models import UserProfile
 from bot.processors.base import (
     BotModule,
@@ -14,6 +14,7 @@ from bot.processors.filters import (
 )
 
 GREETING_CHANNEL = 'general'
+WELCOME_ROOM_CHANNEL = 'penny-u-welcome-committee'
 
 
 def greeting_blocks(user_id):
@@ -87,6 +88,20 @@ def greeting_blocks(user_id):
     return message
 
 
+def welcome_room_blocks(user_id):
+    message = [
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'<@{user_id}> just arrived. Can anyone reach out to them to set up a 15 minute chat?'
+            }
+
+        }
+    ]
+    return message
+
+
 def onboarding_blocks(user=None):
     template = {
         'callback_id': 'interests',
@@ -146,6 +161,8 @@ class GreetingBotModule(BotModule):
     @has_event_type('message.channel_join')
     def welcome_user(self, event):
         self.slack.chat_postMessage(channel=event['user'], blocks=greeting_blocks(event['user']))
+        self.slack.chat_postMessage(channel=channel_lookup(WELCOME_ROOM_CHANNEL),
+                                    blocks=welcome_room_blocks(event['user']))
         notify_admins(self.slack, f'<@{event["user"]}> just received a greeting message.')
 
     @is_block_interaction_event

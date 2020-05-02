@@ -19,11 +19,15 @@ def test_greeting(mocker):
         'channel_type': 'channel'
     }
     with mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome'), \
+            mocker.patch('bot.processors.greeting.welcome_room_blocks', return_value='arrive'), \
             mocker.patch('bot.processors.greeting.notify_admins'), \
-            mocker.patch('bot.processors.filters.channel_lookup', return_value='GENERAL'):
-
+            mocker.patch('bot.processors.filters.channel_lookup', return_value='GENERAL'), \
+            mocker.patch('bot.processors.greeting.channel_lookup', return_value='WELCOME_CHANNEL'):
         greeter(event)
-    assert slack.chat_postMessage.call_args == mocker.call(channel='U42HCBFEF', blocks='welcome')
+    slack.chat_postMessage.assert_has_calls([
+        mocker.call(channel='U42HCBFEF', blocks='welcome'),
+        mocker.call(channel='WELCOME_CHANNEL', blocks='arrive')
+    ], any_order=True)
 
 
 def test_greeting_wrong_channel(mocker):
