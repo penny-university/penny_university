@@ -44,10 +44,11 @@ jobs:
     - name: trash
       env:
         SECRET_KEY: literally_anything
+        DJANGO_SETTINGS_MODULE: penny_university.settings.base
         DJANGO_PORT: 12345
       run: |
-        echo $DJANGO_PORT $SECRET_KEY
-        export SECRET_KEY=$SECRET_KEY
+        echo $DJANGO_PORT $SECRET_KEY #TODO! remove
+        export SECRET_KEY=$SECRET_KEY #TODO! remove
         ./manage.py runserver 12345 &
         while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:$DJANGO_PORT)" != "200" ]]; do sleep 5; done
         curl localhost:$DJANGO_PORT
