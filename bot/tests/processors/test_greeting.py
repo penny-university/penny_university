@@ -18,16 +18,18 @@ def test_greeting(mocker):
         'event_ts': '1557281569.001300',
         'channel_type': 'channel'
     }
-    with mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome'), \
-            mocker.patch('bot.processors.greeting.welcome_room_blocks', return_value='arrive'), \
-            mocker.patch('bot.processors.greeting.notify_admins'), \
-            mocker.patch('bot.processors.filters.channel_lookup', return_value='GENERAL'), \
-            mocker.patch('bot.processors.greeting.channel_lookup', return_value='WELCOME_CHANNEL'):
+    greeting_blocks = mocker.patch('bot.processors.greeting.greeting_blocks', return_value='welcome')
+    welcome_room_blocks = mocker.patch('bot.processors.greeting.welcome_room_blocks', return_value='arrive')
+    notify_admins = mocker.patch('bot.processors.greeting.notify_admins')
+    filters_channel_lookup = mocker.patch('bot.processors.filters.channel_lookup', return_value='GENERAL')
+    greeting_channel_lookup = mocker.patch('bot.processors.greeting.channel_lookup', return_value='WELCOME_CHANNEL')
+    with greeting_blocks, welcome_room_blocks, notify_admins, filters_channel_lookup, greeting_channel_lookup:
         greeter(event)
     slack.chat_postMessage.assert_has_calls([
         mocker.call(channel='U42HCBFEF', blocks='welcome'),
         mocker.call(channel='WELCOME_CHANNEL', blocks='arrive')
     ], any_order=True)
+    notify_admins.assert_called()
 
 
 def test_greeting_wrong_channel(mocker):
