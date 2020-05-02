@@ -31,6 +31,10 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+    - uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
     - name: Install dependencies
       run: |
         sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
