@@ -1,14 +1,12 @@
 name: CI
-# This is patterned after https://medium.com/@michaelekpang/creating-a-ci-cd-pipeline-using-github-actions-b65bb248edfe
+# Deployment patterned after https://medium.com/@michaelekpang/creating-a-ci-cd-pipeline-using-github-actions-b65bb248edfe
 
-on:
-  pull_request
+on: [push]
 
 jobs:
-  test-backend:
+  test:
 
     runs-on: ubuntu-latest
-
     strategy:
       max-parallel: 4
       matrix:
@@ -27,59 +25,48 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-      - uses: actions/checkout@v1
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - uses: actions/cache@v1
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
-
-      - name: Test with pytest
-        env:
-          SLACK_API_TOKEN: ""
-          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
-          DJANGO_SETTINGS_MODULE: penny_university.settings.ci
-          SECRET_KEY: literally_anything
-        run: |
-          pytest
-          - name: Flake8
-            run: |
-              flake8
-
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r dev-requirements.txt
+    - name: Test with pytest
+      env:
+        SLACK_API_TOKEN: ""
+        DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
+        DJANGO_SETTINGS_MODULE: "penny_university.settings.ci"
+        SECRET_KEY: "6db7242adc5570c3bb2d12b2e161b1930650f9669a457fb3"
+      run: |
+        pytest
+    - name: Flake8
+      run: |
+        flake8
   test-frontend:
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node: [ '10' ]
     steps:
-      - uses: actions/checkout@v1
-
-      - name: Set Up Node ${{ matrix.node }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Install Dependencies
-        working-directory: ./penny_university_frontend
-        run: |
-            npm install
-
-      - name: Run Tests
-        working-directory: ./penny_university_frontend
-        run: |
-          CI=true npm test
+    - uses: actions/checkout@v1
+    - name: Set Up Node ${{ matrix.node }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node }}
+    - name: Install Dependencies
+      working-directory: ./penny_university_frontend
+      run: |
+          npm install
+    - name: Run Tests
+      working-directory: ./penny_university_frontend
+      run: |
+        CI=true npm test
 
   test-integration:
 
