@@ -158,8 +158,10 @@ jobs:
       - name: Add remote origin
         if: github.event_name == 'push'
         run: |
+          echo "NOTE: if this suddenly breaks, it might be because of an expired API key"
           git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/penny-stage.git
       - name: Deploy to Heroku
         if: github.event_name == 'push'
         run: |
           git push heroku HEAD:master -f
+
