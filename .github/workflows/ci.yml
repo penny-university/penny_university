@@ -5,6 +5,9 @@ on:
   pull_request:
     branches:
       - '*'
+  push:
+    branches:
+      - staging
 
 jobs:
   test-backend:
@@ -33,6 +36,10 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+    - uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
     - name: Install dependencies
       run: |
         sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
@@ -63,6 +70,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node }}
+    # TODO add dependency caching here
     - name: Install Dependencies
       working-directory: ./penny_university_frontend
       run: |
@@ -115,6 +123,7 @@ jobs:
           DJANGO_SETTINGS_MODULE: penny_university.settings.ci
           SECRET_KEY: literally_anything
           DJANGO_PORT: 12345
+        #TODO! split up integration tests and startup - move startup to script
         run: |
           ./manage.py runserver $DJANGO_PORT &
           # Add timeout
@@ -140,7 +149,15 @@ jobs:
 
   deploy:
     needs: ["test-backend", "test-frontend", "test-integration"]
+
     runs-on: ubuntu-latest
+
     steps:
-      - run: |
-          echo "this works"
+      - uses: actions/checkout@v1
+      - name: Add remote origin
+        run: |
+          git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/penny-stage.git
+      - name: Deploy to Heroku
+        if: github.event_name == 'push'
+        run: |
+          git push heroku HEAD:master -f
