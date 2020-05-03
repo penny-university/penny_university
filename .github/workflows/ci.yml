@@ -1,7 +1,10 @@
 name: CI
 # Deployment patterned after https://medium.com/@michaelekpang/creating-a-ci-cd-pipeline-using-github-actions-b65bb248edfe
 
-on: [push]
+on:
+  - pull_request:
+      branches:
+        - *
 
 jobs:
   test:
@@ -70,8 +73,6 @@ jobs:
         CI=true npm test
 
   test-integration:
-
-    # needs: ["test-backend", "test-frontend"]  #TODO! add this
 
     runs-on: ubuntu-latest
 
