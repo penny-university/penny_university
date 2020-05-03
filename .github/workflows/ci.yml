@@ -7,7 +7,7 @@ on:
       - '*'
 
 jobs:
-  test:
+  test-backend:
 
     runs-on: ubuntu-latest
     strategy:
@@ -137,3 +137,10 @@ jobs:
 
           kill %1
           exit $exit_status
+
+  deploy:
+    needs: ["test-backend", "test-frontend", "test-integration"]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "this works"
