@@ -154,7 +154,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+        if: github.event_name == 'push'
       - name: Add remote origin
+        if: github.event_name == 'push'
         run: |
           git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/penny-stage.git
       - name: Deploy to Heroku
