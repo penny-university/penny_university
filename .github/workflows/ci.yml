@@ -1,5 +1,4 @@
 name: CI
-# Deployment patterned after https://medium.com/@michaelekpang/creating-a-ci-cd-pipeline-using-github-actions-b65bb248edfe
 
 on:
   pull_request:
@@ -7,7 +6,7 @@ on:
       - '*'
   push:
     branches:
-      - staging
+      - master
 
 jobs:
   test-backend:
@@ -155,13 +154,23 @@ jobs:
     steps:
       - uses: actions/checkout@v1
         if: github.event_name == 'push'
-      - name: Add remote origin
+      - name: Add Heroku credentials
+        if: github.event_name == 'push'
+        run: |
+          echo "machine api.heroku.com" > ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+      - name: Backup DB
+        if: github.event_name == 'push'
+        run: |
+          echo "NOTE: this isn't going to work once the db gets too large, but while we can take advantage of this extra safety, why not?"
+          heroku pg:backups:capture -a penny-university
+      - name: Push
         if: github.event_name == 'push'
         run: |
           echo "NOTE: if this suddenly breaks, it might be because of an expired API key"
-          git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/penny-stage.git
-      - name: Deploy to Heroku
-        if: github.event_name == 'push'
-        run: |
+          git remote add heroku https://git.heroku.com/penny-university.git
           git push heroku HEAD:master -f
-
