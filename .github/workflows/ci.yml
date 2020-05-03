@@ -23,9 +23,8 @@ jobs:
           echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
       - name: Backup DB
         run: heroku pg:backups:capture -a penny-university
-      - name: Add remote origin
+      - name: Push
         run: |
           echo "NOTE: if this suddenly breaks, it might be because of an expired API key"
-          git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/penny-university.git
-
-
+          git remote add heroku https://git.heroku.com/penny-stage.git  #TODO! change
+          git push heroku HEAD:master -f
