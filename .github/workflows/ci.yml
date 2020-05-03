@@ -13,11 +13,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - name: Add Heroku credentials
+        run: |
+          echo "machine api.heroku.com" > ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+      - name: Backup DB
+        run: heroku pg:backups:capture -a penny-university
       - name: Add remote origin
         run: |
           echo "NOTE: if this suddenly breaks, it might be because of an expired API key"
           git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/penny-university.git
-      - name: Backup DB
-        run: |
-          heroku pg:backups:capture -a penny-university
+
 
