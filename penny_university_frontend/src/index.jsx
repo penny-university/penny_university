@@ -7,6 +7,7 @@ import thunk from 'redux-thunk'
 import rootReducer, { initialState } from './reducers'
 import api from './middleware/api'
 import user from './middleware/user'
+import logging from './middleware/logging'
 import './style.css'
 import App from './App'
 
@@ -14,7 +15,7 @@ import App from './App'
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 const store = createStore(rootReducer, initialState, composeEnhancers(
-  applyMiddleware(thunk, api, user),
+  applyMiddleware(thunk, api, user, logging),
 ))
 
 ReactDOM.render(

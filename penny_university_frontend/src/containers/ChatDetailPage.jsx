@@ -6,9 +6,10 @@ import {
   createFollowUp, loadChatDetail, loadFollowUps, updateFollowUp,
 } from '../actions'
 import { ChatDetail } from '../components/chats'
+import * as selectors from '../selectors'
 
 const ChatDetailPage = ({
-  id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp,
+  id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp, user, userProfiles
 }) => {
   useEffect(() => {
     loadChatDetail(id)
@@ -22,6 +23,8 @@ const ChatDetailPage = ({
       loadFollowUps={loadFollowUps}
       createFollowUp={createFollowUp}
       updateFollowUp={updateFollowUp}
+      user={user}
+      userProfiles={userProfiles}
     />
   )
 }
@@ -36,40 +39,12 @@ ChatDetailPage.propTypes = {
 
 const mapStateToProps = (state, ownProps) => {
   const { id } = ownProps.match.params
-
-  const {
-    entities: { chats, followUps, userProfiles },
-    pagination,
-  } = state
-
-  const chat = chats[id]
-  if (chat) {
-    // if userProfile is just an ID, populate the full userProfile
-    chat.participants = chat.participants.map((c) => ((typeof (c.userProfile) === 'number') ? { userProfile: userProfiles[c.userProfile], role: c.role } : c))
-  }
-  const followUpsPagination = pagination.followUpsByChat[id] || { ids: [] }
-
-  const decorateUserProfileWithRole = (userProfile) => {
-    if (chat && userProfile) {
-      const participant = chat.participants.find((p) => p.userProfile?.id === userProfile?.id)
-      return participant ? participant.role : null
-    }
-    return null
-  }
-
-  const followUpsList = followUpsPagination.ids.map((id) => {
-    const followUp = followUps[id]
-    followUp.userProfile = {
-      ...userProfiles[followUp.userProfile],
-      role: decorateUserProfileWithRole(userProfiles[followUp.userProfile]),
-    }
-    return followUp
-  })
-
   return {
     id,
-    chat,
-    followUpsList,
+    chat: selectors.chats.getChatById(state, id),
+    followUpsList: selectors.chats.getFollowupsForChatId(state, id),
+    user: selectors.user.getUser(state),
+    userProfiles: selectors.entities.getUserProfiles(state),
   }
 }
 

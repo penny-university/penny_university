@@ -3,7 +3,11 @@ import { Content, EditContent } from '../content'
 import { EditButton, SaveButton } from '../buttons'
 import FollowUpUserInfo from './FollowUpUserInfo'
 
-const FollowUpCard = ({ followUp, updateFollowUp }) => {
+const FollowUpButtons = ({ editOnPress, saveOnPress, editMode }) => editMode
+  ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
+  : <EditButton className="align-self-start" type="Follow Up" onClick={editOnPress} />
+
+const FollowUpCard = ({ followUp, updateFollowUp, canEdit, userProfile }) => {
   const [editMode, toggleEditMode] = useState(false)
   const [content, updateContent] = useState(followUp.content)
 
@@ -15,13 +19,12 @@ const FollowUpCard = ({ followUp, updateFollowUp }) => {
     toggleEditMode(false)
   }
 
+  const editOnPress = () => toggleEditMode(true)
   return (
     <div className="pt-2">
       <div className="d-flex justify-content-between">
-        <FollowUpUserInfo userProfile={followUp.userProfile} date={followUp.date} />
-        {editMode
-          ? <SaveButton className="align-self-start" type="Changes" onClick={saveFollowUp} />
-          : <EditButton className="align-self-start" type="Follow Up" onClick={() => toggleEditMode(true)} />}
+        <FollowUpUserInfo userProfile={userProfile} date={followUp.date} />
+        {canEdit ? <FollowUpButtons editMode={editMode} saveOnPress={saveFollowUp} editOnPress={editOnPress} /> : null}
       </div>
       {editMode
         ? <EditContent content={content} onChange={updateContent} />
