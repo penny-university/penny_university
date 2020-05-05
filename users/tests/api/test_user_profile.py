@@ -1,5 +1,5 @@
 import pytest
-
+from django.urls import reverse
 from rest_framework.test import APIClient
 
 from users.models import UserProfile
@@ -13,6 +13,7 @@ def test_user_profile_detail():
         email='anonymous@profile.com',
         slack_id='required',
     )
-    response = client.get(f'/api/users/{profile.id}/')
+    
+    response = client.get(reverse('userprofile-detail', args=[profile.id]))
     assert response.data['real_name'] == 'Anonymous Profile'
     assert 'url' in response.data

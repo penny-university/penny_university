@@ -1,4 +1,5 @@
 import pytest
+from django.urls import reverse
 from rest_framework.test import APIClient
 
 from users.models import UserProfile
@@ -8,7 +9,7 @@ from users.models import UserProfile
 def test_user_chat_detail(test_chats_1):
     user = UserProfile.objects.get(slack_id='one')
 
-    response = APIClient().get(f'/api/users/{user.id}/')
+    response = APIClient().get(reverse('userprofile-detail', args=[user.id]))
     assert response.data['real_name'] == 'one'
     assert 'url' in response.data
     assert response.data['chats'] == f'http://testserver/api/users/{user.id}/chats/'
