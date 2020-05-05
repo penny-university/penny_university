@@ -13,7 +13,7 @@ def test_user_profile_detail():
         email='anonymous@profile.com',
         slack_id='required',
     )
-    
+
     response = client.get(reverse('userprofile-detail', args=[profile.id]))
     assert response.data['real_name'] == 'Anonymous Profile'
     assert 'url' in response.data

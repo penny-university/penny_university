@@ -50,6 +50,11 @@ class UserProfileDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
         return self.retrieve(request, *args, **kwargs)
 
 
+class UserProfileList(generics.ListAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+
+
 class ListUserChats(generics.GenericAPIView):
     """
     API endpoint listing chats associated with users
