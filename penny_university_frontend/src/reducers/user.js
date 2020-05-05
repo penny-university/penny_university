@@ -3,7 +3,6 @@ import * as ActionTypes from '../actions/user'
 export const initialState = {
   token: null,
   user: null,
-  userProfiles: [],
 }
 
 const user = (state = initialState, action) => {
