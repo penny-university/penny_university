@@ -28,8 +28,8 @@ export default (store) => (next) => (action) => {
       break
     case LOGIN_SUCCESS:
     case SIGNUP_SUCCESS:
-      CookieHelper.setToken(action.response.key)
-      store.dispatch(setToken(action.response.key))
+      CookieHelper.setToken(action.payload.result.key)
+      store.dispatch(setToken(action.payload.result.key))
       store.dispatch(fetchUser())
       modalDispatch.close()
       break
