@@ -9,7 +9,7 @@ import user, { initialState as userInitialState } from './user'
 // with response.entities, such as a CHATS_LIST_SUCCESS
 const entities = (state = { chats: {}, followUps: {}, userProfiles: {} }, action) => {
   const { result, responseSchema } = action.payload || {}
-  if (result) {
+  if (result && responseSchema) {
     const { entities = {} } = normalize(result, responseSchema)
     return deepmerge(state, entities)
   }
