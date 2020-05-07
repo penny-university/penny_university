@@ -25,12 +25,8 @@
                     <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
                     <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
                 </div>
-                <button type="button" class="ml-2 btn btn-outline-dark"
-                        {% if invite_link %}
-                        onclick=" window.open('{{ invite_link }}','_blank')"
-                        {% else %}
-                        data-toggle="modal" data-target="#formModal"
-                        {% endif %}>
+                <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
+                        data-target="#formModal">
                     Join Us! <i class="fa fa-slack"></i>
                 </button>
             </div>
@@ -44,12 +40,7 @@
                 <h1 class="display-4">Penny University</h1>
                 <h3 class="mt-4">A peer to peer learning community</h3>
                 <div class="mt-4">
-                    <button type="button" class="btn btn-lg btn-primary"
-                            {% if invite_link %}
-                            onclick=" window.open('{{ invite_link }}','_blank')"
-                            {% else %}
-                            data-toggle="modal" data-target="#formModal"
-                            {% endif %}>
+                    <button type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#formModal">
                         Join Us On Slack! <i class="fa fa-slack"></i>
                     </button>
                 </div>
@@ -127,12 +118,7 @@
                         Penny Chats with one another to in order to share knowledge, and then write up what
                         they've learned and share it with the community.
                     </p>
-                    <button type="button" class="btn btn-lg btn-primary"
-                            {% if invite_link %}
-                            onclick=" window.open('{{ invite_link }}','_blank')"
-                            {% else %}
-                            data-toggle="modal" data-target="#formModal"
-                            {% endif %}>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#formModal">
                         Join Us On Slack! <i class="fa fa-slack"></i>
                     </button>
                     <div class="mt-3">
@@ -153,12 +139,8 @@
             <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
             <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
         </div>
-        <button type="button" class="ml-2 btn btn-outline-dark"
-                {% if invite_link %}
-                onclick=" window.open('{{ invite_link }}','_blank')"
-                {% else %}
-                data-toggle="modal" data-target="#formModal"
-                {% endif %}>
+        <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
+                data-target="#formModal">
             Join Us! <i class="fa fa-slack"></i>
         </button>
     </footer>

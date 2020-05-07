@@ -11,23 +11,18 @@
                 {% csrf_token %}
                 <div class="modal-body">
                     <p class="font-weight-light">
-                        Give us your email address and we will add you to our Slack group.
-                        You will also be able to add your own Penny Chat Reviews to our Google Forum.
+                        The Penny University community hangs out in Slack.
+                        Click the button below to go to our Slack sign-up page.
                     </p>
-                    {% for field in form %}
-                        <div class="form-group">
-                            {{ field.errors }}
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% if field.help_text %}
-                                <small class="form-text text-muted">{{ field.help_text|safe }}</small>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
+                    <p>Not sure yet?
+                            <a href="https://groups.google.com/forum/#!forum/penny-university">
+                                Check out what we've been up to on our forum.
+                            </a>
+                        </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary">Join Penny University</button>
                 </div>
             </form>
         </div>
