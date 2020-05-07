@@ -29,7 +29,7 @@ def index(request):
     else:
         form = InviteForm()
 
-    return render(request, 'home/index.html', {'form': form})
+    return render(request, 'home/index.html', {'form': form, 'invite_link': settings.SLACK_INVITE_LINK})
 
 
 def thank_you(request):

@@ -154,6 +154,10 @@ PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
 
 SLACK_TEAM_ID = 'T41DZFW4T'
 
+SLACK_INVITE_LINK = os.environ.get('SLACK_INVITE_LINK')
+if SLACK_INVITE_LINK is None:
+    print('WARNING: SLACK_INVITE_LINK is None')
+
 
 # Django Rest Framework
 REST_FRAMEWORK = {
