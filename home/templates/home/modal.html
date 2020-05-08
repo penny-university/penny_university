@@ -9,6 +9,7 @@
             </div>
             <form method="post">
                 {% csrf_token %}
+                {% if invite_link %}
                 <div class="modal-body">
                     <p class="font-weight-light">
                         The Penny University community hangs out in Slack.
@@ -24,6 +25,28 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Join Penny University</button>
                 </div>
+                {% else %}
+                <div class="modal-body">
+                    <p class="font-weight-light">
+                        Give us your email address and we will add you to our Slack group.
+                        You will also be able to add your own Penny Chat Reviews to our Google Forum.
+                    </p>
+                    {% for field in form %}
+                        <div class="form-group">
+                            {{ field.errors }}
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                {% endif %}
             </form>
         </div>
     </div>
