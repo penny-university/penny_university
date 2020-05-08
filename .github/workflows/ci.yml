@@ -1,9 +1,15 @@
 name: CI
 
-on: [push]
+on:
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches:
+      - master
 
 jobs:
-  test:
+  test-backend:
 
     runs-on: ubuntu-latest
     strategy:
@@ -29,6 +35,10 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
+    - uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
     - name: Install dependencies
       run: |
         sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
@@ -59,6 +69,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node }}
+    # TODO add dependency caching here
     - name: Install Dependencies
       working-directory: ./penny_university_frontend
       run: |
@@ -67,3 +78,99 @@ jobs:
       working-directory: ./penny_university_frontend
       run: |
         CI=true npm test
+
+  test-integration:
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:11.5
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+
+      - name: Integration Tests (just a stand-in for now)
+        env:
+          SLACK_API_TOKEN: ""
+          DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
+          DJANGO_SETTINGS_MODULE: penny_university.settings.ci
+          SECRET_KEY: literally_anything
+          DJANGO_PORT: 12345
+        #TODO! split up integration tests and startup - move startup to script
+        run: |
+          ./manage.py runserver $DJANGO_PORT &
+          # Add timeout
+
+          start_time=$(date +%s)
+          max_secs=10
+          while ! curl --fail localhost:$DJANGO_PORT;
+          do
+          	if  [ $((    ( $(date +%s) - $start_time )   >   $max_secs   )) == 1 ]
+          	then
+          		break
+          	fi
+          	printf .
+          	sleep 1
+          done
+
+          # this line right here is effectively the integration test
+          curl --fail localhost:$DJANGO_PORT
+          exit_status=$?
+
+          kill %1
+          exit $exit_status
+
+  deploy:
+    needs: ["test-backend", "test-frontend", "test-integration"]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+        if: github.event_name == 'push'
+      - name: Add Heroku credentials
+        if: github.event_name == 'push'
+        run: |
+          echo "machine api.heroku.com" > ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+      - name: Backup DB
+        if: github.event_name == 'push'
+        run: |
+          echo "NOTE: this isn't going to work once the db gets too large, but while we can take advantage of this extra safety, why not?"
+          heroku pg:backups:capture -a penny-university
+      - name: Push
+        if: github.event_name == 'push'
+        run: |
+          echo "NOTE: if this suddenly breaks, it might be because of an expired API key"
+          git remote add heroku https://git.heroku.com/penny-university.git
+          git push heroku HEAD:master -f

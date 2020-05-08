@@ -1,6 +1,5 @@
 from background_task.management.commands.process_tasks import Command as ProcessTasks
 from background_task.utils import SignalManager
-from django.conf import settings
 
 from bot.tasks import send_penny_chat_reminders
 
