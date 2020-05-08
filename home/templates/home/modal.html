@@ -9,6 +9,18 @@
             </div>
             <form method="post">
                 {% csrf_token %}
+                {% if invite_link %}
+                <div class="modal-body">
+                    <p class="font-weight-light">
+                        The Penny University community hangs out in Slack.
+                        Click the button below to go to our Slack sign-up page.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Join Penny University</button>
+                </div>
+                {% else %}
                 <div class="modal-body">
                     <p class="font-weight-light">
                         Give us your email address and we will add you to our Slack group.
@@ -29,6 +41,7 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
+                {% endif %}
             </form>
         </div>
     </div>
