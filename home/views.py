@@ -13,6 +13,8 @@ def index(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         if settings.SLACK_INVITE_LINK:
+            message = f'Somebody clicked join.'
+            notify_admins(slack_client, message)
             return HttpResponseRedirect(settings.SLACK_INVITE_LINK)
         else:
             # create a form instance and populate it with data from the request:
