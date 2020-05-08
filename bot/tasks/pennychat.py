@@ -2,7 +2,7 @@ import json
 import urllib.parse
 from datetime import datetime, timedelta
 
-from background_task import background
+from background_task import background as original_background
 from django.conf import settings
 from pytz import timezone, utc
 from slack import WebClient
@@ -28,6 +28,17 @@ PENNY_CHAT_ID = 'penny_chat_id'
 
 PREVIEW, INVITE, UPDATE, REMIND = 'review', 'invite', 'update', 'remind'
 PENNY_CHAT_DETAILS_BLOCKS_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
+
+
+def background(*args, **kwargs):
+    """This is just a silly hack because we don't have an easy way of shutting off async for tests.
+
+    Details about what I want https://github.com/arteria/django-background-tasks/issues/234
+    """
+    if getattr(settings, 'TASK_ALWAYS_EAGER', False):
+        return args[0]
+    else:
+        return original_background(*args, **kwargs)
 
 
 def _get_slack_client():
@@ -273,3 +284,9 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
 def comma_split(comma_delimited_string):
     """normal string split for  ''.split(',') returns [''], so using this instead"""
     return [x for x in comma_delimited_string.split(',') if x]
+
+
+# TODO! delete
+@background
+def trash():
+    print("here")
