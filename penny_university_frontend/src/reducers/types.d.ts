@@ -1,7 +1,5 @@
 type StandardAction<P> = { type: string, payload?: P }
 
-// type Dispatch<P> = (action: StandardAction<P> | Promise<any>) => void
-
 type User = {
 
 }
