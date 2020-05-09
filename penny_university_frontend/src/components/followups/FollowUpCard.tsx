@@ -30,7 +30,7 @@ const FollowUpCard = ({ followUp, updateFollowUp }: FollowUpCard) => {
       </div>
       {editMode
         ? <EditContent content={content} onChange={updateContent} />
-        : <Content className="ml-4 border-left pl-3" source={content} />}
+        : <Content className="ml-4 border-left pl-3" content={content} />}
     </div>
   )
 }

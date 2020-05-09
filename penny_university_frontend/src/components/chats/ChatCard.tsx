@@ -19,7 +19,7 @@ const ChatCard = ({ chat }: ChatCardProps) => (
     </CardTitle>
     <Date className="text-secondary" date={chat.date} />
     {chat.description
-      ? <Content source={chat.description} /> : null}
+      ? <Content content={chat.description} /> : null}
     <div className="d-flex">
       <ParticipantList className="mr-2" participants={chat.participants} chatId={chat.id} />
       -

@@ -2,12 +2,12 @@ import React from 'react'
 import ReactMarkdown from 'react-markdown'
 
 type ContentProps = {
-  source?: string,
+  content?: string,
   className?: string,
 }
 
-const Content = ({ source, className }: ContentProps) => (
-  <ReactMarkdown className={className} source={source} />
+const Content = ({ content, className }: ContentProps) => (
+  <ReactMarkdown className={className} source={content} />
 )
 
 Content.defaultProps = {

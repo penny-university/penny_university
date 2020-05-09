@@ -44,7 +44,7 @@ const ChatDetail = ({
       <Card body className="mb-3 border-0 shadow-sm">
         <h3 className="mr-3">{chat.title}</h3>
         <Date className="text-secondary" date={chat.date} />
-        {chat.description ? <Content className="mb-4" source={chat.description} /> : null}
+        {chat.description ? <Content className="mb-4" content={chat.description} /> : null}
         <div className="mb-4">
           <HeartButton className="mr-2" count={followUps.length} />
           <CreateButton type="Follow Up" onClick={scrollToAddFollowUp} />
