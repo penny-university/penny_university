@@ -7,7 +7,7 @@ def test_channel_lookup(mocker):
     resp.data = {'channels': [{'name': 'general', 'id': 'C123456'}]}
     fake_slack_client.channels_list.return_value = resp
 
-    with mocker.patch('bot.utils.slack.WebClient', return_value=fake_slack_client):
+    with mocker.patch('bot.utils.get_slack_client', return_value=fake_slack_client):
         chan_id_1 = channel_lookup('general')
         chan_id_2 = channel_lookup('general')
 

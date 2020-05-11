@@ -172,7 +172,7 @@ def test_update_user_profile_from_slack(mocker):
         'members': slack_users,
     }
 
-    with mocker.patch('users.models.slack.WebClient', return_value=slack_client):
+    with mocker.patch('users.models.get_slack_client', return_value=slack_client):
         update_user_profile_from_slack()
 
     for i in range(3):

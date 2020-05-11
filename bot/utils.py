@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-import slack
+from common.utils import get_slack_client
 from slack.errors import SlackApiError
 
 _CHANNEL_NAME__ID = None
@@ -10,7 +10,7 @@ _CHANNEL_NAME__ID = None
 def channel_lookup(name):
     global _CHANNEL_NAME__ID
     if _CHANNEL_NAME__ID is None:
-        slack_client = slack.WebClient(settings.SLACK_API_KEY)
+        slack_client = get_slack_client()
         resp = slack_client.channels_list()
         _CHANNEL_NAME__ID = {chan['name']: chan['id'] for chan in resp.data['channels']}
     return _CHANNEL_NAME__ID.get(name)

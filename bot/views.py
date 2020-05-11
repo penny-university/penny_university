@@ -1,9 +1,6 @@
 import json
 import logging
 
-from django.conf import settings
-import slack
-
 from django.http import (
     HttpResponse,
     JsonResponse,
@@ -14,8 +11,9 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from bot.processors.greeting import GreetingBotModule
 from bot.processors.pennychat import PennyChatBotModule
 from bot.processors.base import Bot
+from common.utils import get_slack_client
 
-slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+slack_client = get_slack_client()
 bot = Bot(event_processors=[GreetingBotModule(slack_client), PennyChatBotModule(slack_client)])
 
 

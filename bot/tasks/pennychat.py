@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from background_task import background as original_background
 from django.conf import settings
 from pytz import timezone, utc
-from slack import WebClient
 
+from common.utils import get_slack_client
 from pennychat.models import PennyChatInvitation, Participant
 from users.models import get_or_create_user_profile_from_slack_id, get_or_create_user_profile_from_slack_ids
 
@@ -45,7 +45,7 @@ def _get_slack_client():
     # TODO memoize the slack_client, but remember that it has to be thread safe, so figure out some way to memoize
     # per-thread
     # TODO move to common/utils.py
-    return WebClient(settings.SLACK_API_KEY)
+    return get_slack_client()
 
 
 @background

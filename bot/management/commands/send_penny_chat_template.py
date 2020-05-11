@@ -1,15 +1,13 @@
 from datetime import datetime
-import os
 
 from django.conf import settings
 from django.core.management import BaseCommand
 from pytz import timezone
-import slack
 
 from bot.processors.pennychat import (
     shared_message_preview_blocks,
 )
-from bot.tasks import organizer_edit_after_share_blocks, _penny_chat_details_blocks, INVITE
+from bot.tasks import organizer_edit_after_share_blocks, _penny_chat_details_blocks, INVITE, get_slack_client
 from pennychat.models import PennyChatInvitation
 from users.models import get_or_create_user_profile_from_slack_id
 
@@ -41,7 +39,7 @@ class Command(BaseCommand):
         organizer = get_or_create_user_profile_from_slack_id(options['slack_user_id'])
         invitees = organizer.slack_id
 
-        slack_client = slack.WebClient(token=os.environ['SLACK_API_KEY'])
+        slack_client = get_slack_client()
 
         time_zone = 'America/Los_Angeles'
         penny_chat_invitation = PennyChatInvitation.objects.create(

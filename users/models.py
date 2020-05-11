@@ -1,12 +1,10 @@
-import slack
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models, IntegrityError
 from django.db.models import Q
 from slack.errors import SlackApiError
 
-from common.utils import pprint_obj
+from common.utils import pprint_obj, get_slack_client
 
 
 class UserProfile(models.Model):
@@ -45,7 +43,7 @@ class UserProfile(models.Model):
 
 def update_user_profile_from_slack(slack_client=None):
     if not slack_client:
-        slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+        slack_client = get_slack_client()
     resp = slack_client.users_list()
     new_users = []
     updated_users = []
@@ -104,7 +102,7 @@ def get_or_create_user_profile_from_slack_ids(slack_user_ids, slack_client=None,
     entry in the dict
     """
     if not slack_client:
-        slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+        slack_client = get_slack_client()
 
     users = {}
     for slack_user_id in set(slack_user_ids):
