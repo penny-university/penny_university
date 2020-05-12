@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 
-from .models import UserProfile
+from .models import SocialProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -28,10 +28,10 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
+class SocialProfileSerializer(serializers.HyperlinkedModelSerializer):
     chats = serializers.HyperlinkedIdentityField(view_name='user-chat-list')
     user = UserSerializer(read_only=True)
 
     class Meta:
-        model = UserProfile
+        model = SocialProfile
         fields = ['id', 'url', 'real_name', 'user', 'chats']

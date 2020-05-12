@@ -1,13 +1,12 @@
 from django.contrib.auth.models import User
-from rest_framework.decorators import action
 from rest_framework import mixins, generics
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.authtoken.models import Token
 
 from pennychat.serializers import UserChatSerializer
-from .models import UserProfile
-from .serializers import UserSerializer, UserProfileSerializer
+from .models import SocialProfile
+from .serializers import UserSerializer, SocialProfileSerializer
 from pennychat.models import Participant
 
 
@@ -21,8 +20,8 @@ class RegisterUser(generics.CreateAPIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            user_profiles = UserProfile.objects.filter(email=user.email)
-            for profile in user_profiles:
+            social_profiles = SocialProfile.objects.filter(email=user.email)
+            for profile in social_profiles:
                 profile.user = user
                 profile.save()
             token = Token.objects.create(user=user)
@@ -42,9 +41,9 @@ class UserExists(generics.CreateAPIView):
         return Response({}, status=HTTP_400_BAD_REQUEST)
 
 
-class UserProfileDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
+class SocialProfileDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
+    queryset = SocialProfile.objects.all()
+    serializer_class = SocialProfileSerializer
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -58,7 +57,7 @@ class ListUserChats(generics.GenericAPIView):
     serializer_class = UserChatSerializer
 
     def get(self, request, pk, format=None):
-        user_chats = Participant.objects.filter(user_profile_id=pk)
+        user_chats = Participant.objects.filter(user_id=pk)
         queryset = self.filter_queryset(user_chats)
 
         page = self.paginate_queryset(queryset)

@@ -7,11 +7,11 @@ from rest_framework.permissions import BasePermission
 class IsOwner(BasePermission):
     """
     Allows access only to the user who owns the entity.
-    This method requires that the view's object has a UserProfile attached.
+    This method requires that the view's object has a User attached.
     """
 
     def has_permission(self, request, view):
-        return bool(view.get_object().user_profile.user == request.user)
+        return bool(view.get_object().user == request.user)
 
 
 def perform_is_authenticated(func):

@@ -10,8 +10,8 @@ from bot.processors.pennychat import (
     shared_message_preview_blocks,
 )
 from bot.tasks import organizer_edit_after_share_blocks, _penny_chat_details_blocks, INVITE
-from pennychat.models import PennyChatInvitation
-from users.models import get_or_create_user_profile_from_slack_id
+from pennychat.models import PennyChatSlackInvitation
+from users.models import get_or_create_social_profile_from_slack_id
 
 
 class Command(BaseCommand):
@@ -38,13 +38,13 @@ class Command(BaseCommand):
             print('This command is intended only for development.')
             return
 
-        organizer = get_or_create_user_profile_from_slack_id(options['slack_user_id'])
+        organizer = get_or_create_social_profile_from_slack_id(options['slack_user_id'])
         invitees = organizer.slack_id
 
         slack_client = slack.WebClient(token=os.environ['SLACK_API_KEY'])
 
         time_zone = 'America/Los_Angeles'
-        penny_chat_invitation = PennyChatInvitation.objects.create(
+        penny_chat_invitation = PennyChatSlackInvitation.objects.create(
             title=options['title'] or 'Some Default Title',
             description='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',  # noqa
             date=timezone(time_zone).localize(datetime(2079, 10, 12)),

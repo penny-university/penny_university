@@ -4,27 +4,30 @@ import time
 
 import pytest
 from pytz import timezone, utc
+from django.contrib.auth import get_user_model
 
 from bot.processors.pennychat import PennyChatBotModule
 import bot.processors.pennychat as penny_chat_constants
 from pennychat.models import (
-    PennyChatInvitation,
+    PennyChatSlackInvitation,
     Participant,
     PennyChat,
 )
 from unittest.mock import call
-from users.models import UserProfile
+from users.models import SocialProfile
 
 TIMEZONE = timezone('America/Chicago')
+SLACK_TEAM_ID = 'test_id'
 
 
 def create_penny_chat():
     date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=utc)
-    chat = PennyChatInvitation.objects.create(
-        status=PennyChatInvitation.DRAFT,
+    chat = PennyChatSlackInvitation.objects.create(
+        status=PennyChatSlackInvitation.DRAFT,
         organizer_tz='America/Chicago',
         date=date,
         view='view',
+        created_from_slack_team_id=SLACK_TEAM_ID
     )
     return chat.id
 
@@ -55,7 +58,7 @@ def test_date_select(mocker):
 
     bot_module(event)
 
-    penny_chat = PennyChatInvitation.objects.get(id=chat_id)
+    penny_chat = PennyChatSlackInvitation.objects.get(id=chat_id)
     assert penny_chat.date.astimezone(TIMEZONE).date() == datetime(2019, 1, 1).date()
 
 
@@ -86,32 +89,35 @@ def test_time_select(mocker):
     }
 
     bot_module(event)
-    penny_chat = PennyChatInvitation.objects.get(id=chat_id)
+    penny_chat = PennyChatSlackInvitation.objects.get(id=chat_id)
     test_time = datetime.now().replace(hour=12, minute=0, second=0, microsecond=0).time()
     assert penny_chat.date.astimezone(TIMEZONE).time() == test_time
 
 
 @pytest.mark.django_db
 def test_PennyChatBotModule_share(mocker):
-    organizer = UserProfile.objects.create(slack_id='organizer')
-    user_invitee_1 = UserProfile.objects.create(slack_id='invitee')
+    user_1 = get_user_model().objects.create_user(username='user_1')
+    user_2 = get_user_model().objects.create_user(username='user_2')
+    organizer = SocialProfile.objects.create(slack_id='organizer', user=user_1)
+    invitee_1 = SocialProfile.objects.create(slack_id='invitee', user=user_2)
     # make sure that things don't break if for some reason a user attempts to invite themselves
-    user_invitee_2 = organizer
+    invitee_2 = organizer
 
     view_id = 'some_silly_view_id'
-    penny_chat_invitation = PennyChatInvitation.objects.create(
-        invitees=','.join([user_invitee_1.slack_id, user_invitee_2.slack_id]),
+    penny_chat_invitation = PennyChatSlackInvitation.objects.create(
+        invitees=','.join([invitee_1.slack_id, invitee_2.slack_id]),
         organizer_slack_id=organizer.slack_id,
         date=timezone("America/Los_Angeles").localize(datetime(1979, 10, 12)),
         title='fake title',
         view=view_id,
         description='fake description',
+        created_from_slack_team_id=SLACK_TEAM_ID,
     )
 
     def id_mock(user_id, slack_client=None, ignore_user_not_found=True):
         lookup = {
             organizer.slack_id: organizer,
-            user_invitee_1.slack_id: user_invitee_1,
+            invitee_1.slack_id: invitee_1,
         }
         return lookup[user_id]
 
@@ -148,7 +154,7 @@ def test_PennyChatBotModule_share(mocker):
     )
 
     # The Actual Test
-    with mocker.patch('pennychat.models.get_or_create_user_profile_from_slack_id', side_effect=id_mock), \
+    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), \
             post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
@@ -162,8 +168,8 @@ def test_PennyChatBotModule_share(mocker):
     assert penny_chat.description == 'new_description'
     assert penny_chat.date == penny_chat_invitation.date
     assert penny_chat.status == PennyChat.SHARED
-    assert penny_chat_invitation.get_organizer() == organizer
-    assert penny_chat_invitation.status == PennyChatInvitation.SHARED
+    assert penny_chat_invitation.get_organizer() == organizer.user
+    assert penny_chat_invitation.status == PennyChatSlackInvitation.SHARED
 
 
 testdata = [
@@ -228,14 +234,18 @@ def test_PennyChatBotModule_attendance_selection(
         expected_organizer_notified,
         mocker,
     ):
-    organizer = UserProfile.objects.create(slack_id='organizer_id')
+    user_1 = get_user_model().objects.create_user(username='user_1')
+    user_2 = get_user_model().objects.create_user(username='user_2')
+    user_3 = get_user_model().objects.create_user(username='user_3')
+
+    organizer = SocialProfile.objects.create(slack_id='organizer_id', slack_team_id=SLACK_TEAM_ID, user=user_1)
 
     if starting_role == Participant.ORGANIZER:
-        user = organizer
+        profile = organizer
     else:
-        user = UserProfile.objects.create(slack_id=str(time.time_ns()))
+        profile = SocialProfile.objects.create(slack_id=str(time.time_ns()), user=user_2)
 
-    some_other_attendee = UserProfile.objects.create(slack_id=str(time.time_ns()))
+    some_other_attendee = SocialProfile.objects.create(slack_id=str(time.time_ns()), user=user_3)
 
     fake_title = 'Fake Title'
     fake_year = 2054
@@ -243,13 +253,14 @@ def test_PennyChatBotModule_attendance_selection(
     penny_chat = PennyChat.objects.create(
         date=timezone("America/Los_Angeles").localize(datetime(fake_year, 10, 12)),
         title=fake_title,
+        created_from_slack_team_id=SLACK_TEAM_ID,
     )
     penny_chat_id_dict = json.dumps({penny_chat_constants.PENNY_CHAT_ID: penny_chat.id})
 
-    Participant.objects.create(penny_chat=penny_chat, user_profile=organizer, role=Participant.ORGANIZER)
-    Participant.objects.create(penny_chat=penny_chat, user_profile=some_other_attendee, role=Participant.ATTENDEE)
+    Participant.objects.create(penny_chat=penny_chat, user=organizer.user, role=Participant.ORGANIZER)
+    Participant.objects.create(penny_chat=penny_chat, user=some_other_attendee.user, role=Participant.ATTENDEE)
     if starting_role not in [None, Participant.ORGANIZER]:
-        Participant.objects.create(penny_chat=penny_chat, user_profile=user, role=starting_role)
+        Participant.objects.create(penny_chat=penny_chat, user=profile.user, role=starting_role)
 
     def user_attendance_event(user, can_attend):
         if can_attend:
@@ -265,18 +276,18 @@ def test_PennyChatBotModule_attendance_selection(
             'actions': [{'action_id': attendance, 'value': penny_chat_id_dict}],
         }
 
-    event = user_attendance_event(user, can_attend)
+    event = user_attendance_event(profile, can_attend)
 
     slack_client = mocker.Mock()
 
     # The Actual Tests
-    with mocker.patch('bot.processors.pennychat.get_or_create_user_profile_from_slack_id', return_value=user):
+    with mocker.patch('bot.processors.pennychat.get_or_create_social_profile_from_slack_id', return_value=profile):
         PennyChatBotModule(slack_client).attendance_selection(event)
 
     # Evaluation
     actual_final_role = None
     try:
-        actual_final_role = Participant.objects.get(penny_chat=penny_chat, user_profile=user).role
+        actual_final_role = Participant.objects.get(penny_chat=penny_chat, user=profile.user).role
     except Participant.DoesNotExist:
         # presumably we weren't supposed to make a participant. this will be tested below
         pass
@@ -289,7 +300,7 @@ def test_PennyChatBotModule_attendance_selection(
         slack_client.chat_postMessage.assert_called_once()
         notification = slack_client.chat_postMessage.call_args[1]
         assert notification['channel'] == 'organizer_id', 'notified the wrong person'
-        assert f'<@{user.slack_id}>' in notification['text'], 'forgot to list the (non)attendees name'
+        assert f'<@{profile.slack_id}>' in notification['text'], 'forgot to list the (non)attendees name'
         assert fake_title in notification['text'], 'forgot to mention which penny chat'
         assert str(fake_year) in notification['text'], 'forgot to mention date'
         if can_attend:
@@ -301,10 +312,10 @@ def test_PennyChatBotModule_attendance_selection(
         slack_client.chat_postEphemeral.assert_called_once()
         thanks = slack_client.chat_postEphemeral.call_args[1]
         assert thanks['channel'] == fake_channel
-        assert thanks['user'] == user.slack_id
+        assert thanks['user'] == profile.slack_id
         assert 'will notify' in thanks['text'].lower()
     else:
         slack_client.chat_postMessage.assert_not_called()
 
     # Make sure the other attendee wasn't affected
-    assert Participant.objects.get(penny_chat=penny_chat, user_profile=some_other_attendee).role == Participant.ATTENDEE
+    assert Participant.objects.get(penny_chat=penny_chat, user=some_other_attendee.user).role == Participant.ATTENDEE

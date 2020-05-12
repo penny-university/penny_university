@@ -2,13 +2,13 @@ import pytest
 
 from rest_framework.test import APIClient
 
-from users.models import UserProfile
+from users.models import SocialProfile
 
 
 @pytest.mark.django_db
-def test_user_profile_detail():
+def test_social_profile_detail():
     client = APIClient()
-    profile = UserProfile.objects.create(
+    profile = SocialProfile.objects.create(
         real_name='Anonymous Profile',
         email='anonymous@profile.com',
         slack_id='required',
