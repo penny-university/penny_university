@@ -1,10 +1,10 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 from common.utils import pprint_obj
 from users.models import (
-    UserProfile,
-    get_or_create_user_profile_from_slack_id,
+    get_or_create_social_profile_from_slack_id,
 )
 
 
@@ -26,6 +26,7 @@ class PennyChat(models.Model):
     description = models.TextField()
     date = models.DateTimeField(null=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT)
+    created_from_slack_team_id = models.CharField(max_length=20, null=True)
 
     # meta
     created = models.DateTimeField(auto_now_add=True)
@@ -35,28 +36,29 @@ class PennyChat(models.Model):
         return pprint_obj(self)
 
     def save_organizer_from_slack_id(self, slack_user_id):
-        organizer = get_or_create_user_profile_from_slack_id(slack_user_id, ignore_user_not_found=False)
+        profile = get_or_create_social_profile_from_slack_id(slack_user_id, ignore_user_not_found=False)
+        organizer = profile.user
         self.save_participant(organizer, Participant.ORGANIZER)
 
     def save_participant(self, participant, role):
         assert role in [role[0] for role in Participant.ROLE_CHOICES]  # get out ids
         Participant.objects.update_or_create(
             penny_chat=self,
-            user_profile=participant,
+            user=participant,
             defaults=dict(role=role),
         )
 
     def get_organizer(self):
-        return UserProfile.objects.get(
+        return get_user_model().objects.get(
             user_chats__penny_chat=self,
             user_chats__role=Participant.ORGANIZER,
         )
 
     def get_participants(self):
-        return UserProfile.objects.filter(user_chats__penny_chat=self)
+        return get_user_model().objects.filter(user_chats__penny_chat=self)
 
 
-class PennyChatInvitation(PennyChat):
+class PennyChatSlackInvitation(PennyChat):
     penny_chat = models.OneToOneField(
         PennyChat,
         auto_created=True,
@@ -81,7 +83,7 @@ class FollowUp(models.Model):
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='follow_ups')
     content = models.TextField()
     date = models.DateTimeField(default=timezone.now)
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='follow_ups')
+    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, related_name='follow_ups')
 
     def __repr__(self):
         return pprint_obj(self)
@@ -96,11 +98,11 @@ class Participant(models.Model):
     )
 
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_chats')
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, related_name='user_chats')
     role = models.IntegerField(choices=ROLE_CHOICES)
 
     class Meta:
-        unique_together = ('penny_chat', 'user_profile',)
+        unique_together = ('penny_chat', 'user',)
         ordering = ['role']
 
     def __repr__(self):

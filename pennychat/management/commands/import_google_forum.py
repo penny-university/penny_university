@@ -5,19 +5,18 @@ import mailbox
 import re
 import sys
 
-from django.conf import settings
 from django.core.management.base import (
     BaseCommand,
     CommandError,
 )
 from django.db import transaction
+from django.contrib.auth import get_user_model
 
 from pennychat.models import (
     PennyChat,
     FollowUp,
     Participant,
 )
-from users.models import UserProfile
 
 
 class Command(BaseCommand):
@@ -222,13 +221,13 @@ def format_chats(raw_chats):
             followups.append({
                 'content': message['body'],
                 'date': message['date'],
-                'user_profile': message['from'],
+                'user': message['from'],
             })
         formatted_chats.append({
             'title': chat['subject'],
             'description': '',
             'date': chat['date'],
-            'user_profile': chat['from'],
+            'user': chat['from'],
             'followups': followups,
         })
     return formatted_chats
@@ -236,7 +235,7 @@ def format_chats(raw_chats):
 
 def import_to_database(formatted_chats, live_run=False):
 
-    new_user_profiles = []
+    new_users = []
     new_chats = []
     new_follow_ups = []
     new_participants = []
@@ -245,9 +244,9 @@ def import_to_database(formatted_chats, live_run=False):
         with transaction.atomic():
             for dump_chat in formatted_chats:
                 attendees = set()
-                organizer, created = get_or_create_anonymous_user_profile(dump_chat['user_profile'])
+                organizer, created = get_or_create_user(dump_chat['user'])
                 if created:
-                    new_user_profiles.append(organizer)
+                    new_users.append(organizer)
 
                 db_chat, created = PennyChat.objects.update_or_create(
                     title=dump_chat['title'],
@@ -264,19 +263,19 @@ def import_to_database(formatted_chats, live_run=False):
 
                 for dump_follow_up in dump_chat['followups']:
 
-                    attendee, created = get_or_create_anonymous_user_profile(dump_follow_up['user_profile'])
+                    attendee, created = get_or_create_user(dump_follow_up['user'])
                     if created:
-                        new_user_profiles.append(attendee)
+                        new_users.append(attendee)
 
                     attendees.add(attendee)
 
                     db_follow_up, created = FollowUp.objects.update_or_create(
                         date=dump_follow_up['date'],
-                        user_profile=attendee,
+                        user=attendee,
                         defaults=dict(
                             content=dump_follow_up['content'],
                             date=dump_follow_up['date'],
-                            user_profile=attendee,
+                            user=attendee,
                             penny_chat=db_chat,
                         )
                     )
@@ -287,10 +286,10 @@ def import_to_database(formatted_chats, live_run=False):
                 attendees.discard(organizer)
                 for attendee in attendees:
                     db_participant, created = Participant.objects.update_or_create(
-                        user_profile=attendee,
+                        user=attendee,
                         penny_chat=db_chat,
                         defaults=dict(
-                            user_profile=attendee,
+                            user=attendee,
                             penny_chat=db_chat,
                             role=Participant.ATTENDEE,
                         )
@@ -299,10 +298,10 @@ def import_to_database(formatted_chats, live_run=False):
                         new_participants.append(db_participant)
 
                 db_participant, created = Participant.objects.update_or_create(
-                    user_profile=organizer,
+                    user=organizer,
                     penny_chat=db_chat,
                     defaults=dict(
-                        user_profile=organizer,
+                        user=organizer,
                         penny_chat=db_chat,
                         role=Participant.ORGANIZER,
                     )
@@ -310,19 +309,19 @@ def import_to_database(formatted_chats, live_run=False):
                 if created:
                     new_participants.append(db_participant)
 
-            print(f'\n\nNEW USERS:\n {new_user_profiles}')
+            print(f'\n\nNEW USERS:\n {new_users}')
             print(f'\n\nNEW CHATS:\n {new_chats}')
             print(f'\n\nNEW FOLLOW UPS:\n {new_follow_ups}')
             print(f'\n\nNEW PARTICIPANTS:\n {new_participants}')
             print(
                 f'\n\nCreated\n'
-                f'- {len(new_user_profiles)} new user profiles\n'
+                f'- {len(new_users)} new users\n'
                 f'- {len(new_chats)} new chats\n'
                 f'- {len(new_follow_ups)} new follow ups\n'
                 f'- {len(new_participants)} new participants\n'
             )
 
-            if sum([len(new_user_profiles), len(new_chats), len(new_follow_ups), len(new_participants)]) == 0:
+            if sum([len(new_users), len(new_chats), len(new_follow_ups), len(new_participants)]) == 0:
                 print('nothing to do here')
                 raise RuntimeError('not committing')
             if not live_run:
@@ -337,12 +336,13 @@ def import_to_database(formatted_chats, live_run=False):
             raise
 
 
-def get_or_create_anonymous_user_profile(email):
-    user_profile, created = UserProfile.objects.get_or_create(
+def get_or_create_user(email):
+    user, created = get_user_model().objects.get_or_create(
         email=email,
-        slack_team_id=settings.SLACK_TEAM_ID,
         defaults={
-            'real_name': 'anonymous',
-            'slack_team_id': settings.SLACK_TEAM_ID,
+            'username': email
         })
-    return user_profile, created
+    if created:
+        user.set_unusable_password()
+        user.save()
+    return user, created

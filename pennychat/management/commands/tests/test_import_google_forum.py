@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth import get_user_model
 
 from pennychat.management.commands.import_google_forum import import_to_database
 from pennychat.models import (
@@ -7,29 +8,27 @@ from pennychat.models import (
     Participant,
 )
 
-from users.models import UserProfile
-
 formatted_forum_dump = [
     {
         "title": "titleA",
         "description": "descriptionA",
         "date": "2017-01-23T14:28:31-08:00",
-        "user_profile": "A0@gmail.com",
+        "user": "A0@gmail.com",
         "followups": [
             {
                 "content": "followupA0",
                 "date": "2017-02-23T14:28:31-08:00",
-                "user_profile": "A0@gmail.com"
+                "user": "A0@gmail.com"
             },
             {
                 "content": "followupA1",
                 "date": "2017-03-24T09:34:49-08:00",
-                "user_profile": "A1@gmail.com"
+                "user": "A1@gmail.com"
             },
             {
                 "content": "followupA2",
                 "date": "2017-04-24T09:34:49-08:00",
-                "user_profile": "A2@gmail.com"
+                "user": "A2@gmail.com"
             },
         ],
     },
@@ -37,12 +36,12 @@ formatted_forum_dump = [
         "title": "titleB",
         "description": "descriptionB",
         "date": "2017-05-23T14:28:31-08:00",
-        "user_profile": "B0@gmail.com",
+        "user": "B0@gmail.com",
         "followups": [
             {
                 "content": "followupB0",
                 "date": "2017-06-23T14:28:31-08:00",
-                "user_profile": "A0@gmail.com"
+                "user": "A0@gmail.com"
             },
         ],
     },
@@ -50,12 +49,12 @@ formatted_forum_dump = [
         "title": "titleC",
         "description": "descriptionC",
         "date": "2017-07-23T14:28:31-08:00",
-        "user_profile": "A0@gmail.com",
+        "user": "A0@gmail.com",
         "followups": [
             {
                 "content": "followupC0",
                 "date": "2017-08-23T14:28:31-08:00",
-                "user_profile": "C0@gmail.com"
+                "user": "C0@gmail.com"
             },
         ],
     },
@@ -84,18 +83,18 @@ def test_import_to_database():
         assert len(participants) == 7
         found_count = 0
         for participant in participants:
-            if participant.penny_chat.title == 'titleA' and participant.user_profile.email == 'A0@gmail.com':
+            if participant.penny_chat.title == 'titleA' and participant.user.email == 'A0@gmail.com':
                 found_count += 1
                 assert participant.role == Participant.ORGANIZER
-            if participant.penny_chat.title == 'titleA' and participant.user_profile.email == 'A1@gmail.com':
+            if participant.penny_chat.title == 'titleA' and participant.user.email == 'A1@gmail.com':
                 found_count += 1
                 assert participant.role == Participant.ATTENDEE
         assert found_count == 2
 
-        user_profiles = [u.email for u in UserProfile.objects.all()]
-        assert len(user_profiles) == 5
-        for user_profile in ['A0@gmail.com', 'A1@gmail.com', 'A2@gmail.com', 'B0@gmail.com', 'C0@gmail.com']:
-            assert user_profile in user_profiles
+        users = [u.email for u in get_user_model().objects.all()]
+        assert len(users) == 5
+        for user in ['A0@gmail.com', 'A1@gmail.com', 'A2@gmail.com', 'B0@gmail.com', 'C0@gmail.com']:
+            assert user in users
 
     import_to_database(formatted_forum_dump, live_run=True)
     assert_db_in_proper_state()
