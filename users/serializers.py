@@ -5,15 +5,23 @@ from rest_framework import serializers
 from .models import SocialProfile
 
 
-class UserSerializer(serializers.ModelSerializer):
+class SocialProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SocialProfile
+        fields = ['id', 'real_name', 'slack_team_id']
+
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
+    social_profiles = SocialProfileSerializer(many=True, read_only=True)
+    chats = serializers.HyperlinkedIdentityField(view_name='user-chat-list')
 
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'password', 'first_name', 'last_name']
+        fields = ['id', 'url', 'email', 'password', 'first_name', 'last_name', 'social_profiles', 'chats']
 
     def create(self, validated_data):
         user = get_user_model().objects.create_user(
@@ -26,12 +34,3 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
         return user
-
-
-class SocialProfileSerializer(serializers.HyperlinkedModelSerializer):
-    chats = serializers.HyperlinkedIdentityField(view_name='user-chat-list')
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = SocialProfile
-        fields = ['id', 'url', 'real_name', 'user', 'chats']

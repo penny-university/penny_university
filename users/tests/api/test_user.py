@@ -57,3 +57,14 @@ def test_user_log_in_and_protected_request(test_social_profile):
     }
     response = client.post('/api/chats/', data=data, format='json')
     assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_user_detail(test_social_profile):
+    client = APIClient()
+    user = User.objects.create_user(username='test@profile.com', email='test@profile.com', password='password')
+    test_social_profile.user = user
+    test_social_profile.save()
+    response = client.get(f'/api/users/{user.id}/')
+    assert response.data['email'] == 'test@profile.com'
+    assert response.data['social_profiles'][0]['real_name'] == 'Test Profile'
