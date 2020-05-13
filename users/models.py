@@ -98,7 +98,10 @@ def update_social_profile_from_slack_user(slack_user):
         )
         if created:
             user.set_unusable_password()
-            user.save()
+        else:
+            user.first_name = profile.real_name.split()[0]
+            user.last_name = profile.real_name.split()[1:]
+        user.save()
         profile.user = user
         profile.save()
 

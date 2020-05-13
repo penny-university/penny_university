@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 
 from pennychat.serializers import UserChatSerializer
 from .models import SocialProfile
-from .serializers import UserSerializer, SocialProfileSerializer
+from .serializers import UserSerializer
 from pennychat.models import Participant
 
 
@@ -41,9 +41,9 @@ class UserExists(generics.CreateAPIView):
         return Response({}, status=HTTP_400_BAD_REQUEST)
 
 
-class SocialProfileDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
-    queryset = SocialProfile.objects.all()
-    serializer_class = SocialProfileSerializer
+class UserDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
