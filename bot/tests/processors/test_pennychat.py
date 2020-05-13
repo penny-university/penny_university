@@ -155,7 +155,7 @@ def test_PennyChatBotModule_share(mocker):
 
     # The Actual Test
     with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), \
-            post_organizer_edit_after_share_blocks:
+         post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_args == call(penny_chat_invitation.id)
@@ -233,7 +233,7 @@ def test_PennyChatBotModule_attendance_selection(
         expected_final_role,
         expected_organizer_notified,
         mocker,
-    ):
+):
     user_1 = get_user_model().objects.create_user(username='user_1')
     user_2 = get_user_model().objects.create_user(username='user_2')
     user_3 = get_user_model().objects.create_user(username='user_3')
