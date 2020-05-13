@@ -93,14 +93,14 @@ def update_social_profile_from_slack_user(slack_user):
             email=profile.email,
             defaults={
                 'first_name': profile.real_name.split()[0],
-                'last_name': profile.real_name.split()[1:]
+                'last_name': ' '.join(profile.real_name.split()[1:])
             },
         )
         if created:
             user.set_unusable_password()
         else:
             user.first_name = profile.real_name.split()[0]
-            user.last_name = profile.real_name.split()[1:]
+            user.last_name = ' '.join(profile.real_name.split()[1:])
         user.save()
         profile.user = user
         profile.save()
