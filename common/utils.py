@@ -4,8 +4,17 @@ from django.conf import settings
 import slack
 
 
+class WrappedSlackWebClient:
+    def __init__(self):
+        self.slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+
+    def __getattr__(self, attr):
+        attr = getattr(self.slack_client, attr)
+        return attr
+
+
 def get_slack_client():
-    slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+    slack_client = WrappedSlackWebClient()
     return slack_client
 
 
