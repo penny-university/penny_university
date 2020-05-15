@@ -1,10 +1,10 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth import get_user_model
 
 from common.utils import pprint_obj
 from users.models import (
     get_or_create_social_profile_from_slack_id,
+    User
 )
 
 
@@ -49,13 +49,13 @@ class PennyChat(models.Model):
         )
 
     def get_organizer(self):
-        return get_user_model().objects.get(
+        return User.objects.get(
             user_chats__penny_chat=self,
             user_chats__role=Participant.ORGANIZER,
         )
 
     def get_participants(self):
-        return get_user_model().objects.filter(user_chats__penny_chat=self)
+        return User.objects.filter(user_chats__penny_chat=self)
 
 
 class PennyChatSlackInvitation(PennyChat):
@@ -83,7 +83,7 @@ class FollowUp(models.Model):
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='follow_ups')
     content = models.TextField()
     date = models.DateTimeField(default=timezone.now)
-    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, related_name='follow_ups')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='follow_ups')
 
     def __repr__(self):
         return pprint_obj(self)
@@ -98,7 +98,7 @@ class Participant(models.Model):
     )
 
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.CASCADE, related_name='participants')
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, related_name='user_chats')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='user_chats')
     role = models.IntegerField(choices=ROLE_CHOICES)
 
     class Meta:

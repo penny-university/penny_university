@@ -6,7 +6,6 @@ from unittest.mock import call
 from pytz import timezone
 import pytest
 from pytz import utc
-from django.contrib.auth import get_user_model
 
 import bot.tasks.pennychat as pennychat_constants
 from bot.tasks.pennychat import (
@@ -17,7 +16,7 @@ from bot.tasks.pennychat import (
     send_penny_chat_reminders,
 )
 from pennychat.models import PennyChatSlackInvitation, Participant
-from users.models import SocialProfile
+from users.models import User, SocialProfile
 
 
 TIMEZONE = timezone('America/Chicago')
@@ -51,7 +50,7 @@ def test_share_penny_chat_invitation(mocker):
     profile = SocialProfile.objects.create(
         slack_id=slack_id,
         display_name='booger',
-        user=get_user_model().objects.create_user('booger')
+        user=User.objects.create_user('booger')
     )
     penny_chat_invitation.save_participant(profile.user, Participant.ORGANIZER)
 
@@ -146,7 +145,7 @@ def test_share_penny_chat_invitation_with_non_invited_attendee(mocker):
         organizer_slack_id='slack_id',
         created_from_slack_team_id=SLACK_TEAM_ID,
     )
-    user = get_user_model().objects.create_user('booger')
+    user = User.objects.create_user('booger')
     profile = SocialProfile.objects.create(
         slack_id=slack_id,
         display_name='booger',
@@ -156,7 +155,7 @@ def test_share_penny_chat_invitation_with_non_invited_attendee(mocker):
     penny_chat_invitation.save_participant(user, Participant.ORGANIZER)
 
     # This person was not invited to the chat, but clicked to attend
-    attendee_user = get_user_model().objects.create_user('foo')
+    attendee_user = User.objects.create_user('foo')
     SocialProfile.objects.create(slack_id='foo', user=attendee_user, slack_team_id=SLACK_TEAM_ID)
     penny_chat_invitation.save_participant(attendee_user, Participant.ATTENDEE)
 
@@ -205,9 +204,9 @@ def test_send_penny_chat_reminders__send_message_to_addendees_of_imminent_events
         organizer_slack_id='organizer',
         created_from_slack_team_id=SLACK_TEAM_ID,
     )
-    organizer_user = get_user_model().objects.create_user('organizer')
-    invitee_1_user = get_user_model().objects.create_user('invitee_1')
-    invitee_2_user = get_user_model().objects.create_user('invitee_2')
+    organizer_user = User.objects.create_user('organizer')
+    invitee_1_user = User.objects.create_user('invitee_1')
+    invitee_2_user = User.objects.create_user('invitee_2')
     SocialProfile.objects.create(
         slack_id='organizer',
         display_name='organizer',
@@ -251,9 +250,9 @@ def test_send_penny_chat_reminders__send_NO_message_to_addendees_of_past_events(
         organizer_slack_id='organizer',
         created_from_slack_team_id=SLACK_TEAM_ID,
     )
-    organizer_user = get_user_model().objects.create_user('organizer')
-    invitee_1_user = get_user_model().objects.create_user('invitee_1')
-    invitee_2_user = get_user_model().objects.create_user('invitee_2')
+    organizer_user = User.objects.create_user('organizer')
+    invitee_1_user = User.objects.create_user('invitee_1')
+    invitee_2_user = User.objects.create_user('invitee_2')
     SocialProfile.objects.create(
         slack_id='organizer',
         display_name='organizer',
@@ -297,9 +296,9 @@ def test_send_penny_chat_reminders__send_NO_message_to_addendees_of_distant_futu
         organizer_slack_id='organizer',
         created_from_slack_team_id=SLACK_TEAM_ID,
     )
-    organizer_user = get_user_model().objects.create_user('organizer')
-    invitee_1_user = get_user_model().objects.create_user('invitee_1')
-    invitee_2_user = get_user_model().objects.create_user('invitee_2')
+    organizer_user = User.objects.create_user('organizer')
+    invitee_1_user = User.objects.create_user('invitee_1')
+    invitee_2_user = User.objects.create_user('invitee_2')
     SocialProfile.objects.create(
         slack_id='organizer',
         display_name='organizer',
@@ -343,9 +342,9 @@ def test_send_penny_chat_reminders__send_NO_message_if_chat_is_already_reminded(
         organizer_slack_id='organizer',
         created_from_slack_team_id=SLACK_TEAM_ID,
     )
-    organizer_user = get_user_model().objects.create_user('organizer')
-    invitee_1_user = get_user_model().objects.create_user('invitee_1')
-    invitee_2_user = get_user_model().objects.create_user('invitee_2')
+    organizer_user = User.objects.create_user('organizer')
+    invitee_1_user = User.objects.create_user('invitee_1')
+    invitee_2_user = User.objects.create_user('invitee_2')
     SocialProfile.objects.create(
         slack_id='organizer',
         display_name='organizer',

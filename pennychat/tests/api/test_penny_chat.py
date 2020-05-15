@@ -1,11 +1,11 @@
 import pytest
 import logging
 
-from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
 from pennychat.models import PennyChat
+from users.models import User
 
 logger = logging.getLogger(__name__)
 

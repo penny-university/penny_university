@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from django.contrib.auth.models import User
 from django.utils import timezone
 import pytest
 
@@ -9,7 +8,7 @@ from pennychat.models import (
     FollowUp,
     Participant,
 )
-from users.models import SocialProfile
+from users.models import User, SocialProfile
 
 
 def generate_social_profile(name):

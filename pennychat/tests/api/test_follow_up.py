@@ -1,10 +1,10 @@
 import pytest
 
-from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
 from pennychat.models import FollowUp
+from users.models import User
 
 
 @pytest.mark.django_db

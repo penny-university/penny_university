@@ -10,13 +10,13 @@ from django.core.management.base import (
     CommandError,
 )
 from django.db import transaction
-from django.contrib.auth import get_user_model
 
 from pennychat.models import (
     PennyChat,
     FollowUp,
     Participant,
 )
+from users.models import User
 
 
 class Command(BaseCommand):
@@ -337,7 +337,7 @@ def import_to_database(formatted_chats, live_run=False):
 
 
 def get_or_create_user(email):
-    user, created = get_user_model().objects.get_or_create(
+    user, created = User.objects.get_or_create(
         email=email,
         defaults={
             'username': email

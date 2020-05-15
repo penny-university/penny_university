@@ -1,8 +1,6 @@
-from django.contrib.auth import get_user_model
-
 from rest_framework import serializers
 
-from .models import SocialProfile
+from .models import User, SocialProfile
 
 
 class SocialProfileSerializer(serializers.ModelSerializer):
@@ -16,15 +14,14 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = serializers.CharField(required=True, write_only=True)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
-    social_profiles = SocialProfileSerializer(many=True, read_only=True)
     chats = serializers.HyperlinkedIdentityField(view_name='user-chat-list')
 
     class Meta:
-        model = get_user_model()
-        fields = ['id', 'url', 'email', 'password', 'first_name', 'last_name', 'social_profiles', 'chats']
+        model = User
+        fields = ['id', 'url', 'email', 'password', 'first_name', 'last_name', 'chats']
 
     def create(self, validated_data):
-        user = get_user_model().objects.create_user(
+        user = User.objects.create_user(
             username=validated_data['email'],
             # All of our usernames are emails, but we still need the email field for other uses.
             email=validated_data['email'],

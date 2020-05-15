@@ -1,5 +1,4 @@
 import pytest
-from django.contrib.auth import get_user_model
 
 from pennychat.management.commands.import_google_forum import import_to_database
 from pennychat.models import (
@@ -7,6 +6,7 @@ from pennychat.models import (
     FollowUp,
     Participant,
 )
+from users.models import User
 
 formatted_forum_dump = [
     {
@@ -91,7 +91,7 @@ def test_import_to_database():
                 assert participant.role == Participant.ATTENDEE
         assert found_count == 2
 
-        users = [u.email for u in get_user_model().objects.all()]
+        users = [u.email for u in User.objects.all()]
         assert len(users) == 5
         for user in ['A0@gmail.com', 'A1@gmail.com', 'A2@gmail.com', 'B0@gmail.com', 'C0@gmail.com']:
             assert user in users
