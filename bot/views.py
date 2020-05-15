@@ -29,14 +29,17 @@ def hook(request):
 
     if 'challenge' in blob:
         return HttpResponse(json.loads(request.body)['challenge'])
-    else:
-        event = blob['event']
-        is_bot = False
-        if 'subtype' in event and event['subtype'] == 'bot_message':
-            is_bot = True
-        if not is_bot:
-            bot(event)
-        return HttpResponse('')
+
+    event = blob['event']
+    is_bot = False
+    if 'subtype' in event and event['subtype'] == 'bot_message':
+        is_bot = True
+    if not is_bot:
+        bot(event)
+
+    logging.info('HOOK SLACK>')
+    slack_client.mock_log_all_calls()  # TODO!
+    return HttpResponse('')
 
 
 @xframe_options_exempt
@@ -48,6 +51,8 @@ def interactive(request):
     if resp:
         return JsonResponse(resp)
 
+    logging.info('INTERACTIVE SLACK>')
+    slack_client.mock_log_all_calls()  # TODO!
     return HttpResponse()
 
 
@@ -71,4 +76,6 @@ def command(request):
         ]
         slack_client.chat_postEphemeral(channel=event['channel_id'], user=event['user_id'], blocks=blocks)
 
+    logging.info('COMMAND SLACK>')
+    slack_client.mock_log_all_calls()  # TODO!
     return HttpResponse('')

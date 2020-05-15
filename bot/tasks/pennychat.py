@@ -36,7 +36,11 @@ def background(*args, **kwargs):
     Details about what I want https://github.com/arteria/django-background-tasks/issues/234
     """
     if getattr(settings, 'TASK_ALWAYS_EAGER', False):
-        return args[0]
+        func = args[0]
+        # We use .now() in a couple places in code like
+        # https://github.com/penny-university/penny_university/blob/36be6d3c75f8094b454f4041abf7208f833583a4/bot/processors/pennychat.py#L312  # noqa
+        func.now = func
+        return func
     else:
         return original_background(*args, **kwargs)
 
