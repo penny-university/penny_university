@@ -1,11 +1,10 @@
-from django.contrib.auth.models import User
 from rest_framework import mixins, generics
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.authtoken.models import Token
 
 from pennychat.serializers import UserChatSerializer
-from .models import SocialProfile
+from .models import User, SocialProfile
 from .serializers import UserSerializer
 from pennychat.models import Participant
 

@@ -141,6 +141,9 @@ LOGGING = {
 }
 
 
+AUTH_USER_MODEL = 'users.User'
+
+
 ############################################
 # Put basic django stove above
 # Put stuff more specific to our app below

@@ -4,7 +4,6 @@ import time
 
 import pytest
 from pytz import timezone, utc
-from django.contrib.auth import get_user_model
 
 from bot.processors.pennychat import PennyChatBotModule
 import bot.processors.pennychat as penny_chat_constants
@@ -14,7 +13,7 @@ from pennychat.models import (
     PennyChat,
 )
 from unittest.mock import call
-from users.models import SocialProfile
+from users.models import User, SocialProfile
 
 TIMEZONE = timezone('America/Chicago')
 SLACK_TEAM_ID = 'test_id'
@@ -96,8 +95,8 @@ def test_time_select(mocker):
 
 @pytest.mark.django_db
 def test_PennyChatBotModule_share(mocker):
-    user_1 = get_user_model().objects.create_user(username='user_1')
-    user_2 = get_user_model().objects.create_user(username='user_2')
+    user_1 = User.objects.create_user(username='user_1')
+    user_2 = User.objects.create_user(username='user_2')
     organizer = SocialProfile.objects.create(slack_id='organizer', user=user_1)
     invitee_1 = SocialProfile.objects.create(slack_id='invitee', user=user_2)
     # make sure that things don't break if for some reason a user attempts to invite themselves
@@ -234,9 +233,9 @@ def test_PennyChatBotModule_attendance_selection(
         expected_organizer_notified,
         mocker,
 ):
-    user_1 = get_user_model().objects.create_user(username='user_1')
-    user_2 = get_user_model().objects.create_user(username='user_2')
-    user_3 = get_user_model().objects.create_user(username='user_3')
+    user_1 = User.objects.create_user(username='user_1')
+    user_2 = User.objects.create_user(username='user_2')
+    user_3 = User.objects.create_user(username='user_3')
 
     organizer = SocialProfile.objects.create(slack_id='organizer_id', slack_team_id=SLACK_TEAM_ID, user=user_1)
 

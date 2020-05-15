@@ -1,6 +1,6 @@
 import slack
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models, IntegrityError
 from django.db.models import Q
@@ -9,8 +9,13 @@ from slack.errors import SlackApiError
 from common.utils import pprint_obj
 
 
+class User(AbstractUser):
+    # Eventually, we will add fields here to extend this class
+    pass
+
+
 class SocialProfile(models.Model):
-    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, related_name='social_profiles')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='social_profiles')
     # slack-related
     email = models.CharField(max_length=200)
     slack_id = models.CharField(max_length=20, unique=True, null=True)
@@ -87,7 +92,7 @@ def update_social_profile_from_slack_user(slack_user):
         raise IntegrityError('There are duplicate social profiles in the database!')
 
     if profile.user_id is None:
-        user, created = get_user_model().objects.get_or_create(
+        user, created = User.objects.get_or_create(
             username=profile.email,
             # All of our usernames are emails, but we still need the email field for other uses.
             email=profile.email,
