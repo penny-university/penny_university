@@ -1,5 +1,6 @@
 export type UserType = {
-  id: number,
+  id?: number,
+  pk?: number,
   firstName: string,
   lastName: string,
   url?: string | undefined
@@ -14,7 +15,7 @@ class User {
   email: string | undefined
 
   constructor(data: UserType = { id: NaN, firstName :'', lastName: '', url: ''}) {
-    this.id = data.id
+    this.id = data.id || data.pk || NaN
     this.firstName = data.firstName
     this.lastName = data.lastName
     this.email = data.email
