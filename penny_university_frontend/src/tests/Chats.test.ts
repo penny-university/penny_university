@@ -3,6 +3,8 @@ import { loadChatDetail, loadChatsList } from '../actions'
 import {rootReducer as  reducer} from '../reducers'
 import { makeMockStore, initialState, baseUrl } from './config'
 import { chats, chatsNext } from './data'
+import user from '../middleware/user'
+import User from '../models/user'
 
 describe('chat actions', () => {
   afterEach(() => {
@@ -109,7 +111,7 @@ describe('chat reducers', () => {
       followups: 'http://localhost:8000/api/chats/2/follow-ups',
       participants: [
         {
-          userProfile: 3,
+          user: "3",
           role: 'Organizer',
         },
       ],
@@ -161,24 +163,27 @@ describe('chat reducers', () => {
     const store = makeMockStore(initialState)
 
     const expectedUserProfiles = {
-      1: {
+      1: new User({
         id: 1,
         url: 'http://localhost:8000/api/users/1/',
         email: 'test1@example.com',
-        realName: 'Test User 1',
-      },
-      2: {
+        firstName: 'Test',
+        lastName: 'User 1',
+      }),
+      2: new User({
         id: 2,
         url: 'http://localhost:8000/api/users/2/',
         email: 'test2@example.com',
-        realName: 'Test User 2',
-      },
+        firstName: 'Test',
+        lastName: 'User 2',
+      }),
     }
     // @ts-ignore
     return store.dispatch(loadChatDetail('1')).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.entities.userProfiles).toEqual(expectedUserProfiles)
+      console.log(store.getActions()[1].payload.result)
+      expect(state.entities.users).toEqual(expectedUserProfiles)
     })
   })
 
@@ -193,7 +198,7 @@ describe('chat reducers', () => {
     return store.dispatch(loadChatsList('all')).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      const expected = chats.map((c) => c.id)
+      const expected = chats.map((c) => c.id.toString())
       expect(state.pagination.chatsByFilter.all.ids).toEqual(expected)
     })
   })

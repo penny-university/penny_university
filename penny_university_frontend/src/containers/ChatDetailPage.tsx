@@ -7,14 +7,14 @@ import {
 import { ChatDetail } from '../components/chats'
 import * as selectors from '../selectors'
 import { RootState } from '../reducers'
-
+import { Chat, User } from '../models'
 
 type StateProps = {
   id: string,
   chat: Chat,
   followUpsList: Array<FollowUp>,
   user: User,
-  userProfiles: {[id: string]: UserProfile},
+  getUserByID: (id: number) => User,
 }
 
 type DispatchProps = {
@@ -25,11 +25,11 @@ type DispatchProps = {
 }
 
 type ChatDetailPageProps = {
-  match: { params: { id: string } }
+  match: { params: { id: number } }
 } & DispatchProps & StateProps
 
 const ChatDetailPage = ({
-  id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp, user, userProfiles,
+  id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp, user, getUserByID,
 }: ChatDetailPageProps) => {
   useEffect(() => {
     loadChatDetail(id)
@@ -43,7 +43,7 @@ const ChatDetailPage = ({
       createFollowUp={createFollowUp}
       updateFollowUp={updateFollowUp}
       user={user}
-      userProfiles={userProfiles}
+      getUserByID={getUserByID}
     />
   )
 }
@@ -52,10 +52,10 @@ const mapStateToProps = (state: RootState, ownProps: ChatDetailPageProps) => {
   const { id } = ownProps.match.params
   return {
     id,
-    chat: selectors.chats.getChatById(state, id),
-    followUpsList: selectors.chats.getFollowupsForChatId(state, id),
+    chat: selectors.chats.getChatByID(state, id),
+    followUpsList: selectors.chats.getFollowupsForChatID(state, id),
     user: selectors.user.getUser(state),
-    userProfiles: selectors.entities.getUserProfiles(state),
+    getUserByID: (id: string) => selectors.entities.getUserByID(state, id),
   }
 }
 
