@@ -1,22 +1,27 @@
-from django.contrib.auth import get_user_model
-
 from rest_framework import serializers
 
-from .models import UserProfile
+from .models import User, SocialProfile
 
 
-class UserSerializer(serializers.ModelSerializer):
+class SocialProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SocialProfile
+        fields = ['id', 'real_name', 'slack_team_id']
+
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
+    chats = serializers.HyperlinkedIdentityField(view_name='user-chat-list')
 
     class Meta:
-        model = get_user_model()
-        fields = ['id', 'email', 'password', 'first_name', 'last_name']
+        model = User
+        fields = ['id', 'url', 'email', 'password', 'first_name', 'last_name', 'chats']
 
     def create(self, validated_data):
-        user = get_user_model().objects.create_user(
+        user = User.objects.create_user(
             username=validated_data['email'],
             # All of our usernames are emails, but we still need the email field for other uses.
             email=validated_data['email'],
@@ -26,12 +31,3 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
         return user
-
-
-class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
-    chats = serializers.HyperlinkedIdentityField(view_name='user-chat-list')
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = UserProfile
-        fields = ['id', 'url', 'real_name', 'user', 'chats']
