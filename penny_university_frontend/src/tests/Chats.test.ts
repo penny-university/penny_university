@@ -165,15 +165,11 @@ describe('chat reducers', () => {
     const expectedUserProfiles = {
       1: new User({
         id: 1,
-        url: 'http://localhost:8000/api/users/1/',
-        email: 'test1@example.com',
         firstName: 'Test',
         lastName: 'User 1',
       }),
       2: new User({
         id: 2,
-        url: 'http://localhost:8000/api/users/2/',
-        email: 'test2@example.com',
         firstName: 'Test',
         lastName: 'User 2',
       }),
@@ -182,7 +178,6 @@ describe('chat reducers', () => {
     return store.dispatch(loadChatDetail('1')).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      console.log(store.getActions()[1].payload.result)
       expect(state.entities.users).toEqual(expectedUserProfiles)
     })
   })

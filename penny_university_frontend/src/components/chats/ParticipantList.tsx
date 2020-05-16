@@ -39,7 +39,6 @@ const ParticipantList = ({ className, participants, chatID, getUserByID }: Parti
         <PopoverBody>
           {participants.slice(0, DISPLAYED_PARTICIPANTS).map((p) => (
             <p key={p.user} className="mb-0">
-              {console.log(getUserByID(p.user), p)}
               {getUserByID(p.user).displayName}
               {p.role === 'Organizer' ? ` - ${p.role}` : ''}
             </p>
