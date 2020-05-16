@@ -34,11 +34,11 @@ describe('follow up actions', () => {
     const expectedActions = [
       {
         type: 'FOLLOW_UPS_REQUEST',
-        payload: { meta: { chatId: '1' } },
+        payload: { meta: { chatID: '1' } },
       },
       {
         type: 'FOLLOW_UPS_FAILURE',
-        payload: { message: 'It failed!', status: undefined, meta: { chatId: '1' } },
+        payload: { message: 'It failed!', status: undefined, meta: { chatID: '1' } },
       },
     ]
     // @ts-ignore
@@ -61,7 +61,7 @@ describe('follow up reducers', () => {
     })
 
     // user will be normalized in response
-    const expectedFollowUp = { ...followUpsForChat[0], userProfile: 1 }
+    const expectedFollowUp = { ...followUpsForChat[0], user: 1 }
 
     const store = makeMockStore()
     // @ts-ignore
@@ -84,7 +84,7 @@ describe('follow up reducers', () => {
     return store.dispatch(loadFollowUps('1')).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.entities.userProfiles['1']).toEqual(followUpsForChat[0].userProfile)
+      expect(state.entities.users['1']).toEqual(followUpsForChat[0].user)
     })
   })
 
@@ -97,7 +97,7 @@ describe('follow up reducers', () => {
 
     const store = makeMockStore(initialState)
 
-    const expectedFollowUpIds = followUpsForChat.map((f) => f.id)
+    const expectedFollowUpIds = followUpsForChat.map((f) => f.id.toString())
     // @ts-ignore
     return store.dispatch(loadFollowUps('1')).then(() => {
       // @ts-ignore

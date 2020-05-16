@@ -1,15 +1,19 @@
 import React, { useState } from 'react'
+import { connect } from 'react-redux'
 import { Popover, PopoverHeader, PopoverBody } from 'reactstrap'
 import { Link } from 'react-router-dom'
-
+import * as selectors from '../../selectors'
+import { RootState } from '../../reducers'
+import User from '../../models/user'
 
 type ParticipantListProps = {
   className: string,
   participants: Array<Participant>,
-  chatId: string,
+  chatID: number,
+  getUserByID: (id: number) => User,
 }
 
-const ParticipantList = ({ className, participants, chatId }: ParticipantListProps) => {
+const ParticipantList = ({ className, participants, chatID, getUserByID }: ParticipantListProps) => {
   const [popoverOpen, setPopoverOpen] = useState(false)
 
   const openPopover = () => setPopoverOpen(true)
@@ -21,8 +25,8 @@ const ParticipantList = ({ className, participants, chatId }: ParticipantListPro
   return (
     <div className={`${className} d-inline-flex`}>
       <Link
-        to={`/chats/${chatId}`}
-        id={`ParticipantsPopover${chatId}`}
+        to={`/chats/${chatID}`}
+        id={`ParticipantsPopover${chatID}`}
         onMouseEnter={openPopover}
         onMouseLeave={closePopover}
       >
@@ -30,12 +34,13 @@ const ParticipantList = ({ className, participants, chatId }: ParticipantListPro
         {' '}
         {participants.length > 1 ? 'Participants' : 'Participant'}
       </Link>
-      <Popover placement="right-start" isOpen={popoverOpen} target={`ParticipantsPopover${chatId}`} trigger="hover">
+      <Popover placement="right-start" isOpen={popoverOpen} target={`ParticipantsPopover${chatID}`} trigger="hover">
         <PopoverHeader>Participants</PopoverHeader>
         <PopoverBody>
           {participants.slice(0, DISPLAYED_PARTICIPANTS).map((p) => (
-            <p key={p.userProfile.id} className="mb-0">
-              {p.userProfile.realName}
+            <p key={p.user} className="mb-0">
+              {console.log(getUserByID(p.user), p)}
+              {getUserByID(p.user).displayName}
               {p.role === 'Organizer' ? ` - ${p.role}` : ''}
             </p>
           ))}
@@ -55,4 +60,8 @@ const ParticipantList = ({ className, participants, chatId }: ParticipantListPro
   )
 }
 
-export default ParticipantList
+const mapStateToProps = (state: RootState) => ({
+  getUserByID: (id: string) => selectors.entities.getUserByID(state, id),
+})
+// @ts-ignore
+export default connect(mapStateToProps)(ParticipantList)

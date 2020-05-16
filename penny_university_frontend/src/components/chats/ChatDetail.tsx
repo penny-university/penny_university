@@ -7,19 +7,19 @@ import Date from '../Date'
 import { Content, EditContent } from '../content'
 import { FollowUpCard } from '../followups'
 import modalDispatch from '../modal/dispatch'
-
+import { Chat, User } from '../../models'
 
 type ChatDetailProps = {
   chat: Chat,
   followUps: Array<FollowUp>,
-  createFollowUp: (id: string, content: { content: string }) => void,
+  createFollowUp: (id: number, content: { content: string }) => void,
   updateFollowUp: (followup: FollowUp) => void,
   user: User,
-  userProfiles: { [id: string]: UserProfile },
+  getUserByID: (id: number) => User,
 }
 
 const ChatDetail = ({
-  chat, followUps, createFollowUp, updateFollowUp, user, userProfiles,
+  chat, followUps, createFollowUp, updateFollowUp, user, getUserByID,
 }: ChatDetailProps) => {
   const [addFollowUpMode, toggleAddFollowUpMode] = useState(false)
   const [followUpContent, updateFollowUpContent] = useState('')
@@ -30,7 +30,7 @@ const ChatDetail = ({
   }
 
   const createOnPress = () => {
-    if (user) {
+    if (user.valid) {
       Promise.resolve(toggleAddFollowUpMode(true))
         .then(() => window.scrollTo(0, document.body.scrollHeight))
     } else {
@@ -45,7 +45,8 @@ const ChatDetail = ({
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
-  if (chat) {
+
+  if (chat.valid) {
     return (
       <Card body className="mb-3 border-0 shadow-sm">
         <h3 className="mr-3">{chat.title}</h3>
@@ -61,14 +62,16 @@ const ChatDetail = ({
           Follow Ups
         </h5>
         {followUps.map((followUp) => {
-          const followUpUserProfile = userProfiles[followUp.userProfile]
+          const followUpUser = getUserByID(followUp.user)
+          const role = chat.getUserRole(followUp.user)
           return (
             <FollowUpCard
               key={`FollowUpCard-${followUp.id}`}
               followUp={followUp}
               updateFollowUp={updateFollowUp}
-              userProfile={followUpUserProfile}
-              canEdit={user?.pk === followUpUserProfile?.user?.id}
+              user={followUpUser}
+              role={role}
+              canEdit={user?.id === followUpUser?.id}
             />
           )
         })}

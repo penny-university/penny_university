@@ -1,3 +1,5 @@
+import { User } from '../models'
+
 export const chats = [
   {
     id: 2,
@@ -8,12 +10,12 @@ export const chats = [
     followups: 'http://localhost:8000/api/chats/2/follow-ups',
     participants: [
       {
-        userProfile: {
+        user: new User({
           id: 3,
-          url: 'http://localhost:8000/api/users/3/',
           email: 'test3@gmail.com',
-          realName: 'Test User 3',
-        },
+          firstName: 'Test',
+          lastName: 'User 3'
+        }),
         role: 'Organizer',
       },
     ],
@@ -27,21 +29,21 @@ export const chats = [
     followups: 'http://localhost:8000/api/chats/1/follow-ups',
     participants: [
       {
-        userProfile: {
+        user: new User({
           id: 1,
-          url: 'http://localhost:8000/api/users/1/',
           email: 'test1@example.com',
-          realName: 'Test User 1',
-        },
+          firstName: 'Test',
+          lastName: 'User 1'
+        }),
         role: 'Organizer',
       },
       {
-        userProfile: {
+        user: new User({
           id: 2,
-          url: 'http://localhost:8000/api/users/2/',
           email: 'test2@example.com',
-          realName: 'Test User 2',
-        },
+          firstName: 'Test',
+          lastName: 'User 2',
+        }),
         role: 'Attendee',
       },
     ],
@@ -58,12 +60,13 @@ export const chatsNext = [
     followups: 'http://localhost:8000/api/chats/4/follow-ups',
     participants: [
       {
-        userProfile: {
+        user: new User({
           id: 3,
           url: 'http://localhost:8000/api/users/3/',
           email: 'test3@gmail.com',
-          realName: 'Test User 3',
-        },
+          firstName: 'Test',
+          lastName: 'User 3',
+        }),
         role: 'Organizer',
       },
     ],
@@ -77,12 +80,13 @@ export const chatsNext = [
     followups: 'http://localhost:8000/api/chats/3/follow-ups',
     participants: [
       {
-        userProfile: {
+        user: new User({
           id: 1,
           url: 'http://localhost:8000/api/users/1/',
           email: 'test1@example.com',
-          realName: 'Test User 1',
-        },
+          firstName: 'Test',
+          lastName: 'User 1',
+        }),
         role: 'Organizer',
       },
     ],
@@ -96,24 +100,26 @@ export const followUps = {
       pennyChat: 'http://localhost:8000/api/chats/1/',
       content: 'In this chat we learned how to user Jest to test our React and Redux apps.',
       date: '2020-01-01T13:00:00Z',
-      userProfile: {
+      user: new User({
         id: 1,
         url: 'http://localhost:8000/api/users/1/',
-        email: 'test1@example.com',
-        realName: 'Test User 1',
-      },
+        // email: 'test1@example.com',
+        firstName: 'Test',
+        lastName: 'User 1',
+      }),
     },
     {
       id: 2,
       pennyChat: 'http://localhost:8000/api/chats/1/',
       content: 'Test User 1 had great insight into this topic.',
       date: '2020-01-01T14:00:00Z',
-      userProfile: {
+      user: new User({
         id: 2,
         url: 'http://localhost:8000/api/users/2/',
-        email: 'test2@example.com',
-        realName: 'Test User 2',
-      },
+        // email: 'test2@example.com',
+        firstName: 'Test',
+        lastName: 'User 2',
+      }),
     },
   ],
   'http://localhost:8000/api/chats/2/follow-ups': [
@@ -122,12 +128,13 @@ export const followUps = {
       pennyChat: 'http://localhost:8000/api/chats/2/',
       content: 'I learned that hooks can replace lots of the boilerplate I used to have in my class components!',
       date: '2019-11-20T22:30:34Z',
-      userProfile: {
+      user: new User({
         id: 3,
         url: 'http://localhost:8000/api/users/3/',
-        email: 'test3@gmail.com',
-        realName: 'Test User 3',
-      },
+        // email: 'test3@gmail.com',
+        firstName: 'Test',
+        lastName: 'User 3',
+      }),
     },
   ],
 }

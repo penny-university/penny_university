@@ -1,7 +1,6 @@
 import { combineReducers, applyMiddleware, createStore, compose } from 'redux'
 import { AnyAction } from 'redux'
-import deepmerge from 'deepmerge'
-import { normalize, Schema } from 'normalizr'
+import { normalize } from 'normalizr'
 import * as ActionTypes from '../actions'
 import paginate from './paginate'
 import user, { initialState as userInitialState } from './user'
@@ -9,6 +8,7 @@ import thunk from 'redux-thunk'
 import api from '../middleware/api'
 import logging from '../middleware/logging'
 import userMiddleware from '../middleware/user'
+import { Schemas } from '../models/schemas'
 
 // Eventually we will want to move this into a DEV configuration
 const composeEnhancers = (<any>window).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -16,11 +16,24 @@ const composeEnhancers = (<any>window).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || c
 // Updates an entity cache in response to any action
 // with response.entities, such as a CHATS_LIST_SUCCESS
 
-const entities = (state: EntityState = { chats: {}, followUps: {}, userProfiles: {}, }, action: AnyAction): EntityState => {
+const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, }, action: AnyAction): EntityState => {
   const { result, responseSchema } = action.payload || {}
   if (result && responseSchema) {
-    const { entities = {} } = normalize(result, responseSchema)
-    return deepmerge(state, entities)
+    const { entities: {chats = {}, users = {}, followUps = {}} = {} } = normalize(result, responseSchema)
+    return {
+      chats: {
+        ...state.chats,
+        ...chats,
+      },
+      users: {
+        ...state.users,
+        ...users,
+      },
+      followUps: {
+        ...state.followUps,
+        ...followUps,
+      }
+    }
   }
 
   return state
@@ -46,7 +59,7 @@ const pagination = combineReducers({
     ],
   }),
   followUpsByChat: paginate({
-    mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.chatId,
+    mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.chatID,
     types: [
       ActionTypes.FOLLOW_UPS_REQUEST,
       ActionTypes.FOLLOW_UPS_SUCCESS,
@@ -60,7 +73,7 @@ export const initialState = {
   entities: {
     chats: {},
     followUps: {},
-    userProfiles: {},
+    users: {},
   },
   pagination: {
     chatsByFilter: {},
@@ -82,5 +95,9 @@ const store = createStore(rootReducer, initialState, composeEnhancers(
 ))
 
 export type RootState = ReturnType<typeof rootReducer>
+
+export { 
+  Schemas
+}
 
 export default store
