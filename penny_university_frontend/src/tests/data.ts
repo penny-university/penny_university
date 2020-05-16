@@ -12,7 +12,6 @@ export const chats = [
       {
         user: new User({
           id: 3,
-          email: 'test3@gmail.com',
           firstName: 'Test',
           lastName: 'User 3'
         }),
@@ -31,7 +30,6 @@ export const chats = [
       {
         user: new User({
           id: 1,
-          email: 'test1@example.com',
           firstName: 'Test',
           lastName: 'User 1'
         }),
@@ -40,7 +38,6 @@ export const chats = [
       {
         user: new User({
           id: 2,
-          email: 'test2@example.com',
           firstName: 'Test',
           lastName: 'User 2',
         }),
