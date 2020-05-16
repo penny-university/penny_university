@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'penny_university.wsgi.application'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 DATABASES = {}
-# in .github/workflows/ci.yml we define a DATABASE_URL corresponding to the test postgres
+# in .github/workflows/unit_testing.yml we define a DATABASE_URL corresponding to the test postgres
 # in heroku the production DATABASE_URL is defined (see `heroku config`)
 # if neither is defined then we presume we're in dev and just use sqlite
 DATABASES['default'] = dj_database_url.config(default='sqlite:///db.sqlite3', conn_max_age=600)
@@ -153,6 +153,10 @@ if SLACK_API_KEY is None:
 PENNY_ADMIN_USERS = ['@JB', '@nick.chouard']
 
 SLACK_TEAM_ID = 'T41DZFW4T'
+
+SLACK_INVITE_LINK = os.environ.get('SLACK_INVITE_LINK')
+if SLACK_INVITE_LINK is None:
+    print('WARNING: SLACK_INVITE_LINK is None')
 
 
 # Django Rest Framework
