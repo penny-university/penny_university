@@ -14,6 +14,7 @@ import ChatDetailPage from './containers/ChatDetailPage'
 import { checkAuth, logout } from './actions/user'
 import * as selectors from './selectors'
 import { RootState } from './reducers'
+import { Routes } from './constants'
 
 type StateProps = {
   authed: boolean,
@@ -36,14 +37,14 @@ const App = (props: Props) => {
       <Navigation authed={authed} logout={dispatchLogout} />
       <Container className="mt-3" fluid>
         <Switch>
-          <Route path="/chats/:id">
+          <Route path={Routes.ChatDetail}>
             <ChatDetailPage />
           </Route>
-          <Route path="/chats">
+          <Route path={Routes.Chats}>
             <ChatsPage />
           </Route>
-          <Route path="/">
-            <Redirect to="/chats" />
+          <Route path={Routes.Home}>
+            <Redirect to={Routes.Chats} />
           </Route>
         </Switch>
         <AlertContainer />

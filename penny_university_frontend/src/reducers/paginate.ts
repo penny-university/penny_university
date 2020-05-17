@@ -1,5 +1,6 @@
 import { normalize, Schema } from 'normalizr'
 import { AnyAction } from 'redux'
+import * as ActionTypes from '../actions'
 
 export const paginationInitialState = {
   chatsByFilter: {
@@ -22,36 +23,38 @@ const union = (a: Iterable<any>, b: Iterable<any>) => (
 // Reducer for handling actions that require pagination.
 // Requires three types (request, success, and failure),
 // and a function to map the pagination to a key, e.g. (action) => action.filterName.
-const paginate = ({ types, mapActionToKey }: { types: [string, string, string], mapActionToKey: (action: AnyAction) => string | undefined }) => {
+const paginate = ({ types, mapActionToKey }: { types: [Array<string>, Array<string>, Array<string>], mapActionToKey: (action: AnyAction) => string | undefined }) => {
   if (!Array.isArray(types) || types.length !== 3) {
     throw new Error('Expected types to be an array of three elements.')
   }
-  if (!types.every((t) => typeof t === 'string')) {
+  if (!types.every((t) => Array.isArray(t))) {
     throw new Error('Expected types to be strings.')
   }
   if (typeof mapActionToKey !== 'function') {
     throw new Error('Expected mapActionToKey to be a function.')
   }
 
-  const [requestType, successType, failureType] = types
+  const [requestTypes, successTypes, failureTypes] = types
 
   const updatePagination = (state = {
     isFetching: false,
     next: undefined,
     previous: undefined,
     count: 0,
-    ids: [],
+    ids: Array(),
   }, action: AnyAction) => {
     const { result, responseSchema } = action.payload || {}
-    switch (action.type) {
-      case requestType:
+      if(requestTypes.includes(action.type)){
         return {
           ...state,
           isFetching: true,
         }
-      case successType:
+       } else if (successTypes.includes(action.type)){
         if (responseSchema) {
-          const { result: resultIds } = normalize(result, responseSchema)
+          let { result: resultIds } = normalize(result, responseSchema)
+          if (typeof resultIds === 'string') {
+            resultIds = [resultIds]
+          }
           return {
             ...state,
             isFetching: false,
@@ -62,23 +65,36 @@ const paginate = ({ types, mapActionToKey }: { types: [string, string, string], 
             
           }
         }
-      case failureType:
+      } else if (failureTypes.includes(action.type)){
         return {
           ...state,
           isFetching: false,
         }
-      default:
-        return state
+      } else if (action.type === ActionTypes.DELETE_FOLLOW_UP_SUCCESS) {
+        const { followID }: {followID: string } = action.payload.meta
+        if (followID) {
+          state.ids.splice(state.ids.indexOf(followID.toString()), 1)
+          return {
+            ...state,
+            ids: state.ids
+          }
+        }
+      } else if (action.type === ActionTypes.DELETE_CHAT_SUCCESS) {
+        const { chatID }: {chatID: string } = action.payload.meta
+        if (chatID) {
+          state.ids.splice(state.ids.indexOf(chatID.toString()), 1)
+          return {
+            ...state,
+            ids: state.ids
+          }
+        }
+      }
+      return state
     }
-  }
 
   return (state = paginationInitialState, action: AnyAction): PaginationState  => {
     // Update pagination by key
     const key = mapActionToKey(action)
-    switch (action.type) {
-      case requestType:
-      case successType:
-      case failureType:
         if (key) {
           return {
             ...state,
@@ -86,9 +102,7 @@ const paginate = ({ types, mapActionToKey }: { types: [string, string, string], 
             [key]: updatePagination(state[key], action),
           }
         }
-      default:
         return state
-    }
   }
 }
 

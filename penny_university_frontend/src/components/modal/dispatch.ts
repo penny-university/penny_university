@@ -41,6 +41,14 @@ const modalDispatch = () => {
     },
   })
 
+  const deleteModal = (props: { warning: string, confirmOnPress: () => void}) => ({
+    type: Actions.OPEN_MODAL,
+    payload: {
+      name: ModalNames.CONFIRM_DELETE,
+      props,
+    }
+  })
+
   const close = () => ({
     type: Actions.CLOSE_MODAL,
     payload: null,
@@ -52,6 +60,7 @@ const modalDispatch = () => {
     auth: call(authUsername),
     authSignup: call(authSignup),
     authPassword: call(authPassword),
+    delete: call(deleteModal),
     close: call(close),
   }
 }

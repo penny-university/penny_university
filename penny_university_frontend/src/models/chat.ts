@@ -28,8 +28,12 @@ class Chat implements ChatType {
   }
 
   getUserRole(id: number): 'Organizer' | 'Participant' | '' {
-    const { role } = this.participants.find((p: Participant) => p.user === id) || { role: ''}
+    const { role } = this.participants.find((p: Participant) => p.user.toString() === id.toString()) || { role: ''}
     return role 
+  }
+
+  isOrganizer(id: number): boolean {
+    return this.getUserRole(id) === 'Organizer'
   }
 
   get valid() {
