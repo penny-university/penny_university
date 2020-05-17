@@ -1,51 +1,50 @@
+from functools import wraps
 import json
 from unittest import mock
 
 from django.conf import settings
 import slack
 
-_slack_client = set()  # singleton global slack client
 
+class IntegrationTestLoggingWrapper:
+    """Wraps methods and class instances to log calls and responses as copy-pastable mock tests.
 
-# TODO! test like in notebook
-class MockWrappedInstance:
-    """Wraps an instance so that all of its methods are actually mocks.
+    Wrap methods with the `@IntegrationTestLoggingWrapper.wrap` decorator. In this case the call and response
+    remains unchanged, but all interactions are logged.
 
-    This allows you to check the call_args later. You can reset an individual method with
-    `wrapped_instance.mock_reset(method_name)` or you can reset all the methods with
-    `wrapped_instance.mock_reset()`.
+    Wrap class instances using `IntegrationTestLoggingWrapper(instance)`. In this case each non-private method
+    is logged.
+
+    Logs are only turned on if the `LOG_FOR_INTEGRATION` django setting is `True`.
     """
+
+    def wrap(method, _prefix=''):
+        @wraps(method)
+        def wrapped_method(*args, **kwargs):
+            m = mock.Mock()
+            m(*args, **kwargs)
+            resp = method(*args, **kwargs)
+            print(f'{_prefix}{method.__name__} = Mock()')
+            print(f'{_prefix}{method.__name__}.return_value = {resp}')
+            print(f'assert {_prefix}{method.__name__}.call_args == {m.call_args}')
+            return resp
+        return wrapped_method
 
     def __init__(self, wrapped_instance):
         self.wrapped_instance = wrapped_instance
-        self.mocks = {}
 
     def __getattr__(self, attr_name):
         attr = getattr(self.wrapped_instance, attr_name)
-        if callable(attr):
-            if attr_name not in self.mocks:
-                self.mocks[attr_name] = mock.Mock(side_effect=attr)
-            attr = self.mocks[attr_name]
+        if callable(attr) and not attr_name[0] == '_':
+            attr = IntegrationTestLoggingWrapper.wrap(attr, f'instance_of_{self.wrapped_instance.__class__.__name__}.')
         return attr
-
-    def mock_reset(self, attr_name=None):
-        if attr_name:
-            del self.mocks[attr_name]
-        else:
-            self.mocks = {}
-
-    def mock_log_all_calls(self):
-        for k, v in self.mocks.items():
-            print(f'*{k}: {v.call_args_list}')
 
 
 def get_slack_client():
-    if not _slack_client:
-        slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
-        if settings.MOCK_WRAP_SLACK_CLIENT:
-            slack_client = MockWrappedInstance(slack_client)
-        _slack_client.add(slack_client)
-    return next(iter(_slack_client))
+    slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+    if settings.LOG_FOR_INTEGRATION:
+        slack_client = IntegrationTestLoggingWrapper(slack_client)
+    return slack_client
 
 
 def pprint_obj(obj):

@@ -18,6 +18,7 @@ bot = Bot(event_processors=[GreetingBotModule(slack_client), PennyChatBotModule(
 
 
 def index(request):
+    # We've come a long way haven't we?
     return HttpResponse("At least something works!!!!")
 
 
@@ -37,8 +38,6 @@ def hook(request):
     if not is_bot:
         bot(event)
 
-    logging.info('HOOK SLACK>')
-    slack_client.mock_log_all_calls()  # TODO!
     return HttpResponse('')
 
 
@@ -51,8 +50,6 @@ def interactive(request):
     if resp:
         return JsonResponse(resp)
 
-    logging.info('INTERACTIVE SLACK>')
-    slack_client.mock_log_all_calls()  # TODO!
     return HttpResponse()
 
 
@@ -76,6 +73,4 @@ def command(request):
         ]
         slack_client.chat_postEphemeral(channel=event['channel_id'], user=event['user_id'], blocks=blocks)
 
-    logging.info('COMMAND SLACK>')
-    slack_client.mock_log_all_calls()  # TODO!
     return HttpResponse('')
