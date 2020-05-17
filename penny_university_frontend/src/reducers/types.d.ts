@@ -43,16 +43,18 @@ interface EntityState {
 interface PaginationState {
   chatsByFilter: {
     all: {
-      nextPageUrl: string,
-      pageCount: number,
-      data: Array<Chat>,
+      next: string | undefined,
+      previous: string | undefined,
+      count: number,
+      ids: Array<Chat>,
     }
   },
   followUpsByChat: {
     [key: string]: {
-      nextPageUrl: string,
-      pageCount: number,
-      data: Array<Chat>,
+      next: string | undefined,
+      previous: string | undefined,
+      count: number,
+      ids: Array<Chat>,
     }
   },
 }

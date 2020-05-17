@@ -30,7 +30,7 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
           if (!response.ok) {
             return Promise.reject(response)
           }
-          const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
+          const camelJson = camelizeKeys(json)
           return camelJson
         }))
     default:
@@ -40,7 +40,7 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
             return Promise.reject(response)
           }
 
-          const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
+          const camelJson = camelizeKeys(json)
           return camelJson
         }))
   }
@@ -75,10 +75,12 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
     next({ type: requestType, payload: { meta } })
     const token = selectors.user.getToken(store.getState())
     return callApi(endpoint, method, payload, token).then(
-      (response: any) => next({
-        payload: { result: response, responseSchema, meta },
+      (response: any) => {
+        const metaWithPagination = response.results ? {...meta, count: response.count, next: response.next, previous: response.previous} : meta
+        return next({
+        payload: { result: response.results || response, responseSchema, meta: metaWithPagination },
         type: successType,
-      }),
+      })},
       (error: { message: string, status: number }) => next({
         type: failureType,
         payload: { message: error.message || 'An error occurred.', status: error.status, meta },
