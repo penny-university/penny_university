@@ -29,10 +29,10 @@ class DebugPassthrough:
     """
 
     def __init__(self, get_response):
-        self.get_response = get_response
         if not settings.DEBUG:
             raise MiddlewareNotUsed()
 
+        self.get_response = get_response
         self.host = None
         self.port = None
         logging.info(f'MIDDLEWARE:DebugPassthrough> initializing DebugPassthrough')

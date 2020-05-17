@@ -110,7 +110,7 @@ def send_penny_chat_reminders():
     )
     for penny_chat_invitation in imminent_chats:
         penny_chat_invitation.status = PennyChatInvitation.REMINDED
-        penny_chat_invitation.save()  # TODO! test
+        penny_chat_invitation.save()
         reminder_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=REMIND)
         participants = penny_chat_invitation.get_participants()
         for participant in participants:
@@ -288,9 +288,3 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
 def comma_split(comma_delimited_string):
     """normal string split for  ''.split(',') returns [''], so using this instead"""
     return [x for x in comma_delimited_string.split(',') if x]
-
-
-# TODO! delete
-@background
-def trash():
-    print("here")

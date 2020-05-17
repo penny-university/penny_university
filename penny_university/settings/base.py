@@ -60,7 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'penny_university.middleware.DebugPassthrough',
+    'penny_university.middleware.debug_passthrough.DebugPassthrough',
+    'penny_university.middleware.integration_test_logging.IntegrationTestLogging',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
