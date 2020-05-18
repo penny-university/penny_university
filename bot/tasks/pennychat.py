@@ -7,8 +7,12 @@ from django.conf import settings
 from pytz import timezone, utc
 
 from common.utils import get_slack_client
-from pennychat.models import PennyChatInvitation, Participant
-from users.models import get_or_create_user_profile_from_slack_id, get_or_create_user_profile_from_slack_ids
+from pennychat.models import PennyChatSlackInvitation, Participant
+from users.models import (
+    SocialProfile,
+    get_or_create_social_profile_from_slack_id,
+    get_or_create_social_profile_from_slack_ids,
+)
 
 VIEW_SUBMISSION = 'view_submission'
 VIEW_CLOSED = 'view_closed'
@@ -49,7 +53,7 @@ def background(*args, **kwargs):
 def post_organizer_edit_after_share_blocks(penny_chat_view_id):
     slack_client = get_slack_client()
 
-    penny_chat_invitation = PennyChatInvitation.objects.get(view=penny_chat_view_id)
+    penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=penny_chat_view_id)
     slack_client.chat_postMessage(
         channel=penny_chat_invitation.organizer_slack_id,
         blocks=organizer_edit_after_share_blocks(slack_client, penny_chat_invitation),
@@ -59,7 +63,7 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
 @background
 def share_penny_chat_invitation(penny_chat_id):
     """Shares penny chat invitations with people and channels in the invitee list"""
-    penny_chat_invitation = PennyChatInvitation.objects.get(id=penny_chat_id)
+    penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
     slack_client = get_slack_client()
 
     # unshare the old shares
@@ -79,7 +83,11 @@ def share_penny_chat_invitation(penny_chat_id):
     participant_ids = []
     for p in penny_chat_invitation.participants.all():
         if p.role != Participant.ORGANIZER:
-            participant_ids.append(p.user_profile.slack_id)
+            profile = SocialProfile.objects.get(
+                user=p.user,
+                slack_team_id=penny_chat_invitation.created_from_slack_team_id,
+            )
+            participant_ids.append(profile.slack_id)
     for share_to in set(channel_ids + invitee_ids + participant_ids):
         resp = slack_client.chat_postMessage(
             channel=share_to,
@@ -95,20 +103,24 @@ def send_penny_chat_reminders():
     slack_client = get_slack_client()
 
     now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
-    imminent_chats = PennyChatInvitation.objects.filter(
-        status__gte=PennyChatInvitation.SHARED,
-        status__lt=PennyChatInvitation.REMINDED,
+    imminent_chats = PennyChatSlackInvitation.objects.filter(
+        status__gte=PennyChatSlackInvitation.SHARED,
+        status__lt=PennyChatSlackInvitation.REMINDED,
         date__gte=now,
         date__lt=now + timedelta(minutes=settings.REMINDER_BEFORE_PENNY_CHAT_MINUTES),
     )
     for penny_chat_invitation in imminent_chats:
-        penny_chat_invitation.status = PennyChatInvitation.REMINDED
+        penny_chat_invitation.status = PennyChatSlackInvitation.REMINDED
         penny_chat_invitation.save()
         reminder_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=REMIND)
         participants = penny_chat_invitation.get_participants()
-        for participant in participants:
+        for user in participants:
+            profile = SocialProfile.objects.get(
+                user=user,
+                slack_team_id=penny_chat_invitation.created_from_slack_team_id,
+            )
             slack_client.chat_postMessage(
-                channel=participant.slack_id,
+                channel=profile.slack_id,
                 blocks=reminder_blocks,
             )
 
@@ -120,7 +132,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     include_calendar_link = mode in {PREVIEW, INVITE, UPDATE}
     include_rsvp = mode in {INVITE, UPDATE}
 
-    organizer = get_or_create_user_profile_from_slack_id(
+    organizer = get_or_create_social_profile_from_slack_id(
         penny_chat_invitation.organizer_slack_id,
         slack_client=get_slack_client(),
     )
@@ -223,7 +235,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
 
 def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
     shares = []
-    users = get_or_create_user_profile_from_slack_ids(
+    users = get_or_create_social_profile_from_slack_ids(
         comma_split(penny_chat_invitation.invitees),
         slack_client=slack_client,
     )

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from users.models import update_user_profile_from_slack
+from users.models import update_social_profile_from_slack
 
 
 class Command(BaseCommand):
@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             with transaction.atomic():
-                new_users, updated_users = update_user_profile_from_slack()
+                new_users, updated_users = update_social_profile_from_slack()
 
                 print(f'\n\nNEW USERS:\n {new_users}')
                 print(f'\n\nUPDATED USERS:\n {updated_users}')

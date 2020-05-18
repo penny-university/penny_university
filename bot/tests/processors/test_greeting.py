@@ -1,6 +1,6 @@
 import pytest
 
-from users.models import UserProfile
+from users.models import SocialProfile
 from bot.processors.greeting import GreetingBotModule
 
 
@@ -95,7 +95,7 @@ def test_show_interests_dialog_existing_user(mocker):
     slack = mocker.Mock()
     bot_module = GreetingBotModule(slack)
 
-    UserProfile.objects.create(slack_id='0', topics_to_learn='django')
+    SocialProfile.objects.create(slack_id='0', topics_to_learn='django')
 
     event = {
         'type': 'block_actions',
@@ -146,21 +146,21 @@ def test_submit_interests(mocker):
     }
     bot_module(event)
 
-    user = UserProfile.objects.get(slack_id='SOME_USER_ID')
+    profile = SocialProfile.objects.get(slack_id='SOME_USER_ID')
 
-    initial_created = user.created
-    initial_updated = user.updated
+    initial_created = profile.created
+    initial_updated = profile.updated
 
-    assert user.email == 'SOME_EMAIL'
-    assert user.slack_id == 'SOME_USER_ID'
-    assert user.display_name == 'SOME_SLACK_NAME'
-    assert user.real_name == 'SOME_REAL_NAME'
-    assert user.metro_name == 'SOME_METRO'
-    assert user.topics_to_learn == 'SOME_LEARNINGS'
-    assert user.topics_to_share == ''
-    assert user.how_you_learned_about_pennyu == 'SOME_REFERER'
-    assert user.created
-    assert user.updated
+    assert profile.email == 'SOME_EMAIL'
+    assert profile.slack_id == 'SOME_USER_ID'
+    assert profile.display_name == 'SOME_SLACK_NAME'
+    assert profile.real_name == 'SOME_REAL_NAME'
+    assert profile.metro_name == 'SOME_METRO'
+    assert profile.topics_to_learn == 'SOME_LEARNINGS'
+    assert profile.topics_to_share == ''
+    assert profile.how_you_learned_about_pennyu == 'SOME_REFERER'
+    assert profile.created
+    assert profile.updated
 
     assert 'interested in learning' in slack.chat_postMessage.call_args_list[0][1]['text']
     assert 'SOME_LEARNINGS' in slack.chat_postMessage.call_args_list[0][1]['text']
@@ -181,15 +181,15 @@ def test_submit_interests(mocker):
 
     bot_module(event)
 
-    user = UserProfile.objects.get(slack_id='SOME_USER_ID')
+    profile = SocialProfile.objects.get(slack_id='SOME_USER_ID')
 
-    assert user.email == 'SOME_EMAIL'
-    assert user.slack_id == 'SOME_USER_ID'
-    assert user.display_name == 'SOME_SLACK_NAME'
-    assert user.real_name == 'SOME_REAL_NAME'
-    assert user.metro_name == 'SOME_OTHER_METRO'
-    assert user.topics_to_learn == 'SOME_OTHER_LEARNINGS'
-    assert user.topics_to_share == 'SOME_OTHER_TEACHINGS'
-    assert user.how_you_learned_about_pennyu == 'SOME_OTHER_REFERER'
-    assert user.created == initial_created
-    assert user.updated > initial_updated
+    assert profile.email == 'SOME_EMAIL'
+    assert profile.slack_id == 'SOME_USER_ID'
+    assert profile.display_name == 'SOME_SLACK_NAME'
+    assert profile.real_name == 'SOME_REAL_NAME'
+    assert profile.metro_name == 'SOME_OTHER_METRO'
+    assert profile.topics_to_learn == 'SOME_OTHER_LEARNINGS'
+    assert profile.topics_to_share == 'SOME_OTHER_TEACHINGS'
+    assert profile.how_you_learned_about_pennyu == 'SOME_OTHER_REFERER'
+    assert profile.created == initial_created
+    assert profile.updated > initial_updated

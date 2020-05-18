@@ -35,7 +35,7 @@ class DebugPassthrough:
         self.get_response = get_response
         self.host = None
         self.port = None
-        logging.info(f'MIDDLEWARE:DebugPassthrough> initializing DebugPassthrough')
+        logging.info('MIDDLEWARE:DebugPassthrough> initializing DebugPassthrough')
         # One-time configuration and initialization.
 
     def __call__(self, request):

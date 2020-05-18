@@ -2,9 +2,9 @@ import time
 
 from django.core.management.base import BaseCommand
 
-from common.utils import get_slack_client
-from users.models import UserProfile
 from bot.processors.greeting import greeting_blocks
+from common.utils import get_slack_client
+from users.models import SocialProfile
 
 
 class Command(BaseCommand):
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 else:
                     not_found_users.add(slack_name)
         else:
-            responded_user_ids = [user.slack_id for user in UserProfile.objects.all() if user.slack_id]
+            responded_user_ids = [user.slack_id for user in SocialProfile.objects.all() if user.slack_id]
             non_responded_user_ids = set(user_id__slack_name).difference(responded_user_ids)
 
         # notify developer of send status

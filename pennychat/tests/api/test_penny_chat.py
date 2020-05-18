@@ -1,11 +1,11 @@
 import pytest
 import logging
 
-from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
 from pennychat.models import PennyChat
+from users.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ def test_penny_chat_list(test_chats_1):
     # first chat should be most recent chat
     assert 'participants' in response.data['results'][0]
     assert response.data['results'][0]['participants'][0]['role'] == 'Organizer'
-    assert response.data['results'][0]['participants'][0]['user_profile']['real_name'] == 'three'
+    assert response.data['results'][0]['participants'][0]['user']['email'] == 'three@wherever.com'
     assert chats[0]['title'] == most_recent_chat.title
 
 
@@ -33,13 +33,13 @@ def test_penny_chat_detail(test_chats_1):
     assert response.status_code == 200
     assert 'participants' in response.data
     assert response.data['participants'][0]['role'] == 'Organizer'
-    assert response.data['participants'][0]['user_profile']['real_name'] == 'one'
+    assert response.data['participants'][0]['user']['email'] == 'one@wherever.com'
     assert response.data['title'] == penny_chat.title
 
 
 @pytest.mark.django_db
 def test_create_penny_chat(test_chats_1):
-    user = test_chats_1[0].get_organizer().user
+    user = test_chats_1[0].get_organizer()
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -58,7 +58,7 @@ def test_create_penny_chat(test_chats_1):
 
 @pytest.mark.django_db
 def test_create_penny_chat_without_date(test_chats_1):
-    user = test_chats_1[0].get_organizer().user
+    user = test_chats_1[0].get_organizer()
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -86,7 +86,7 @@ def test_create_penny_chat_unauthorized(test_chats_1):
 @pytest.mark.django_db
 def test_update_penny_chat(test_chats_1):
     penny_chat = test_chats_1[0]
-    user = penny_chat.get_organizer().user
+    user = penny_chat.get_organizer()
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -137,7 +137,7 @@ def test_update_penny_chat_wrong_user(test_chats_1):
 @pytest.mark.django_db
 def test_partial_update_penny_chat(test_chats_1):
     penny_chat = test_chats_1[0]
-    user = penny_chat.get_organizer().user
+    user = penny_chat.get_organizer()
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -181,7 +181,7 @@ def test_partial_update_penny_chat_wrong_user(test_chats_1):
 @pytest.mark.django_db
 def test_delete_penny_chat(test_chats_1):
     penny_chat = test_chats_1[0]
-    user = penny_chat.get_organizer().user
+    user = penny_chat.get_organizer()
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)

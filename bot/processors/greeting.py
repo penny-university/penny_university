@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from bot.utils import notify_admins, channel_lookup
-from users.models import UserProfile
+from users.models import SocialProfile
 from bot.processors.base import (
     BotModule,
 )
@@ -102,7 +102,7 @@ def welcome_room_blocks(user_id):
     return message
 
 
-def onboarding_blocks(user=None):
+def onboarding_blocks(profile=None):
     template = {
         'callback_id': 'interests',
         'title': 'Let\'s get to know you',
@@ -116,7 +116,7 @@ def onboarding_blocks(user=None):
                 'label': 'What do you want to learn?',
                 'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
                 'optional': 'true',
-                'value': user.topics_to_learn if user else ''
+                'value': profile.topics_to_learn if profile else ''
             },
             {
                 'name': 'topics_to_share',
@@ -124,7 +124,7 @@ def onboarding_blocks(user=None):
                 'label': 'What do you able to share with others?',
                 'hint': 'Provide a comma separated list of subjects you would be interested in sharing.',
                 'optional': 'true',
-                'value': user.topics_to_share if user else ''
+                'value': profile.topics_to_share if profile else ''
             },
             {
                 'name': 'metro_name',
@@ -132,7 +132,7 @@ def onboarding_blocks(user=None):
                 'label': 'Where are you from?',
                 'hint': 'City and state (or country if not the U.S.).',
                 'optional': 'true',
-                'value': user.metro_name if user else ''
+                'value': profile.metro_name if profile else ''
             },
             {
                 'name': 'how_you_learned_about_pennyu',
@@ -140,7 +140,7 @@ def onboarding_blocks(user=None):
                 'label': 'How did you learn about Penny University?',
                 'hint': 'Who told you? Where did you hear about us?',
                 'optional': 'true',
-                'value': user.how_you_learned_about_pennyu if user else ''
+                'value': profile.how_you_learned_about_pennyu if profile else ''
             },
         ]
     }
@@ -169,8 +169,8 @@ class GreetingBotModule(BotModule):
     @has_action_id('open_interests_dialog')
     def show_interests_dialog(self, event):
         slack_id = event['user']['id']
-        user = UserProfile.objects.filter(slack_id=slack_id).first()
-        template = onboarding_blocks(user)
+        profile = SocialProfile.objects.filter(slack_id=slack_id).first()
+        template = onboarding_blocks(profile)
         self.slack.dialog_open(dialog=template, trigger_id=event['trigger_id'])
 
     @has_event_type('dialog_submission')
@@ -188,7 +188,7 @@ class GreetingBotModule(BotModule):
             topics_to_share=event['submission']['topics_to_share'] or '',
             how_you_learned_about_pennyu=event['submission']['how_you_learned_about_pennyu'] or '',
         )
-        UserProfile.objects.update_or_create(defaults=kwargs, slack_id=slack_id)
+        SocialProfile.objects.update_or_create(defaults=kwargs, slack_id=slack_id)
 
         message = f"Welcome to Penny University {kwargs['real_name']}!"
         if kwargs['topics_to_learn']:

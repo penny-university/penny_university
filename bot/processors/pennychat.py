@@ -11,7 +11,7 @@ from bot.tasks import (
 from bot.utils import chat_postEphemeral_with_fallback
 from pennychat.models import (
     PennyChat,
-    PennyChatInvitation,
+    PennyChatSlackInvitation,
     Participant,
 )
 from bot.processors.base import BotModule
@@ -19,10 +19,7 @@ from bot.processors.filters import (
     has_action_id,
     is_block_interaction_event,
     has_event_type, has_callback_id)
-from users.models import (
-    get_or_create_user_profile_from_slack_id,
-    UserProfile,
-)
+from users.models import get_or_create_social_profile_from_slack_id, SocialProfile
 
 VIEW_SUBMISSION = 'view_submission'
 VIEW_CLOSED = 'view_closed'
@@ -219,8 +216,8 @@ class PennyChatBotModule(BotModule):
         user = slack.users_info(user=event['user_id']).data['user']
         date = datetime.now().replace(minute=0, second=0, microsecond=0, tzinfo=utc)
 
-        penny_chat_invitations = PennyChatInvitation.objects \
-            .filter(organizer_slack_id=user['id'], status=PennyChatInvitation.DRAFT) \
+        penny_chat_invitations = PennyChatSlackInvitation.objects \
+            .filter(organizer_slack_id=user['id'], status=PennyChatSlackInvitation.DRAFT) \
             .order_by('-updated')
 
         if len(penny_chat_invitations) > 1:
@@ -231,11 +228,12 @@ class PennyChatBotModule(BotModule):
             )
             penny_chat_invitations.update(status=PennyChat.ABANDONED)
             penny_chat_invitation = penny_chat_invitations[0]
-            penny_chat_invitation.status = PennyChatInvitation.DRAFT
+            penny_chat_invitation.status = PennyChatSlackInvitation.DRAFT
         elif len(penny_chat_invitations) == 0:
-            penny_chat_invitation = PennyChatInvitation(
+            penny_chat_invitation = PennyChatSlackInvitation.objects.create(
                 organizer_slack_id=user['id'],
-                status=PennyChatInvitation.DRAFT,
+                created_from_slack_team_id=user['team_id'],
+                status=PennyChatSlackInvitation.DRAFT,
                 date=date,
             )
         else:  # There is only one PennyChatInvitation
@@ -254,7 +252,7 @@ class PennyChatBotModule(BotModule):
     @has_action_id(PENNY_CHAT_DATE)
     def date_select(self, event):
         date = event['actions'][0]['selected_date']
-        penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
+        penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=event['view']['id'])
         tz = timezone(penny_chat_invitation.organizer_tz)
         time = str(penny_chat_invitation.date.astimezone(tz).time()) if penny_chat_invitation.date else '00:00:00'
         penny_chat_invitation.date = tz.localize(datetime.strptime(date + ' ' + time, '%Y-%m-%d %H:%M:%S'))
@@ -264,7 +262,7 @@ class PennyChatBotModule(BotModule):
     @has_action_id(PENNY_CHAT_TIME)
     def time_select(self, event):
         time = event['actions'][0]['selected_option']['value']
-        penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
+        penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=event['view']['id'])
         tz = timezone(penny_chat_invitation.organizer_tz)
         date = str(penny_chat_invitation.date.astimezone(tz).date()) \
             if penny_chat_invitation.date else datetime.now().date()
@@ -275,7 +273,7 @@ class PennyChatBotModule(BotModule):
     @has_action_id(PENNY_CHAT_USER_SELECT)
     def user_select(self, event):
         users = event['actions'][0]['selected_users']
-        penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
+        penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=event['view']['id'])
         penny_chat_invitation.invitees = ','.join(users)
         penny_chat_invitation.save()
 
@@ -283,7 +281,7 @@ class PennyChatBotModule(BotModule):
     @has_action_id(PENNY_CHAT_CHANNEL_SELECT)
     def channel_select(self, event):
         selected_channels = event['actions'][0]['selected_channels']
-        penny_chat_invitation = PennyChatInvitation.objects.get(view=event['view']['id'])
+        penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=event['view']['id'])
         penny_chat_invitation.channels = ','.join(selected_channels)
         penny_chat_invitation.save()
 
@@ -291,7 +289,7 @@ class PennyChatBotModule(BotModule):
     @has_callback_id(PENNY_CHAT_DETAILS)
     def submit_details_and_share(self, event):
         view = event['view']
-        penny_chat_invitation = PennyChatInvitation.objects.get(view=view['id'])
+        penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=view['id'])
         state = view['state']['values']
 
         if len(penny_chat_invitation.invitees.strip()) == 0 and len(penny_chat_invitation.channels.strip()) == 0:
@@ -306,7 +304,7 @@ class PennyChatBotModule(BotModule):
         # Ready to share
         penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
         penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
-        penny_chat_invitation.status = PennyChatInvitation.SHARED
+        penny_chat_invitation.status = PennyChatSlackInvitation.SHARED
         penny_chat_invitation.save()
 
         post_organizer_edit_after_share_blocks.now(view['id'])
@@ -322,7 +320,7 @@ class PennyChatBotModule(BotModule):
     def edit_chat(self, event):
         try:
             value = json.loads(event['actions'][0]['value'])
-            penny_chat_invitation = PennyChatInvitation.objects.get(id=value['penny_chat_id'])
+            penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=value['penny_chat_id'])
         except:  # noqa
             requests.post(event['response_url'], json={'delete_original': True})
             self.slack_client.chat_postEphemeral(
@@ -366,7 +364,7 @@ class PennyChatBotModule(BotModule):
             participant_role = None
 
         try:
-            user = get_or_create_user_profile_from_slack_id(
+            profile = get_or_create_social_profile_from_slack_id(
                 event['user']['id'],
                 slack_client=self.slack_client,
             )
@@ -376,7 +374,7 @@ class PennyChatBotModule(BotModule):
 
             organizer = penny_chat.get_organizer()
 
-            if organizer == user:
+            if organizer == profile.user:
                 # TODO notify user that it's silly to attend or not attend their own event
                 return
 
@@ -384,29 +382,33 @@ class PennyChatBotModule(BotModule):
             timestamp = int(penny_chat.date.astimezone(utc).timestamp())
             date_text = f'<!date^{timestamp}^{{date}} at {{time}}|{penny_chat.date}>'
             _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
-            notification = f'<@{user.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
+            notification = f'<@{profile.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
             we_will_notify_organizer = 'Thank you. We will notify the organizer.'
 
             changed = False
             if participant_role:
                 participant, created = Participant.objects.update_or_create(
-                    user_profile=user,
+                    user=profile.user,
                     penny_chat=penny_chat,
                     defaults={'role': participant_role}
                 )
                 if created:
                     changed = True
             else:
-                num_deleted, _ = Participant.objects.filter(user_profile=user, penny_chat=penny_chat).delete()
+                num_deleted, _ = Participant.objects.filter(user=profile.user, penny_chat=penny_chat).delete()
                 if num_deleted > 0:
                     changed = True
 
             if changed:
-                self.slack_client.chat_postMessage(channel=organizer.slack_id, text=notification)
+                organizer_profile = SocialProfile.objects.get(
+                    user=organizer,
+                    slack_team_id=penny_chat.created_from_slack_team_id,
+                )
+                self.slack_client.chat_postMessage(channel=organizer_profile.slack_id, text=notification)
                 chat_postEphemeral_with_fallback(
                     self.slack_client,
                     channel=event['channel']['id'],
-                    user=user.slack_id,
+                    user=profile.slack_id,
                     text=we_will_notify_organizer,
                 )
         except RuntimeError:
