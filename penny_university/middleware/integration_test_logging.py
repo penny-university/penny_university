@@ -5,11 +5,14 @@ from unittest import mock
 from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
 
-# TODO! document - must have LOG_FOR_INTEGRATION and TASK_ALWAYS_EAGER
-
 
 class IntegrationTestLogging:
-    """Logs all requests and their responses so that they can be copy-pastable into tests."""
+    """Logs all requests and their responses so that they can be copy-pastable into tests.
+
+    Logs are only turned on if the `LOG_FOR_INTEGRATION` django setting is `True`.
+
+    See documentation in testing section of development_environment.md.
+    """
     def __init__(self, get_response):
         if not getattr(settings, 'LOG_FOR_INTEGRATION', False):
             raise MiddlewareNotUsed()
@@ -37,6 +40,8 @@ class IntegrationTestLoggingWrapper:
     is logged.
 
     Logs are only turned on if the `LOG_FOR_INTEGRATION` django setting is `True`.
+
+    See documentation in testing section of development_environment.md.
     """
 
     def wrap(method, _prefix=''):

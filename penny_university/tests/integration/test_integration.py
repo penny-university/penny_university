@@ -2,13 +2,6 @@ import pytest
 
 from rest_framework.test import APIClient
 
-# TODO! move these to "the right place"
-# TODO! test for
-# * rest of penny chat flow
-#   * including sending invites to others
-# * reminders before chat
-# * onboarding
-
 
 @pytest.mark.django_db
 def test_penny_chat_initiate_request(mocker, do_asserts=True):
