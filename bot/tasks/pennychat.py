@@ -45,16 +45,9 @@ def background(*args, **kwargs):
         return original_background(*args, **kwargs)
 
 
-def _get_slack_client():
-    # TODO memoize the slack_client, but remember that it has to be thread safe, so figure out some way to memoize
-    # per-thread
-    # TODO move to common/utils.py
-    return get_slack_client()
-
-
 @background
 def post_organizer_edit_after_share_blocks(penny_chat_view_id):
-    slack_client = _get_slack_client()
+    slack_client = get_slack_client()
 
     penny_chat_invitation = PennyChatInvitation.objects.get(view=penny_chat_view_id)
     slack_client.chat_postMessage(
@@ -67,7 +60,7 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
 def share_penny_chat_invitation(penny_chat_id):
     """Shares penny chat invitations with people and channels in the invitee list"""
     penny_chat_invitation = PennyChatInvitation.objects.get(id=penny_chat_id)
-    slack_client = _get_slack_client()
+    slack_client = get_slack_client()
 
     # unshare the old shares
     old_shares = json.loads(penny_chat_invitation.shares or '{}')
@@ -99,7 +92,7 @@ def share_penny_chat_invitation(penny_chat_id):
 
 def send_penny_chat_reminders():
     """This sends out reminders for any chat that is about to happen."""
-    slack_client = _get_slack_client()
+    slack_client = get_slack_client()
 
     now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
     imminent_chats = PennyChatInvitation.objects.filter(
@@ -129,7 +122,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
 
     organizer = get_or_create_user_profile_from_slack_id(
         penny_chat_invitation.organizer_slack_id,
-        slack_client=_get_slack_client(),
+        slack_client=get_slack_client(),
     )
 
     header_text = ''

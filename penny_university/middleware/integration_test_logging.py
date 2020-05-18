@@ -5,11 +5,13 @@ from unittest import mock
 from django.conf import settings
 from django.core.exceptions import MiddlewareNotUsed
 
+# TODO! document - must have LOG_FOR_INTEGRATION and TASK_ALWAYS_EAGER
+
 
 class IntegrationTestLogging:
     """Logs all requests and their responses so that they can be copy-pastable into tests."""
     def __init__(self, get_response):
-        if not settings.LOG_FOR_INTEGRATION:
+        if not getattr(settings, 'LOG_FOR_INTEGRATION', False):
             raise MiddlewareNotUsed()
         self.get_response = get_response
 
@@ -41,7 +43,7 @@ class IntegrationTestLoggingWrapper:
         @wraps(method)
         def wrapped_method(*args, **kwargs):
             resp = method(*args, **kwargs)
-            if settings.LOG_FOR_INTEGRATION:
+            if getattr(settings, 'LOG_FOR_INTEGRATION', False):
                 m = mock.Mock()
                 m(*args, **kwargs)
                 logging.info(f'LOG_FOR_INTEGRATION> {_prefix}{method.__name__} = Mock()')
@@ -55,7 +57,7 @@ class IntegrationTestLoggingWrapper:
 
     def __getattr__(self, attr_name):
         attr = getattr(self.wrapped_instance, attr_name)
-        if settings.LOG_FOR_INTEGRATION and callable(attr) and not attr_name[0] == '_':
+        if getattr(settings, 'LOG_FOR_INTEGRATION', False) and callable(attr) and not attr_name[0] == '_':
             prefix = self.wrapped_instance.__class__.__name__
             prefix = prefix[0].lower() + prefix[1:] + '.'
             attr = IntegrationTestLoggingWrapper.wrap(attr, prefix)
