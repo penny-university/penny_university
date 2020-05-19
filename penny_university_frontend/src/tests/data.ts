@@ -100,7 +100,6 @@ export const followUps = {
       user: new User({
         id: 1,
         url: 'http://localhost:8000/api/users/1/',
-        // email: 'test1@example.com',
         firstName: 'Test',
         lastName: 'User 1',
       }),
@@ -113,7 +112,6 @@ export const followUps = {
       user: new User({
         id: 2,
         url: 'http://localhost:8000/api/users/2/',
-        // email: 'test2@example.com',
         firstName: 'Test',
         lastName: 'User 2',
       }),
@@ -128,7 +126,6 @@ export const followUps = {
       user: new User({
         id: 3,
         url: 'http://localhost:8000/api/users/3/',
-        // email: 'test3@gmail.com',
         firstName: 'Test',
         lastName: 'User 3',
       }),
