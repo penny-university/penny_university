@@ -162,6 +162,7 @@ SLACK_INVITE_LINK = os.environ.get('SLACK_INVITE_LINK')
 if SLACK_INVITE_LINK is None:
     print('WARNING: SLACK_INVITE_LINK is None')
 
+SLACK_DEV_CHANNEL = '#penny-labs'
 
 # Django Rest Framework
 REST_FRAMEWORK = {

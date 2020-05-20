@@ -107,3 +107,19 @@ jobs:
           echo "NOTE: if this suddenly breaks, it might be because of an expired API key"
           git remote add heroku https://git.heroku.com/penny-university.git
           git push heroku HEAD:master -f
+
+  garbage_fail:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          false || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" mage message_slack --message garbage_fail --exit 1
+
+  garbage_pass:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: |
+          true || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" mage message_slack --message garbage_pass --exit 1
