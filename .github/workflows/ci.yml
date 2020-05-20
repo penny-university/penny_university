@@ -113,6 +113,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
       - run: |
           false || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" ./manage.py message_slack --message garbage_fail --exit 1
 
@@ -121,5 +136,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dev-requirements.txt') }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get install libpq-dev  # required b/c it has pg_config which is needed to build psycopg2
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
       - run: |
           true || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" ./manage.py message_slack --message garbage_pass --exit 1
