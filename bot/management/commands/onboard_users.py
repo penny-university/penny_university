@@ -1,12 +1,10 @@
 import time
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
-import slack
-
-from users.models import SocialProfile
 from bot.processors.greeting import greeting_blocks
+from common.utils import get_slack_client
+from users.models import SocialProfile
 
 
 class Command(BaseCommand):
@@ -25,7 +23,7 @@ class Command(BaseCommand):
         slack_names = [slack_name.strip(', ') for slack_name in slack_names]
 
         # collect appropriate ids for onboarding
-        slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+        slack_client = get_slack_client()
         resp = slack_client.users_list()
         if 'ok' not in resp.data or not resp.data['ok']:
             raise RuntimeError(f'something is wrong: {resp.data}')

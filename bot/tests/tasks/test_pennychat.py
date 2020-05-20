@@ -74,7 +74,7 @@ def test_share_penny_chat_invitation(mocker):
 
     # test 1 - on first call it should send all the invitations
     with _make_get_or_create_social_profile_from_slack_id_mocks(mocker, 'bot.tasks.pennychat', [profile]), \
-            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+            mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client):
         share_penny_chat_invitation.now(penny_chat_invitation.id)
 
     shared_with = set([cal[1]['channel'] for cal in slack_client.chat_postMessage.call_args_list])
@@ -107,7 +107,7 @@ def test_share_penny_chat_invitation(mocker):
 
     slack_client.chat_postMessage.reset_mock()
 
-    with mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+    with mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client):
         share_penny_chat_invitation.now(penny_chat_invitation.id)
 
     shared_with = set([cal[1]['channel'] for cal in slack_client.chat_postMessage.call_args_list])
@@ -179,7 +179,7 @@ def test_share_penny_chat_invitation_with_non_invited_attendee(mocker):
 
     # test 1 - on first call it should send all the invitations
     with _make_get_or_create_social_profile_from_slack_id_mocks(mocker, 'bot.tasks.pennychat', [profile]), \
-            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+            mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client):
         share_penny_chat_invitation.now(penny_chat_invitation.id)
 
     shared_with = set([cal[1]['channel'] for cal in slack_client.chat_postMessage.call_args_list])
@@ -232,7 +232,7 @@ def test_send_penny_chat_reminders__send_message_to_addendees_of_imminent_events
     slack_client = mocker.Mock()
 
     with mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value='<blocks>'), \
-            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+            mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client):
         send_penny_chat_reminders()
 
     actual = {call[1]['channel'] for call in slack_client.chat_postMessage.call_args_list}
@@ -278,7 +278,7 @@ def test_send_penny_chat_reminders__send_NO_message_to_addendees_of_past_events(
     slack_client = mocker.Mock()
 
     with mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value='<blocks>'), \
-            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+            mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client):
         send_penny_chat_reminders()
 
     actual = {call[1]['channel'] for call in slack_client.chat_postMessage.call_args_list}
@@ -324,7 +324,7 @@ def test_send_penny_chat_reminders__send_NO_message_to_addendees_of_distant_futu
     slack_client = mocker.Mock()
 
     with mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value='<blocks>'), \
-            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+            mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client):
         send_penny_chat_reminders()
 
     actual = {call[1]['channel'] for call in slack_client.chat_postMessage.call_args_list}
@@ -370,7 +370,7 @@ def test_send_penny_chat_reminders__send_NO_message_if_chat_is_already_reminded(
     slack_client = mocker.Mock()
 
     with mocker.patch('bot.tasks.pennychat._penny_chat_details_blocks', return_value='<blocks>'), \
-            mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client):
+            mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client):
         send_penny_chat_reminders()
 
     actual = {call[1]['channel'] for call in slack_client.chat_postMessage.call_args_list}
@@ -407,7 +407,7 @@ def test_post_organizer_edit_after_share_blocks(mocker):
 
     slack_client.chat_postMessage.side_effect = chat_postMessage(1234)
 
-    with mocker.patch('bot.tasks.pennychat._get_slack_client', return_value=slack_client),\
+    with mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client),\
             mocker.patch('bot.tasks.pennychat.organizer_edit_after_share_blocks', return_value='some_block'):
         post_organizer_edit_after_share_blocks.now(penny_chat_view_id),
 
