@@ -132,3 +132,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
+      - run: |
+          false || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" ./manage.py message_slack --message garbage_fail --exit 1
