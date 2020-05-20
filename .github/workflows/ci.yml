@@ -114,7 +114,7 @@ jobs:
 
     steps:
       - run: |
-          false || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" mage message_slack --message garbage_fail --exit 1
+          false || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" ./manage.py message_slack --message garbage_fail --exit 1
 
   garbage_pass:
 
@@ -122,4 +122,4 @@ jobs:
 
     steps:
       - run: |
-          true || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" mage message_slack --message garbage_pass --exit 1
+          true || SLACK_API_KEY="${{ secrets.SLACK_API_KEY }}" ./manage.py message_slack --message garbage_pass --exit 1
