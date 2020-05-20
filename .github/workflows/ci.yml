@@ -114,4 +114,4 @@ jobs:
 
     steps:
       - run: |
-          false || script/message_to_slack "${{ secrets.SLACK_API_KEY }}" FAILED 1
+          false || ./script/message_to_slack "${{ secrets.SLACK_API_KEY }}" FAILED 1
