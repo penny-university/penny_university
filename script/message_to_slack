@@ -8,7 +8,7 @@ CHANNEL=CHCM2MFHU
 
 if [ -z "$EXIT_CODE" ]
 then
-  EXIT_CODE=1
+  EXIT_CODE=0
 fi
 
 
