@@ -2,7 +2,7 @@ import { combineReducers, applyMiddleware, createStore, compose } from 'redux'
 import { AnyAction } from 'redux'
 import { normalize } from 'normalizr'
 import * as ActionTypes from '../actions'
-import paginate from './paginate'
+import paginate, { paginationInitialState } from './paginate'
 import user, { initialState as userInitialState } from './user'
 import thunk from 'redux-thunk'
 import api from '../middleware/api'
@@ -75,10 +75,7 @@ export const initialState = {
     followUps: {},
     users: {},
   },
-  pagination: {
-    chatsByFilter: {},
-    followUpsByChat: {},
-  },
+  pagination: paginationInitialState,
   error: { status: NaN, message: '' },
 }
 
@@ -89,7 +86,7 @@ export const rootReducer = combineReducers({
   user,
 })
 
-
+// @ts-ignore
 const store = createStore(rootReducer, initialState, composeEnhancers(
   applyMiddleware(thunk, api, userMiddleware, logging),
 ))

@@ -3,6 +3,7 @@ import { ThunkDispatch } from 'redux-thunk'
 import { CALL_API } from '../middleware/api'
 import { RootState } from '../reducers'
 import { Schemas } from '../models/schemas'
+import ApiRoutes  from '../constants'
 
 export const CHATS_LIST_REQUEST = 'CHATS_LIST_REQUEST'
 export const CHATS_LIST_SUCCESS = 'CHATS_LIST_SUCCESS'
@@ -27,7 +28,7 @@ export const UPDATE_FOLLOW_UP_FAILURE = 'UPDATE_FOLLOW_UP_FAILURE'
 export const CLEAR_ERROR_MESSAGE = 'CLEAR_ERROR_MESSAGE'
 
 // Creates an action that will fetch the chats list
-const fetchChats = (nextPageUrl: string) => ({
+export const loadChatsList = (nextPageUrl: string = ApiRoutes.chats) => ({
   type: CALL_API,
   payload: {
     types: [CHATS_LIST_REQUEST, CHATS_LIST_SUCCESS, CHATS_LIST_FAILURE],
@@ -79,21 +80,6 @@ const postFollowUp = (url: string, followUp: string) => ({
   },
 })
 
-// These are all thunks. They return a call to dispatch with an action passed into it
-export const loadChatsList = (filter: 'all', nextPage?: string) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
-  const {
-    nextPageUrl = 'chats/',
-    pageCount = 0,
-    // @ts-ignore
-  } = getState().pagination.chatsByFilter[filter] || {}
-
-  if (pageCount > 0 && !nextPage) {
-    return null
-  }
-
-  return dispatch(fetchChats(nextPageUrl))
-}
-
 export const loadChatDetail = (chatID: number) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
   const chat = getState().entities.chats[chatID]
 
@@ -106,14 +92,14 @@ export const loadChatDetail = (chatID: number) => (dispatch: ThunkDispatch<{}, {
 
 export const loadFollowUps = (chatID: number, nextPage: string) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
   const {
-    nextPageUrl = `chats/${chatID}/follow-ups/`,
-    pageCount = 0,
+    next,
+    count,
     // @ts-ignore
-  } = getState().pagination.followUpsByChat[chatID] || {}
-  if (pageCount > 0 && !nextPage) {
+  } = getState().pagination.followUpsByChat[chatID] || {next: undefined, count: 0}
+  if (count > 0 && !next) {
     return null
   }
-  return dispatch(fetchFollowUps(chatID, nextPageUrl))
+  return dispatch(fetchFollowUps(chatID, next || `chats/${chatID}/follow-ups/`))
 }
 
 export const updateFollowUp = (followUp: FollowUp) => (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {

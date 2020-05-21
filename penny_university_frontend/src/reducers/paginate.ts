@@ -1,5 +1,19 @@
 import { normalize, Schema } from 'normalizr'
 import { AnyAction } from 'redux'
+
+export const paginationInitialState = {
+  chatsByFilter: {
+    all: {
+      isFetching: false,
+      next: '',
+      previous: '',
+      count: 0,
+      ids: [],
+    }
+  },
+  followUpsByChat: {},
+}
+
 // Takes two arrays and returns the union between them as a new array
 const union = (a: Iterable<any>, b: Iterable<any>) => (
   [...new Set([...a, ...b])]
@@ -23,8 +37,9 @@ const paginate = ({ types, mapActionToKey }: { types: [string, string, string], 
 
   const updatePagination = (state = {
     isFetching: false,
-    nextPageUrl: undefined,
-    pageCount: 0,
+    next: undefined,
+    previous: undefined,
+    count: 0,
     ids: [],
   }, action: AnyAction) => {
     const { result, responseSchema } = action.payload || {}
@@ -41,8 +56,10 @@ const paginate = ({ types, mapActionToKey }: { types: [string, string, string], 
             ...state,
             isFetching: false,
             ids: union(state.ids, resultIds),
-            nextPageUrl: action.payload?.nextPageUrl,
-            pageCount: state.pageCount + 1,
+            next: action.payload?.meta.next,
+            previous: action.payload?.meta.previous,
+            count: action.payload?.meta.count,
+            
           }
         }
       case failureType:
@@ -55,7 +72,7 @@ const paginate = ({ types, mapActionToKey }: { types: [string, string, string], 
     }
   }
 
-  return (state = {}, action: AnyAction) => {
+  return (state = paginationInitialState, action: AnyAction): PaginationState  => {
     // Update pagination by key
     const key = mapActionToKey(action)
     switch (action.type) {

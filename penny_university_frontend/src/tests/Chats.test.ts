@@ -20,7 +20,7 @@ describe('chat actions', () => {
 
     const expectedActionTypes = ['CHATS_LIST_REQUEST', 'CHATS_LIST_SUCCESS']
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
     })
   })
@@ -45,7 +45,7 @@ describe('chat actions', () => {
       },
     ]
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       expect(store.getActions()).toEqual(expectedActions)
     })
   })
@@ -103,7 +103,7 @@ describe('chat reducers', () => {
 
     const expectedChat = normalizedChats['1']
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
       expect(state.entities.chats['1']).toEqual(expectedChat)
@@ -133,7 +133,7 @@ describe('chat reducers', () => {
 
     const store = makeMockStore(state)
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       // @ts-ignore
       state = reducer(state, store.getActions()[1])
       expect(Object.keys(state.entities.chats)).toEqual(['1', '2', '3'])
@@ -165,7 +165,7 @@ describe('chat reducers', () => {
 
     const store = makeMockStore()
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
       const expected = chats.map((c) => c.id.toString())
