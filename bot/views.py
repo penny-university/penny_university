@@ -1,9 +1,6 @@
 import json
 import logging
 
-from django.conf import settings
-import slack
-
 from django.http import (
     HttpResponse,
     JsonResponse,
@@ -14,12 +11,14 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from bot.processors.greeting import GreetingBotModule
 from bot.processors.pennychat import PennyChatBotModule
 from bot.processors.base import Bot
+from common.utils import get_slack_client
 
-slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+slack_client = get_slack_client()
 bot = Bot(event_processors=[GreetingBotModule(slack_client), PennyChatBotModule(slack_client)])
 
 
 def index(request):
+    # We've come a long way haven't we?
     return HttpResponse("At least something works!!!!")
 
 
@@ -31,14 +30,15 @@ def hook(request):
 
     if 'challenge' in blob:
         return HttpResponse(json.loads(request.body)['challenge'])
-    else:
-        event = blob['event']
-        is_bot = False
-        if 'subtype' in event and event['subtype'] == 'bot_message':
-            is_bot = True
-        if not is_bot:
-            bot(event)
-        return HttpResponse('')
+
+    event = blob['event']
+    is_bot = False
+    if 'subtype' in event and event['subtype'] == 'bot_message':
+        is_bot = True
+    if not is_bot:
+        bot(event)
+
+    return HttpResponse('')
 
 
 @xframe_options_exempt

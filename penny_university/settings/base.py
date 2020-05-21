@@ -60,7 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'penny_university.middleware.DebugPassthrough',
+    'penny_university.middleware.debug_passthrough.DebugPassthrough',
+    'penny_university.middleware.integration_test_logging.IntegrationTestLogging',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -161,6 +162,7 @@ SLACK_INVITE_LINK = os.environ.get('SLACK_INVITE_LINK')
 if SLACK_INVITE_LINK is None:
     print('WARNING: SLACK_INVITE_LINK is None')
 
+SLACK_DEV_CHANNEL = '#penny-labs'
 
 # Django Rest Framework
 REST_FRAMEWORK = {

@@ -1,12 +1,14 @@
 from django.shortcuts import render, HttpResponseRedirect
 from django.conf import settings
+
+from common.utils import get_slack_client
 from .forms import InviteForm
 import slack
 
 from bot.utils import notify_admins
 
 # Create your views here.
-slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
+slack_client = get_slack_client()
 
 
 def index(request):
