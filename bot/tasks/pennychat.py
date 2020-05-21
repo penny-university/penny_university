@@ -2,11 +2,11 @@ import json
 import urllib.parse
 from datetime import datetime, timedelta
 
-from background_task import background
+from background_task import background as original_background
 from django.conf import settings
 from pytz import timezone, utc
-from slack import WebClient
 
+from common.utils import get_slack_client
 from pennychat.models import PennyChatSlackInvitation, Participant
 from users.models import (
     SocialProfile,
@@ -34,16 +34,24 @@ PREVIEW, INVITE, UPDATE, REMIND = 'review', 'invite', 'update', 'remind'
 PENNY_CHAT_DETAILS_BLOCKS_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
 
 
-def _get_slack_client():
-    # TODO memoize the slack_client, but remember that it has to be thread safe, so figure out some way to memoize
-    # per-thread
-    # TODO move to common/utils.py
-    return WebClient(settings.SLACK_API_KEY)
+def background(*args, **kwargs):
+    """This is just a silly hack because we don't have an easy way of shutting off async for tests.
+
+    Details about what I want https://github.com/arteria/django-background-tasks/issues/234
+    """
+    if getattr(settings, 'TASK_ALWAYS_EAGER', False):
+        func = args[0]
+        # We use .now() in a couple places in code like
+        # https://github.com/penny-university/penny_university/blob/36be6d3c75f8094b454f4041abf7208f833583a4/bot/processors/pennychat.py#L312  # noqa
+        func.now = func
+        return func
+    else:
+        return original_background(*args, **kwargs)
 
 
 @background
 def post_organizer_edit_after_share_blocks(penny_chat_view_id):
-    slack_client = _get_slack_client()
+    slack_client = get_slack_client()
 
     penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=penny_chat_view_id)
     slack_client.chat_postMessage(
@@ -56,7 +64,7 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
 def share_penny_chat_invitation(penny_chat_id):
     """Shares penny chat invitations with people and channels in the invitee list"""
     penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
-    slack_client = _get_slack_client()
+    slack_client = get_slack_client()
 
     # unshare the old shares
     old_shares = json.loads(penny_chat_invitation.shares or '{}')
@@ -92,7 +100,7 @@ def share_penny_chat_invitation(penny_chat_id):
 
 def send_penny_chat_reminders():
     """This sends out reminders for any chat that is about to happen."""
-    slack_client = _get_slack_client()
+    slack_client = get_slack_client()
 
     now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
     imminent_chats = PennyChatSlackInvitation.objects.filter(
@@ -103,7 +111,7 @@ def send_penny_chat_reminders():
     )
     for penny_chat_invitation in imminent_chats:
         penny_chat_invitation.status = PennyChatSlackInvitation.REMINDED
-        penny_chat_invitation.save()  # TODO! test
+        penny_chat_invitation.save()
         reminder_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=REMIND)
         participants = penny_chat_invitation.get_participants()
         for user in participants:
@@ -126,7 +134,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
 
     organizer = get_or_create_social_profile_from_slack_id(
         penny_chat_invitation.organizer_slack_id,
-        slack_client=_get_slack_client(),
+        slack_client=get_slack_client(),
     )
 
     header_text = ''
