@@ -6,6 +6,7 @@ const ApiRoutes = {
   register: 'auth/register/',
   logout: 'auth/logout/',
   exists: 'auth/exists/',
+  chats:  'chats/',
 }
 
 export default ApiRoutes
