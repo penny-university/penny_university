@@ -5,13 +5,11 @@ import { RouteComponentProps } from 'react-router-dom';
 import {
   HeartButton, CreateButton, SaveButton, CancelButton,
 } from '../buttons'
-import Dropdown from '../dropdown'
 import Date from '../Date'
 import { Content, EditContent } from '../content'
 import { FollowUpCard } from '../followups'
 import modalDispatch from '../modal/dispatch'
 import { Chat, User } from '../../models'
-import { Routes } from '../../constants'
 
 require('./styles.scss')
 
