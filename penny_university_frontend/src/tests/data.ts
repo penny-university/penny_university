@@ -1,134 +1,18 @@
+import { normalize } from 'normalizr'
+import { camelizeKeys } from 'humps'
+import chatDetail from '../../../__mocks__/api-chats-get-1-200.json'
+import chatList from '../../../__mocks__/api-chats-get-200.json'
+import followUpsList from '../../../__mocks__/api-chats-get-1-follow-ups-200.json'
 import { User } from '../models'
+import { Schemas } from '../models/schemas'
 
-export const chats = [
-  {
-    id: 2,
-    url: 'http://localhost:8000/api/chats/2/',
-    title: 'React Hooks',
-    description: 'Learn to make your components functional using hooks',
-    date: '2020-02-02T12:00:00Z',
-    followups: 'http://localhost:8000/api/chats/2/follow-ups',
-    participants: [
-      {
-        user: new User({
-          id: 3,
-          firstName: 'Test',
-          lastName: 'User 3'
-        }),
-        role: 'Organizer',
-      },
-    ],
-  },
-  {
-    id: 1,
-    url: 'http://localhost:8000/api/chats/1/',
-    title: 'Testing with React/Redux',
-    description: 'Learning to test front end applications',
-    date: '2020-01-01T12:00:00Z',
-    followups: 'http://localhost:8000/api/chats/1/follow-ups',
-    participants: [
-      {
-        user: new User({
-          id: 1,
-          firstName: 'Test',
-          lastName: 'User 1'
-        }),
-        role: 'Organizer',
-      },
-      {
-        user: new User({
-          id: 2,
-          firstName: 'Test',
-          lastName: 'User 2',
-        }),
-        role: 'Attendee',
-      },
-    ],
-  },
-]
+export const chats = camelizeKeys(chatList.results.slice(2,3))
+export const chatsNext = camelizeKeys(chatList.results.slice(0,1))
+export const followUps = camelizeKeys(followUpsList)
 
-export const chatsNext = [
-  {
-    id: 4,
-    url: 'http://localhost:8000/api/chats/4/',
-    title: 'The 4th chat',
-    description: '',
-    date: '2020-04-04T12:00:00Z',
-    followups: 'http://localhost:8000/api/chats/4/follow-ups',
-    participants: [
-      {
-        user: new User({
-          id: 3,
-          url: 'http://localhost:8000/api/users/3/',
-          email: 'test3@gmail.com',
-          firstName: 'Test',
-          lastName: 'User 3',
-        }),
-        role: 'Organizer',
-      },
-    ],
-  },
-  {
-    id: 3,
-    url: 'http://localhost:8000/api/chats/3/',
-    title: 'The 3rd chat',
-    description: 'This is the third list in the chat',
-    date: '2020-03-03T12:00:00Z',
-    followups: 'http://localhost:8000/api/chats/3/follow-ups',
-    participants: [
-      {
-        user: new User({
-          id: 1,
-          url: 'http://localhost:8000/api/users/1/',
-          email: 'test1@example.com',
-          firstName: 'Test',
-          lastName: 'User 1',
-        }),
-        role: 'Organizer',
-      },
-    ],
-  },
-]
+export const { chats: normalizedChats, users } = normalize(chats, Schemas.CHAT_ARRAY).entities
 
-export const followUps = {
-  'http://localhost:8000/api/chats/1/follow-ups': [
-    {
-      id: 1,
-      pennyChat: 'http://localhost:8000/api/chats/1/',
-      content: 'In this chat we learned how to user Jest to test our React and Redux apps.',
-      date: '2020-01-01T13:00:00Z',
-      user: new User({
-        id: 1,
-        url: 'http://localhost:8000/api/users/1/',
-        firstName: 'Test',
-        lastName: 'User 1',
-      }),
-    },
-    {
-      id: 2,
-      pennyChat: 'http://localhost:8000/api/chats/1/',
-      content: 'Test User 1 had great insight into this topic.',
-      date: '2020-01-01T14:00:00Z',
-      user: new User({
-        id: 2,
-        url: 'http://localhost:8000/api/users/2/',
-        firstName: 'Test',
-        lastName: 'User 2',
-      }),
-    },
-  ],
-  'http://localhost:8000/api/chats/2/follow-ups': [
-    {
-      id: 3,
-      pennyChat: 'http://localhost:8000/api/chats/2/',
-      content: 'I learned that hooks can replace lots of the boilerplate I used to have in my class components!',
-      date: '2019-11-20T22:30:34Z',
-      user: new User({
-        id: 3,
-        url: 'http://localhost:8000/api/users/3/',
-        firstName: 'Test',
-        lastName: 'User 3',
-      }),
-    },
-  ],
-}
+export const { chats: normalizedNextChats } = normalize(chatsNext, Schemas.CHAT_ARRAY).entities
+
+
+export const { followUps: normalizedFollowUps}  = normalize(followUps, Schemas.FOLLOW_UP_ARRAY).entities
