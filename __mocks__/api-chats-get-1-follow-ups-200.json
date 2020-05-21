@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "url": "http://testserver/api/follow-ups/1/",
+    "penny_chat": "http://testserver/api/chats/1/",
+    "content": "The first follow up",
+    "date": "2020-05-20T00:41:06.210625Z",
+    "user": {
+      "id": 1,
+      "url": "http://testserver/api/users/1/",
+      "email": "one@wherever.com",
+      "first_name": "",
+      "last_name": "",
+      "chats": "http://testserver/api/users/1/chats/"
+    }
+  },
+  {
+    "id": 2,
+    "url": "http://testserver/api/follow-ups/2/",
+    "penny_chat": "http://testserver/api/chats/1/",
+    "content": "The first follow up",
+    "date": "2020-05-20T00:41:06.210910Z",
+    "user": {
+      "id": 2,
+      "url": "http://testserver/api/users/2/",
+      "email": "two@wherever.com",
+      "first_name": "",
+      "last_name": "",
+      "chats": "http://testserver/api/users/2/chats/"
+    }
+  }
+]

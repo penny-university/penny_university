@@ -125,3 +125,29 @@ We also have a git pre-commit hook that runs linting, Python tests, and JavaScri
 cp dev/pre-commit .git/hooks/pre-commit
 chmod a+x .git/hooks/pre-commit
 ```
+
+### Integration Testing
+Our integrated system is a combination of our application and slack, and testing integration testing is cumbersome. However we've added some tools to make it a little less painful. When you run your server with `settings.LOG_FOR_INTEGRATION == True`, then lines are logged that can _almost_ be copy-pasted into a python test. Currently several things are logged.
+
+* For every incoming web request, the request is logged with the method, URL, data, and content_type like this:
+```python
+response_for_bot_interactive = APIClient().post('/bot/interactive/', b'stuff', content_type='application/x-www-form-urlencoded')
+```
+* For every incoming web request, the response content and status are logged like this:
+```python
+assert response_for_bot_interactive.status_code == 200
+assert response_for_bot_interactive.content == b'stuff'
+```
+* For every call on a public method of the slack_client, the call arguments are logged as
+```python
+webClient.chat_postMessage = Mock()
+assert webClient.chat_postMessage.call_args == call(channel='CNWF92K2Q', text='stuff')
+```
+* For every call on a public method of the slack_client, the response is logged as 
+```python
+webClient.chat_postMessage.return_value = {'ok': True, 'channel': 'CNWF92K2Q', 'ts': '1589769791.000100', 'message': 'stuff'}
+```
+
+In theory you could copy paste these directly into a test and you would have a working integration test. In practice, the ordering of calls and content of the callse might be non-deterministic, and the `__str__` representations of items might not be sufficient to instantiate them. But, looking at penny_university/tests/integration/test_integration.py as an example, you can see that these copy-paste lines still come in quite handy.
+
+The `integration_test_logging.IntegrationTestLoggingWrapper` object that wraps the slack client is generic and can be used to wrap any function or object.

@@ -1,4 +1,4 @@
-import { schema, Schema } from 'normalizr'
+import { schema } from 'normalizr'
 import Chat, { ChatType } from './chat'
 import User, { UserType } from './user'
 
