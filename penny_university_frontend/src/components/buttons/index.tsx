@@ -81,18 +81,6 @@ SaveButton.defaultProps = {
   className: '',
 }
 
-const DeleteButton = ({
-  className, type: detail, onClick, color
-}: { className: string, type: string, onClick: () => void, color: string }) => (
-  <IconButton className={className} onClick={onClick} icon={faBan} title="Delete" detail={detail} color={color} />
-)
-
-DeleteButton.defaultProps = {
-  className: '',
-  color: 'danger',
-  type: '',
-}
-
 const MoreOptions = ({
   className, onClick, id
 }: { className: string, id: string, onClick: () => void, }) => (
@@ -105,7 +93,7 @@ MoreOptions.defaultProps = {
 }
 
 export {
-  HeartButton, CreateButton, EditButton, SaveButton, CancelButton, DeleteButton, MoreOptions,
+  HeartButton, CreateButton, EditButton, SaveButton, CancelButton, MoreOptions,
 }
 
 export default IconButton

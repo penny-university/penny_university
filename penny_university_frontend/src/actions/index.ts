@@ -88,24 +88,3 @@ export const createFollowUp = (chatID: number, followUp: { content: string }) =>
     meta: { chatID },
   },
 })
-
-export const deleteFollowUp = (chatID: number, followID: number) => ({
-  type: CALL_API,
-  payload: {
-    types: [DELETE_FOLLOW_UP_REQUEST, DELETE_FOLLOW_UP_SUCCESS, DELETE_FOLLOW_UP_FAILURE],
-    endpoint: `follow-ups/${followID}/`,
-    method: 'DELETE',
-    meta: { chatID, followID },
-  },
-})
-
-
-export const deleteChat = (chatID: number,) => ({
-  type: CALL_API,
-  payload: {
-    types: [DELETE_CHAT_REQUEST, DELETE_CHAT_SUCCESS, DELETE_CHAT_FAILURE],
-    endpoint: ApiRoutes.chatDetail(chatID),
-    method: 'DELETE',
-    meta: { chatID },
-  },
-})

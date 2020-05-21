@@ -35,7 +35,7 @@ const App = (props: Props) => {
   return (
     <>
       <Navigation authed={authed} logout={dispatchLogout} />
-      <Container className="mt-3" fluid>
+      <Container className="mt-3">
         <Switch>
           <Route path={Routes.ChatDetail}>
             <ChatDetailPage />

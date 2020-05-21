@@ -6,7 +6,6 @@ import { Modal as ModalStrap } from 'reactstrap'
 import modalDispatch from './dispatch'
 import Actions, { ModalNames } from './constants'
 import { AuthEmail, AuthPassword, AuthSignup } from './auth'
-import ConfirmDeleteModal from './delete'
 
 
 type State = { name: string | null, open: boolean, props: { email?: string | undefined } }
@@ -34,7 +33,6 @@ const Modals = {
   [ModalNames.AUTH_EMAIL]: AuthEmail,
   [ModalNames.AUTH_PASSWORD]: AuthPassword,
   [ModalNames.AUTH_SIGNUP]: AuthSignup,
-  [ModalNames.CONFIRM_DELETE]: ConfirmDeleteModal,
 }
 
 export const Modal = () => {

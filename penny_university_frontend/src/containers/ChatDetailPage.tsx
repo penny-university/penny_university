@@ -4,7 +4,7 @@ import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import {
-  createFollowUp, loadChatDetail, loadFollowUps, updateFollowUp, deleteFollowUp as deleteFollowUpAC, deleteChat as deleteChatAC,
+  createFollowUp, loadChatDetail, loadFollowUps, updateFollowUp,
 } from '../actions'
 import { ChatDetail } from '../components/chats'
 import * as selectors from '../selectors'
@@ -24,8 +24,6 @@ type DispatchProps = {
   loadFollowUps: (id: number, nextPageUrl?: string) => void,
   createFollowUp: (chatID: number, content: { content: string }) => void,
   updateFollowUp: (followup: FollowUp) => void,
-  deleteFollowUp: (chatID: number, id: number) => void,
-  deleteChat: (chatID: number) => void,
 }
 
 type ChatDetailPageProps = {
@@ -33,7 +31,7 @@ type ChatDetailPageProps = {
 } & DispatchProps & StateProps
 
 const ChatDetailPage = ({
-  id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp, user, getUserByID, deleteFollowUp, deleteChat,
+  id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp, user, getUserByID,
 }: ChatDetailPageProps) => {
   useEffect(() => {
     loadChatDetail(id)
@@ -48,8 +46,6 @@ const ChatDetailPage = ({
       updateFollowUp={updateFollowUp}
       user={user}
       getUserByID={getUserByID}
-      deleteFollowUp={deleteFollowUp}
-      deleteChat={deleteChat}
     />
   )
 }
@@ -70,8 +66,6 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
   loadFollowUps: (chatID: number, nextPageUrl?: string) => dispatch(loadFollowUps(chatID, nextPageUrl)),
   createFollowUp: (chatID: number, content: { content: string }) => dispatch(createFollowUp(chatID, content)),
   updateFollowUp: (followUp: FollowUp) => dispatch(updateFollowUp(followUp)),
-  deleteFollowUp: (chatID: number, id: number) => dispatch(deleteFollowUpAC(chatID, id)),
-  deleteChat: (chatID: number) => dispatch(deleteChatAC(chatID)), 
 })
 // @ts-ignore
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChatDetailPage))

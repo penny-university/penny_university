@@ -3,7 +3,7 @@ import { Card } from 'reactstrap'
 import { withRouter } from "react-router"
 import { RouteComponentProps } from 'react-router-dom';
 import {
-  HeartButton, CreateButton, SaveButton, CancelButton, DeleteButton,
+  HeartButton, CreateButton, SaveButton, CancelButton,
 } from '../buttons'
 import Dropdown from '../dropdown'
 import Date from '../Date'
@@ -20,14 +20,12 @@ interface ChatDetailProps extends RouteComponentProps<any> {
   followUps: Array<FollowUp>,
   createFollowUp: (id: number, content: { content: string }) => void,
   updateFollowUp: (followup: FollowUp) => void,
-  deleteFollowUp: (chatID: number, id: number) => void,
-  deleteChat: (chatID: number) => void,
   user: User,
   getUserByID: (id: number) => User,
 }
 
 const ChatDetail = ({
-  chat, followUps, createFollowUp, updateFollowUp, user, getUserByID, deleteFollowUp, deleteChat, history
+  chat, followUps, createFollowUp, updateFollowUp, user, getUserByID
 }: ChatDetailProps) => {
   const [addFollowUpMode, toggleAddFollowUpMode] = useState(false)
   const [followUpContent, updateFollowUpContent] = useState('')
@@ -45,15 +43,7 @@ const ChatDetail = ({
       modalDispatch.auth()
     }
   }
-  const onDeleteChatPress = () => {
-    modalDispatch.delete({
-      warning: "Are you sure you would like to delete this chat? All its followups will also be deleted.",
-      confirmOnPress: () => {
-        deleteChat(chat?.id)
-        history.push(Routes.Chats)
-      }
-    })
-  }
+
   /*
    * Scrolls to the top of the page when the component is mounted.
    * Sticky navbar causes a bug that keeps the scroll
@@ -68,13 +58,6 @@ const ChatDetail = ({
       <Card body className="mb-3 border-0 shadow-sm">
         <div className="chat-detail-header">
           <h3 className="mr-3">{chat.title}</h3>
-          {chat.isOrganizer(user.id) ? <Dropdown
-            id={`chat-dropdown-${chat.id}`}
-            header="Options"
-            options={[
-              <DeleteButton className="align-self-start" type="Chat" onClick={onDeleteChatPress} key={`delete-chat-${chat.id}`} color="link" />
-            ]}
-          /> : null}
         </div>
         <Date className="text-secondary" date={chat.date} />
         {chat.description ? <Content className="mb-4" content={chat.description} /> : null}
@@ -95,7 +78,6 @@ const ChatDetail = ({
               key={`FollowUpCard-${followUp.id}`}
               followUp={followUp}
               updateFollowUp={updateFollowUp}
-              deleteFollowUp={((chatID: number) => (followUpID: number) => deleteFollowUp(chatID, followUpID))(chat.id)}
               user={followUpUser}
               role={role}
               canEdit={user?.id === followUpUser?.id}
