@@ -2,7 +2,7 @@ import fetchMock from 'fetch-mock'
 import { loadFollowUps } from '../actions'
 import { rootReducer as reducer } from '../reducers'
 import { makeMockStore, initialState, baseUrl } from './config'
-import { followUps } from './data'
+import { followUps, normalizedFollowUps, users } from './data'
 
 describe('follow up actions', () => {
   afterEach(() => {
@@ -11,7 +11,7 @@ describe('follow up actions', () => {
 
   it('should dispatch FOLLOW_UPS_REQUEST and FOLLOW_UPS_SUCCESS', () => {
     fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
-      body: { results: followUps['http://localhost:8000/api/chats/1/follow-ups'] },
+      body: { results: followUps },
       headers: { 'content-type': 'application/json' },
     })
 
@@ -34,11 +34,11 @@ describe('follow up actions', () => {
     const expectedActions = [
       {
         type: 'FOLLOW_UPS_REQUEST',
-        payload: { meta: { chatId: '1' } },
+        payload: { meta: { chatID: '1' } },
       },
       {
         type: 'FOLLOW_UPS_FAILURE',
-        payload: { message: 'It failed!', status: undefined, meta: { chatId: '1' } },
+        payload: { message: 'It failed!', status: undefined, meta: { chatID: '1' } },
       },
     ]
     // @ts-ignore
@@ -53,51 +53,51 @@ describe('follow up reducers', () => {
     fetchMock.restore()
   })
 
-  xit('should add follow ups to entities', () => {
-    const followUpsForChat = followUps['http://localhost:8000/api/chats/1/follow-ups']
+  it('should add follow ups to entities', () => {
+    const followUpsForChat = normalizedFollowUps['1']
     fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
-      body: { results: followUpsForChat },
+      body: { results: followUps },
       headers: { 'content-type': 'application/json' },
     })
 
     // user will be normalized in response
-    const expectedFollowUp = { ...followUpsForChat[0], userProfile: 1 }
+    const expectedFollowUp = { ...followUpsForChat[0], user: 1 }
 
     const store = makeMockStore()
     // @ts-ignore
     return store.dispatch(loadFollowUps('1')).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.entities.followUps['1']).toEqual(expectedFollowUp)
+      expect(state.entities.followUps['1']).toEqual(normalizedFollowUps['1'])
     })
   })
 
   it('should add user profile to entities', () => {
-    const followUpsForChat = followUps['http://localhost:8000/api/chats/1/follow-ups']
+    const followUpsForChat = normalizedFollowUps['1']
     fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
-      body: { results: followUpsForChat },
+      body: { results: followUps },
       headers: { 'content-type': 'application/json' },
     })
-
+    
     const store = makeMockStore()
     // @ts-ignore
     return store.dispatch(loadFollowUps('1')).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.entities.userProfiles['1']).toEqual(followUpsForChat[0].userProfile)
+      expect(state.entities.users['1']).toEqual(users['1'])
     })
   })
 
   it('should paginate follow up ids', () => {
-    const followUpsForChat = followUps['http://localhost:8000/api/chats/1/follow-ups']
+    const followUpsForChat = normalizedFollowUps['1']
     fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
-      body: { results: followUpsForChat },
+      body: { results: followUps },
       headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore(initialState)
 
-    const expectedFollowUpIds = followUpsForChat.map((f) => f.id)
+    const expectedFollowUpIds = followUps.map((f) => f.id.toString())
     // @ts-ignore
     return store.dispatch(loadFollowUps('1')).then(() => {
       // @ts-ignore

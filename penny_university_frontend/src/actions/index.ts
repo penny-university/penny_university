@@ -1,7 +1,8 @@
 import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
-import { CALL_API, Schemas } from '../middleware/api'
-import{ RootState } from '../reducers'
+import { CALL_API } from '../middleware/api'
+import { RootState } from '../reducers'
+import { Schemas } from '../models/schemas'
 
 export const CHATS_LIST_REQUEST = 'CHATS_LIST_REQUEST'
 export const CHATS_LIST_SUCCESS = 'CHATS_LIST_SUCCESS'
@@ -46,10 +47,10 @@ const fetchChat = (url: string) => ({
 })
 
 // Creates an action that will fetch the follow ups associated with a chat
-const fetchFollowUps = (chatId: string, nextPageUrl: string) => ({
+const fetchFollowUps = (chatID: number, nextPageUrl: string) => ({
   type: CALL_API,
   payload: {
-    meta: { chatId },
+    meta: { chatID },
     types: [FOLLOW_UPS_REQUEST, FOLLOW_UPS_SUCCESS, FOLLOW_UPS_FAILURE],
     endpoint: nextPageUrl,
     schema: Schemas.FOLLOW_UP_ARRAY,
@@ -93,26 +94,26 @@ export const loadChatsList = (filter: 'all', nextPage?: string) => (dispatch: Th
   return dispatch(fetchChats(nextPageUrl))
 }
 
-export const loadChatDetail = (chatId: string) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
-  const chat = getState().entities.chats[chatId]
+export const loadChatDetail = (chatID: number) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
+  const chat = getState().entities.chats[chatID]
 
   if (chat) {
     return null
   }
 
-  return dispatch(fetchChat(`chats/${chatId}/`))
+  return dispatch(fetchChat(`chats/${chatID}/`))
 }
 
-export const loadFollowUps = (chatId: string, nextPage: string) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
+export const loadFollowUps = (chatID: number, nextPage: string) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
   const {
-    nextPageUrl = `chats/${chatId}/follow-ups/`,
+    nextPageUrl = `chats/${chatID}/follow-ups/`,
     pageCount = 0,
     // @ts-ignore
-  } = getState().pagination.followUpsByChat[chatId] || {}
+  } = getState().pagination.followUpsByChat[chatID] || {}
   if (pageCount > 0 && !nextPage) {
     return null
   }
-  return dispatch(fetchFollowUps(chatId, nextPageUrl))
+  return dispatch(fetchFollowUps(chatID, nextPageUrl))
 }
 
 export const updateFollowUp = (followUp: FollowUp) => (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
@@ -120,9 +121,9 @@ export const updateFollowUp = (followUp: FollowUp) => (dispatch: ThunkDispatch<{
   return dispatch(putFollowUp(url, followUp))
 }
 
-export const createFollowUp = (chatId: string, followUp: string) => async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
-  const url = `chats/${chatId}/follow-ups/`
+export const createFollowUp = (chatID: number, followUp: string) => async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+  const url = `chats/${chatID}/follow-ups/`
   await dispatch(postFollowUp(url, followUp))
 
-  return dispatch(fetchFollowUps(chatId, `${url}?page=last`))
+  return dispatch(fetchFollowUps(chatID, `${url}?page=last`))
 }

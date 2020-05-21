@@ -5,10 +5,13 @@ import { Button } from 'reactstrap'
 import { loadChatsList } from '../actions'
 import { ChatList } from '../components/chats'
 import { RootState } from '../reducers'
+import * as selectors from '../selectors'
+import { Chat } from '../models'
 
 type StateProps = {
   nextPageUrl: string,
-  filteredChats: Array<Chat>,
+  filteredChats: Array<number>,
+  getChatByID: (id: number) => Chat,
 }
 
 type DispatchProps = {
@@ -17,14 +20,14 @@ type DispatchProps = {
 
 type ChatPageProps = StateProps & DispatchProps
 
-const ChatsPage = ({ filteredChats, nextPageUrl, loadChatsList }: ChatPageProps) => {
+const ChatsPage = ({ filteredChats, nextPageUrl, loadChatsList, getChatByID }: ChatPageProps) => {
   useEffect(() => {
     loadChatsList('all')
   }, [loadChatsList])
   return (
     <div>
-      <ChatList chats={filteredChats} />
-      <Button className="mb-3" onClick={(e) => loadChatsList('all', nextPageUrl)}>Load More</Button>
+      <ChatList chats={filteredChats} getChatByID={getChatByID} />
+      <Button className="mb-3" onClick={() => loadChatsList('all', nextPageUrl)}>Load More</Button>
     </div>
   )
 }
@@ -32,31 +35,15 @@ const ChatsPage = ({ filteredChats, nextPageUrl, loadChatsList }: ChatPageProps)
 const mapStateToProps = (state: RootState) => {
   const {
     pagination: { chatsByFilter },
-    entities: { chats, userProfiles },
+    entities: { chats, users },
   } = state
   // @ts-ignore
   const chatsPagination = chatsByFilter.all || { ids: [] }
   const { nextPageUrl } = chatsPagination
-  const filteredChats = chatsPagination.ids
-    // @ts-ignore
-    .map((id) => chats[id])
-    // @ts-ignore
-    .map((chat) => {
-      const c = chat
-      // if userProfile is just an ID, populate the full userProfile
-      c.participants = c.participants
-      .map((c: Participant) => ((typeof (c.userProfile) === 'number') ? { userProfile: userProfiles[c.userProfile], role: c.role } : c))
-      .sort((a: UserProfile, b: UserProfile) => {
-        if (a.role === 'Organizer') return -1
-        if (b.role === 'Organizer') return -1
-        return 0
-      })
-      return c
-    })
-
   return {
-    filteredChats,
+    filteredChats: chatsPagination.ids,
     nextPageUrl,
+    getChatByID: (id: number) => selectors.chats.getChatByID(state, id),
   }
 }
 
