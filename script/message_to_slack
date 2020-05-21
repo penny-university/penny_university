@@ -1,0 +1,20 @@
+#!/bin/bash
+
+SLACK_API_KEY=$1
+MESSAGE=$2
+EXIT_CODE=$3
+
+CHANNEL=CHCM2MFHU
+
+if [ -z "$EXIT_CODE" ]
+then
+  EXIT_CODE=0
+fi
+
+
+curl -X POST -H "Authorization: Bearer $SLACK_API_KEY" \
+-H 'Content-type: application/json' \
+--data '{"channel":"'$CHANNEL'","text":"'$MESSAGE'"}' \
+https://slack.com/api/chat.postMessage
+
+exit $EXIT_CODE
