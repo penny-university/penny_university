@@ -65,5 +65,4 @@ test('users can only create follow ups when authenticated', () => {
   
   const markdownButton = screen.queryByText("Save Follow Up")
   expect(markdownButton).toBeNull()
-
 })

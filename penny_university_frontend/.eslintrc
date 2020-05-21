@@ -21,8 +21,8 @@
     "react/prop-types": 1,
     "react/forbid-prop-types": 1,
     "react/require-default-props": 1,
-    "react/default-props-match-prop-types": 1
-
+    "react/default-props-match-prop-types": 1,
+    "eol-last": ["error", "never"]
   },
   "globals": {}
 }
