@@ -1,4 +1,5 @@
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
+from dj_rest_auth.serializers import LoginSerializer
 
 from .models import User, SocialProfile
 
@@ -31,3 +32,24 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         )
 
         return user
+
+
+class CustomLoginSerializer(LoginSerializer):
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        user = self._validate_username_email(email, '', password)
+        if user:
+            if not user.is_verified:
+                raise exceptions.ValidationError('User email has not been verified.')
+        else:
+            raise exceptions.ValidationError('Unable to log in with provided credentials.')
+
+        attrs['user'] = user
+        return attrs
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.CharField(min_length=24, max_length=24)
+    email = serializers.EmailField()

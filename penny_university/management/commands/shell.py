@@ -9,7 +9,7 @@ class Command(ShellCommand):
         script_to_run_on_startup = """
         from pennychat.models import PennyChat, PennyChatSlackInvitation, FollowUp, Participant
 
-        from users.models import SocialProfile
+        from users.models import User, SocialProfile
 
         from slack import WebClient
         from django.conf import settings

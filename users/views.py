@@ -1,12 +1,24 @@
-from rest_framework import mixins, generics
+from rest_framework import (
+    mixins,
+    generics,
+    views,
+)
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
-from rest_framework.authtoken.models import Token
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
+    HTTP_404_NOT_FOUND,
+)
 
 from pennychat.serializers import UserChatSerializer
-from .models import User, SocialProfile
-from .serializers import UserSerializer
 from pennychat.models import Participant
+from .models import User
+from .tokens import verification_token
+from .serializers import (
+    UserSerializer,
+    VerifyEmailSerializer,
+)
 
 
 class RegisterUser(generics.CreateAPIView):
@@ -18,13 +30,34 @@ class RegisterUser(generics.CreateAPIView):
         serializer = UserSerializer(data=user_data, context={'request': request})
 
         if serializer.is_valid():
-            user = serializer.save()
-            social_profiles = SocialProfile.objects.filter(email=user.email)
-            for profile in social_profiles:
-                profile.user = user
-                profile.save()
-            token = Token.objects.create(user=user)
-            return Response(data={'key': token.key, 'user': serializer.data})
+            try:
+                user = self.get_queryset().get(email=serializer.validated_data['email'])
+                if user.is_verified:
+                    return Response({'detail': 'User already exists.'}, status=HTTP_400_BAD_REQUEST)
+                user.set_password(serializer.validated_data['password'])
+                user.first_name = serializer.validated_data['first_name']
+                user.last_name = serializer.validated_data['last_name']
+            except User.DoesNotExist:
+                user = serializer.save()
+            token = verification_token.make_token(user)
+            user.send_verification_email(token=token)
+            return Response(status=HTTP_204_NO_CONTENT)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class VerifyEmail(views.APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = VerifyEmailSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                user = User.objects.get(email=serializer.validated_data['email'])
+                if verification_token.check_token(user, serializer.validated_data['token']):
+                    user.is_verified = True
+                    user.save()
+                    return Response(status=HTTP_204_NO_CONTENT)
+                return Response({'detail': 'Verification token is invalid.'}, status=HTTP_400_BAD_REQUEST)
+            except User.DoesNotExist:
+                return Response(status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
