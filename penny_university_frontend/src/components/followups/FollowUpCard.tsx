@@ -5,6 +5,11 @@ import { Content, EditContent } from '../content'
 import { EditButton, SaveButton } from '../buttons'
 import FollowUpUserInfo from './FollowUpUserInfo'
 
+
+export const TestIDs ={
+  subMenu: 'followup-submenu'
+}
+
 type FollowUpCard = {
   followUp: FollowUp,
   updateFollowUp: (followUp: FollowUp) => void,
@@ -18,6 +23,7 @@ const FollowUpButtons = ({ editOnPress, saveOnPress, editMode, id }: { editOnPre
   : <Dropdown
     id={`followup-dropdown-${id}`}
     header="Options"
+    testID={TestIDs.subMenu}
     options={[
       <EditButton className="align-self-start" type="Follow Up" onClick={editOnPress} key={`edit-followup-${id}`} color="link" />,
     ]}

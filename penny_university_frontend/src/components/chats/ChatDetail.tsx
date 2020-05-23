@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { Card } from 'reactstrap'
-import { withRouter } from "react-router"
-import { RouteComponentProps } from 'react-router-dom';
 import {
   HeartButton, CreateButton, SaveButton, CancelButton,
 } from '../buttons'
@@ -13,7 +11,7 @@ import { Chat, User } from '../../models'
 
 require('./styles.scss')
 
-interface ChatDetailProps extends RouteComponentProps<any> {
+interface ChatDetailProps {
   chat: Chat,
   followUps: Array<FollowUp>,
   createFollowUp: (id: number, content: { content: string }) => void,
@@ -101,4 +99,4 @@ const ChatDetail = ({
   return <h1>Loading...</h1>
 }
 
-export default withRouter(ChatDetail)
+export default ChatDetail

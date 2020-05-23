@@ -10,11 +10,11 @@ import { Button } from 'reactstrap'
 require('./style.scss')
 
 const IconButton = ({
-  className, size, onClick, title, detail, icon, color, id,
-}: { className: string, size: 'md', onClick: () => void, title: string, detail: string, icon: IconDefinition, color: string, id: string }) => {
+  className, size, onClick, title, detail, icon, color, id, testID,
+}: { className: string, size: 'md', onClick: () => void, title: string, detail: string, icon: IconDefinition, color: string, id: string, testID?: string | null, }) => {
   const text = title && detail ? `${title} ${detail}` : title || detail
   return (
-    <Button size={size} color={color} onClick={onClick} className={classNames(className, 'edit-button')} id={id}>
+    <Button size={size} color={color} onClick={onClick} className={classNames(className, 'edit-button')} id={id} data-testid={testID}>
       <FontAwesomeIcon icon={icon} />
       {text}
     </Button>
@@ -29,6 +29,7 @@ IconButton.defaultProps = {
   title: '',
   onClick: null,
   id: '',
+  testID: null,
 }
 
 const CancelButton = ({
@@ -82,9 +83,9 @@ SaveButton.defaultProps = {
 }
 
 const MoreOptions = ({
-  className, onClick, id
-}: { className: string, id: string, onClick: () => void, }) => (
-  <IconButton className={className} onClick={onClick} icon={faEllipsisH} id={id} color="link" />
+  className, onClick, id, testID,
+}: { className: string, id: string, onClick: () => void, testID: string }) => (
+  <IconButton className={className} onClick={onClick} icon={faEllipsisH} id={id} color="link" testID={testID} />
 )
 
 MoreOptions.defaultProps = {

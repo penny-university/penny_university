@@ -6,12 +6,13 @@ interface DropdownProps {
   header: string,
   options: Array<React.ReactElement>,
   id: string,
+  testID: string,
 }
 
-const Dropdown = ({ header, options, id }: DropdownProps) => {
+const Dropdown = ({ header, options, id, testID }: DropdownProps) => {
   return (
     <>
-      <MoreOptions id={id} />
+      <MoreOptions id={id} testID={testID} />
       <UncontrolledPopover trigger="legacy" placement="bottom" target={id}>
         <PopoverHeader>{header}</PopoverHeader>
         {options}
