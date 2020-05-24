@@ -261,7 +261,7 @@ testdata = [
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(",".join(testdata[0].keys()), [td.values() for td in testdata])
-def test_send_penny_chat_reminders(
+def test_send_penny_chat_and_followup_reminders(
         msg,  # pytest prints this out when the test errors  # noqa
         date,
         initial_status,
