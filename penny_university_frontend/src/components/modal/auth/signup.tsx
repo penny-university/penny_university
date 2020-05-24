@@ -8,7 +8,7 @@ import {
   Form, ModalHeader, ModalBody, Button,
 } from 'reactstrap'
 import modalDispatch from '../dispatch'
-import { dispatchSignup } from '../../../actions/user'
+import { signup } from '../../../actions/user'
 import { Input } from '../../fields'
 
 type AuthSignupModalProps = {
@@ -62,7 +62,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
     lastName: string,
     email: string,
     password: string,
-  }) => dispatch(dispatchSignup(payload)),
+  }) => dispatch(signup(payload)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthSignupModal)

@@ -1,7 +1,7 @@
 import fetchMock from 'fetch-mock'
 import { rootReducer as reducer } from '../reducers'
 import { makeMockStore, initialState } from './config'
-import { loadChatsList } from '../actions'
+import { loadChatsList } from '../actions/chat'
 
 describe('error reducer', () => {
   fetchMock.get('*', () => {
@@ -14,7 +14,7 @@ describe('error reducer', () => {
     return store.dispatch(loadChatsList('1')).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.error).toEqual({ message: 'It failed!', status: undefined })
+      expect(state.error).toEqual({ message: 'It failed!', status: undefined, meta: { userID: undefined } })
     })
   })
 })

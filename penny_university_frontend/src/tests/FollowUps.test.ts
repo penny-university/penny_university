@@ -1,5 +1,5 @@
 import fetchMock from 'fetch-mock'
-import { loadFollowUps } from '../actions'
+import { loadFollowUps } from '../actions/chat'
 import { rootReducer as reducer } from '../reducers'
 import { makeMockStore, initialState, baseUrl } from './config'
 import { followUps, normalizedFollowUps, users } from './data'

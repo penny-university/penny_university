@@ -1,7 +1,7 @@
 import { combineReducers, applyMiddleware, createStore, compose } from 'redux'
 import { AnyAction } from 'redux'
 import { normalize } from 'normalizr'
-import * as ActionTypes from '../actions'
+import { ChatActions } from '../actions'
 import paginate, { paginationInitialState } from './paginate'
 import user, { initialState as userInitialState } from './user'
 import thunk from 'redux-thunk'
@@ -11,7 +11,7 @@ import userMiddleware from '../middleware/user'
 import { Schemas } from '../models/schemas'
 
 // Eventually we will want to move this into a DEV configuration
-const composeEnhancers = (<any>window).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const composeEnhancers = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 // Updates an entity cache in response to any action
 // with response.entities, such as a CHATS_LIST_SUCCESS
@@ -53,7 +53,7 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, },
 
 const errorReducer = (state = { status: NaN, message: '' }, action: AnyAction): ErrorState => {
   const { type, payload } = action
-  if (type === ActionTypes.CLEAR_ERROR_MESSAGE) {
+  if (type === ChatActions.CLEAR_ERROR_MESSAGE) {
     return { status: NaN, message: '' }
   } if (payload) {
     return payload
@@ -63,7 +63,9 @@ const errorReducer = (state = { status: NaN, message: '' }, action: AnyAction): 
 
 const pagination = combineReducers({
   chatsByFilter: paginate({
-    mapActionToKey: (action?: AnyAction) => 'all', // In the future, we will have different filters
+    mapActionToKey: (action?: AnyAction) => {
+      return action?.payload?.meta?.userID || 'all'
+    },
     types: [
       [ActionTypes.CHATS_LIST_REQUEST],
       [ActionTypes.CHATS_LIST_SUCCESS],

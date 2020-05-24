@@ -1,7 +1,7 @@
 // @flow
 /* eslint-disable max-lines-per-function */
 
-import React, { useReducer, useEffect, Dispatch } from 'react'
+import React, { useReducer, useEffect } from 'react'
 import { Modal as ModalStrap } from 'reactstrap'
 import modalDispatch from './dispatch'
 import Actions, { ModalNames } from './constants'
