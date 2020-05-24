@@ -138,7 +138,7 @@ def send_followup_reminder_and_mark_chat_as_completed():
 
     now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
     completed_chats = PennyChatSlackInvitation.objects.filter(
-        status__gte=PennyChatSlackInvitation.REMINDED,
+        status__gte=PennyChatSlackInvitation.SHARED,
         status__lt=PennyChatSlackInvitation.COMPLETED,
         date__lt=now - timedelta(minutes=settings.FOLLOWUP_REMINDER_AFTER_PENNY_CHAT_MINUTES),
     )
