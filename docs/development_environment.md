@@ -18,7 +18,7 @@ So why is this so complicated? Well, we are building a Slack bot and the only wa
 
 ## Requirements
 
-* `python >= 3.7` & `pip3`
+* `python >= 3.8` & `pip3`
 * `node >= 8.0` & `npm >= 6.3`
 
 ## Setup

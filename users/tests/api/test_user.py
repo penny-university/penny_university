@@ -41,17 +41,31 @@ def test_verify_email(test_user):
 @pytest.mark.django_db
 def test_verify_email__invalid_token(test_user):
     client = APIClient()
-    other_user = User.objects.create_user(
-        username='other@test.com',
-        email='other@test.com',
-        password='password',
-    )
     data = {
-        'token': verification_token_generator.make_token(other_user),
         'email': test_user.email
     }
-    response = client.post('/api/auth/verify/', data=data, format='json')
-    assert response.status_code == 400
+    response = client.post('/api/auth/verification-email/', data=data, format='json')
+    assert response.status_code == 204
+
+
+@pytest.mark.django_db
+def test_send_verification_email(test_user):
+    client = APIClient()
+    data = {
+        'email': test_user.email
+    }
+    response = client.post('/api/auth/verification-email/', data=data, format='json')
+    assert response.status_code == 204
+
+
+@pytest.mark.django_db
+def test_send_verification_email__user_does_not_exist(test_user):
+    client = APIClient()
+    data = {
+        'email': 'notregistered@test.com'
+    }
+    response = client.post('/api/auth/verification-email/', data=data, format='json')
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
