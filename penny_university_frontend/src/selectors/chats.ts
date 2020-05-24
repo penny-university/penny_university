@@ -27,7 +27,6 @@ const getFollowupsForChatID = (state: RootState, id: number) => {
   return followUpsList 
 }
 
-
 export {
   getChatByID,
   getFollowupsForChatID,

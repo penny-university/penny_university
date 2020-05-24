@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import {
   createFollowUp, loadChatDetail, loadFollowUps, updateFollowUp,
-} from '../actions'
+} from '../actions/chat'
 import { ChatDetail } from '../components/chats'
 import * as selectors from '../selectors'
 import { RootState } from '../reducers'

@@ -1,4 +1,4 @@
-import { normalize, Schema } from 'normalizr'
+import { normalize } from 'normalizr'
 import { AnyAction } from 'redux'
 
 export const paginationInitialState = {
@@ -59,9 +59,10 @@ const paginate = ({ types, mapActionToKey }: { types: [string, string, string], 
             next: action.payload?.meta.next,
             previous: action.payload?.meta.previous,
             count: action.payload?.meta.count,
-            
+
           }
         }
+        return state
       case failureType:
         return {
           ...state,
@@ -72,7 +73,7 @@ const paginate = ({ types, mapActionToKey }: { types: [string, string, string], 
     }
   }
 
-  return (state = paginationInitialState, action: AnyAction): PaginationState  => {
+  return (state = paginationInitialState, action: AnyAction): PaginationState => {
     // Update pagination by key
     const key = mapActionToKey(action)
     switch (action.type) {
@@ -86,6 +87,7 @@ const paginate = ({ types, mapActionToKey }: { types: [string, string, string], 
             [key]: updatePagination(state[key], action),
           }
         }
+        return state
       default:
         return state
     }

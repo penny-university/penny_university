@@ -5,7 +5,7 @@ import {
 } from '../buttons'
 import Date from '../Date'
 import { Content, EditContent } from '../content'
-import { FollowUpCard } from '../followups'
+import { FollowUpCard } from '../follow-ups'
 import modalDispatch from '../modal/dispatch'
 import { Chat, User } from '../../models'
 

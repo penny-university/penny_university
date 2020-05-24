@@ -3,40 +3,42 @@ import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import ApiRoutes from '../constants'
 
-export const HYDRATE_USER = 'HYDRATE_USER'
-export const LOGOUT_USER = 'LOGOUT_USER'
-export const CHECK_AUTH = 'CHECK_AUTH'
-export const SET_TOKEN = 'SET_TOKEN'
-export const FETCH_USER_REQUEST = 'FETCH_USER_REQUEST'
-export const FETCH_USER_SUCCESS = 'FETCH_USER_SUCCESS'
-export const FETCH_USER_FAILURE = 'FETCH_USER_FAILURE'
-export const LOGIN_REQUEST = 'LOGIN_REQUEST'
-export const LOGIN_SUCCESS = 'LOGIN_SUCCESS'
-export const LOGIN_FAILURE = 'LOGIN_FAILURE'
-export const SIGNUP_REQUEST = 'SIGNUP_REQUEST'
-export const SIGNUP_SUCCESS = 'SIGNUP_SUCCESS'
-export const SIGNUP_FAILURE = 'SIGNUP_FAILURE'
-export const LOGOUT_REQUEST = 'LOGOUT_REQUEST'
-export const LOGOUT_SUCCESS = 'LOGOUT_SUCCESS'
-export const LOGOUT_FAILURE = 'LOGOUT_FAILURE'
-export const USER_EXISTS_REQUEST = 'USER_EXISTS_REQUEST'
-export const USER_EXISTS_SUCCESS = 'USER_EXISTS_SUCCESS'
-export const USER_EXISTS_FAILURE = 'USER_EXISTS_FAILURE'
+export const Actions = {
+  HYDRATE_USER: 'HYDRATE_USER',
+  LOGOUT_USER: 'LOGOUT_USER',
+  BOOTSTRAP: 'BOOTSTRAP',
+  SET_TOKEN: 'SET_TOKEN',
+  FETCH_USER_REQUEST: 'FETCH_USER_REQUEST',
+  FETCH_USER_SUCCESS: 'FETCH_USER_SUCCESS',
+  FETCH_USER_FAILURE: 'FETCH_USER_FAILURE',
+  LOGIN_REQUEST: 'LOGIN_REQUEST',
+  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
+  LOGIN_FAILURE: 'LOGIN_FAILURE',
+  SIGNUP_REQUEST: 'SIGNUP_REQUEST',
+  SIGNUP_SUCCESS: 'SIGNUP_SUCCESS',
+  SIGNUP_FAILURE: 'SIGNUP_FAILURE',
+  LOGOUT_REQUEST: 'LOGOUT_REQUEST',
+  LOGOUT_SUCCESS: 'LOGOUT_SUCCESS',
+  LOGOUT_FAILURE: 'LOGOUT_FAILURE',
+  USER_EXISTS_REQUEST: 'USER_EXISTS_REQUEST',
+  USER_EXISTS_SUCCESS: 'USER_EXISTS_SUCCESS',
+  USER_EXISTS_FAILURE: 'USER_EXISTS_FAILURE',
+}
 
 
 export const setToken = (token: string) => ({
-  type: SET_TOKEN,
+  type: Actions.SET_TOKEN,
   payload: token,
 })
 
-export const checkAuth = () => ({
-  type: CHECK_AUTH,
+export const bootstrap = () => ({
+  type: Actions.BOOTSTRAP,
 })
 
 export const fetchUser = () => ({
   type: CALL_API,
   payload: {
-    types: [FETCH_USER_REQUEST, FETCH_USER_SUCCESS, FETCH_USER_FAILURE],
+    types: [Actions.FETCH_USER_REQUEST, Actions.FETCH_USER_SUCCESS, Actions.FETCH_USER_FAILURE],
     endpoint: ApiRoutes.user,
     method: 'GET',
   },
@@ -45,17 +47,17 @@ export const fetchUser = () => ({
 const login = (payload: { email: string, password: string }): AnyAction => ({
   type: CALL_API,
   payload: {
-    types: [LOGIN_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE],
+    types: [Actions.LOGIN_REQUEST, Actions.LOGIN_SUCCESS, Actions.LOGIN_FAILURE],
     endpoint: ApiRoutes.login,
     method: 'POST',
     payload,
   },
 })
 
-const signup = (payload: { email: string, password: string }): AnyAction => ({
+export const signup = (payload: { email: string, password: string }): AnyAction => ({
   type: CALL_API,
   payload: {
-    types: [SIGNUP_REQUEST, SIGNUP_SUCCESS, SIGNUP_FAILURE],
+    types: [Actions.SIGNUP_REQUEST, Actions.SIGNUP_SUCCESS, Actions.SIGNUP_FAILURE],
     endpoint: ApiRoutes.register,
     method: 'POST',
     payload,
@@ -66,7 +68,7 @@ const signup = (payload: { email: string, password: string }): AnyAction => ({
 const userExists = (email: string) => ({
   type: CALL_API,
   payload: {
-    types: [USER_EXISTS_REQUEST, USER_EXISTS_SUCCESS, USER_EXISTS_FAILURE],
+    types: [Actions.USER_EXISTS_REQUEST, Actions.USER_EXISTS_SUCCESS, Actions.USER_EXISTS_FAILURE],
     endpoint: ApiRoutes.exists,
     method: 'POST',
     payload: { email },
@@ -75,20 +77,16 @@ const userExists = (email: string) => ({
 })
 
 export const logout = () => ({
-  type: LOGOUT_USER,
+  type: Actions.LOGOUT_USER,
 })
 export const logoutRequest = () => ({
   type: CALL_API,
   payload: {
-    types: [LOGOUT_REQUEST, LOGOUT_SUCCESS, LOGOUT_FAILURE],
+    types: [Actions.LOGOUT_REQUEST, Actions.LOGOUT_SUCCESS, Actions.LOGOUT_FAILURE],
     endpoint: ApiRoutes.logout,
     method: 'POST',
   },
 })
-
-export const dispatchFetchUser = () => async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => dispatch(fetchUser())
-
-export const dispatchSignup = (payload: { email: string, password: string }) => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(signup(payload))
 
 export const dispatchLogin = (payload: { email: string, password: string }) => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(login(payload))
 
