@@ -279,7 +279,7 @@ def _followup_reminder_blocks(penny_chat_invitation):
                 'text': f'{organizer.real_name}\'s Penny Chat *"{penny_chat_invitation.title}"* has completed. '
                         'How did it go?\n\nIf you learned something new, then consider writing a Penny Chat '
                         'Follow-Up and sharing what you learned with the community. This is also a great way '
-                        'to say _"thank you"_ to all those that attended the Penny Chat.'
+                        'to say _*thank you*_ to all those that attended the Penny Chat.'
             }
         },
         {
