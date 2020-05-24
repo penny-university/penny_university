@@ -44,7 +44,7 @@ const App = (props: Props) => {
           <Route path={Routes.Chats}>
             <ChatsPage />
           </Route>
-          <PrivateRoute path={Routes.profile} component={ProfilePage} />
+          <PrivateRoute path={Routes.Profile} component={ProfilePage} />
           <Route path={Routes.Home}>
             <Redirect to={Routes.Chats} />
           </Route>

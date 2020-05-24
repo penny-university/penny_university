@@ -23,7 +23,7 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
           <DropdownMenu>
             <div>
               <Link
-                to={Routes.profile}
+                to={Routes.Profile}
                 className="btn btn-link"
               >
                 Profile

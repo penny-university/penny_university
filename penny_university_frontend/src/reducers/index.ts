@@ -35,19 +35,6 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, },
       }
     }
   }
-
-  switch (action.type) {
-    case ActionTypes.DELETE_CHAT_SUCCESS:
-      const { chatID }: { chatID: string } = action.payload.meta
-      const { chats: newChats } = state
-      delete newChats[chatID]
-      return {
-        ...state,
-        chats: {
-          ...newChats
-        }
-      }
-  }
   return state
 }
 
@@ -67,17 +54,17 @@ const pagination = combineReducers({
       return action?.payload?.meta?.userID || 'all'
     },
     types: [
-      [ActionTypes.CHATS_LIST_REQUEST],
-      [ActionTypes.CHATS_LIST_SUCCESS],
-      [ActionTypes.CHATS_LIST_FAILURE],
+      [ChatActions.CHATS_LIST_REQUEST],
+      [ChatActions.CHATS_LIST_SUCCESS],
+      [ChatActions.CHATS_LIST_FAILURE],
     ],
   }),
   followUpsByChat: paginate({
     mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.chatID,
     types: [
-      [ActionTypes.FOLLOW_UPS_REQUEST],
-      [ActionTypes.FOLLOW_UPS_SUCCESS, ActionTypes.CREATE_FOLLOW_UP_SUCCESS],
-      [ActionTypes.FOLLOW_UPS_FAILURE],
+      [ChatActions.FOLLOW_UPS_REQUEST],
+      [ChatActions.FOLLOW_UPS_SUCCESS, ChatActions.CREATE_FOLLOW_UP_SUCCESS],
+      [ChatActions.FOLLOW_UPS_FAILURE],
     ],
   }),
 })

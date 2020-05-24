@@ -1,4 +1,4 @@
-import { normalize } from 'normalizr'
+import { normalize, Schema } from 'normalizr'
 import { AnyAction } from 'redux'
 import * as ActionTypes from '../actions'
 
@@ -62,11 +62,10 @@ const paginate = ({ types, mapActionToKey }: { types: [Array<string>, Array<stri
             next: action.payload?.meta.next,
             previous: action.payload?.meta.previous,
             count: action.payload?.meta.count,
-
+            
           }
         }
-        return state
-      case failureType:
+      } else if (failureTypes.includes(action.type)){
         return {
           ...state,
           isFetching: false,
@@ -75,7 +74,7 @@ const paginate = ({ types, mapActionToKey }: { types: [Array<string>, Array<stri
       return state
     }
 
-  return (state = paginationInitialState, action: AnyAction): PaginationState => {
+  return (state = paginationInitialState, action: AnyAction): PaginationState  => {
     // Update pagination by key
     const key = mapActionToKey(action)
         if (key) {
@@ -85,8 +84,6 @@ const paginate = ({ types, mapActionToKey }: { types: [Array<string>, Array<stri
             [key]: updatePagination(state[key], action),
           }
         }
-        return state
-      default:
         return state
   }
 }

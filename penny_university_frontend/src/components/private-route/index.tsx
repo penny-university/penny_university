@@ -25,7 +25,7 @@ const PrivateRoute = (props: PrivateRouteProps) => {
   if (user.valid || token) {
     return <Route exact={ exact } path = { path } component={component} />
    }
-  return <Redirect to={ Routes.home } />
+  return <Redirect to={ Routes.Home } />
 }
 
 const mapStateToProps = (state: RootState): StateToPropsType => ({

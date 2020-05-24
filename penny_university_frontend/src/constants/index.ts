@@ -12,10 +12,10 @@ const ApiRoutes = {
 }
 
 export const Routes = {
-  profile: '/profile',
-  chats: '/chats',
-  chatDetail: '/chats/:id',
-  home: '/',
+  Profile: '/profile',
+  Chats: '/chats',
+  ChatDetail: '/chats/:id',
+  Home: '/',
 }
 
 export default ApiRoutes
