@@ -82,7 +82,6 @@ def test_checking_user_exists__not_verified(test_user):
     assert response.status_code == 403
 
 
-
 @pytest.mark.django_db
 def test_user_log_in__verified_and_protected_request(test_social_profile, test_user):
     client = APIClient()
