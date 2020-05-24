@@ -24,6 +24,7 @@ def test_penny_chat_list(test_chats_1):
     assert response.data['results'][0]['participants'][0]['user']['email'] == 'three@wherever.com'
     assert chats[0]['title'] == most_recent_chat.title
 
+
 @pytest.mark.django_db
 def test_penny_chat_list(test_chats_1):
     client = APIClient()
