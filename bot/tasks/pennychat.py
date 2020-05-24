@@ -63,7 +63,7 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
 
 @background
 def share_penny_chat_invitation(penny_chat_id):
-    """Shares penny chat invitations with people and channels in the invitee list. Handled in background_tasks.py"""
+    """Shares penny chat invitations with people and channels in the invitee list."""
     penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
     slack_client = get_slack_client()
 
@@ -100,7 +100,10 @@ def share_penny_chat_invitation(penny_chat_id):
 
 
 def send_penny_chat_reminders_and_mark_chat_as_reminded():
-    """This sends out reminders for any chat that is about to happen. Handled in background_tasks.py"""
+    """This sends out reminders for any chat that is about to happen and also marks a chat as REMINDED.
+
+    Handled in background_tasks.py
+    """
     slack_client = get_slack_client()
 
     now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
@@ -127,7 +130,10 @@ def send_penny_chat_reminders_and_mark_chat_as_reminded():
 
 
 def send_followup_reminder_and_mark_chat_as_completed():
-    """This sends out reminders for any chat that is about to happen."""
+    """This sends out reminders for any chat that is about to happen and also marks a chat as COMPLETED.
+
+    Handled in background_tasks.py
+    """
     slack_client = get_slack_client()
 
     now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
