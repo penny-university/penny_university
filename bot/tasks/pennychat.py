@@ -273,32 +273,28 @@ def _followup_reminder_blocks(penny_chat_invitation):
     )
     return [
         {
-            'blocks': [
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'{organizer.real_name}\'s Penny Chat *"{penny_chat_invitation.title}"* has completed. '
+                        'How did it go?\n\nIf you learned something new, then consider writing a Penny Chat '
+                        'Follow-Up and sharing what you learned with the community. This is also a great way '
+                        'to say _"thank you"_ to all those that attended the Penny Chat.'
+            }
+        },
+        {
+            'type': 'actions',
+            'elements': [
                 {
-                    'type': 'section',
+                    'type': 'button',
                     'text': {
-                        'type': 'mrkdwn',
-                        'text': f'{organizer.real_name}\'s Penny Chat *"{penny_chat_invitation.title}"* has completed. '
-                                'How did it go?\n\nIf you learned something new, then consider writing a Penny Chat '
-                                'Follow-Up and sharing what you learned with the community. This is also a great way '
-                                'to say \'thank you\' to all those that attended the Penny Chat.'
-                    }
-                },
-                {
-                    'type': 'actions',
-                    'elements': [
-                        {
-                            'type': 'button',
-                            'text': {
-                                'type': 'plain_text',
-                                'text': ':pencil2: Write a Follow-Up',
-                                'emoji': True
-                            },
-                            'style': 'primary',
-                            'url': f'https://www.pennyuniversity.org/chats/{penny_chat_invitation.id}',
-                            'action_id': GO_TO_FOLLOWUP
-                        }
-                    ]
+                        'type': 'plain_text',
+                        'text': ':pencil2: Write a Follow-Up',
+                        'emoji': True
+                    },
+                    'style': 'primary',
+                    'url': f'https://www.pennyuniversity.org/chats/{penny_chat_invitation.id}',
+                    'action_id': GO_TO_FOLLOWUP
                 }
             ]
         }
