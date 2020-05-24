@@ -70,24 +70,6 @@ const paginate = ({ types, mapActionToKey }: { types: [Array<string>, Array<stri
           ...state,
           isFetching: false,
         }
-      } else if (action.type === ActionTypes.DELETE_FOLLOW_UP_SUCCESS) {
-        const { followID }: {followID: string } = action.payload.meta
-        if (followID) {
-          state.ids.splice(state.ids.indexOf(followID.toString()), 1)
-          return {
-            ...state,
-            ids: state.ids
-          }
-        }
-      } else if (action.type === ActionTypes.DELETE_CHAT_SUCCESS) {
-        const { chatID }: {chatID: string } = action.payload.meta
-        if (chatID) {
-          state.ids.splice(state.ids.indexOf(chatID.toString()), 1)
-          return {
-            ...state,
-            ids: state.ids
-          }
-        }
       }
       return state
     }
