@@ -26,7 +26,7 @@ def test_penny_chat_list(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_penny_chat_list(test_chats_1):
+def test_penny_chat_participanats_list(test_chats_1):
     client = APIClient()
     response = client.get('/api/chats/?participants__user_id=1')
     assert response.status_code == 200
