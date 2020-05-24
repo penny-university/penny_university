@@ -2,7 +2,8 @@ import fetchMock from 'fetch-mock'
 import { loadChatDetail, loadChatsList } from '../actions'
 import {rootReducer as  reducer} from '../reducers'
 import { makeMockStore, initialState, baseUrl } from './config'
-import { chats, chatsNext } from './data'
+import { chats, chatsNext, normalizedChats, users } from './data'
+
 
 describe('chat actions', () => {
   afterEach(() => {
@@ -19,7 +20,7 @@ describe('chat actions', () => {
 
     const expectedActionTypes = ['CHATS_LIST_REQUEST', 'CHATS_LIST_SUCCESS']
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
     })
   })
@@ -44,7 +45,7 @@ describe('chat actions', () => {
       },
     ]
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       expect(store.getActions()).toEqual(expectedActions)
     })
   })
@@ -100,25 +101,12 @@ describe('chat reducers', () => {
 
     const store = makeMockStore()
 
-    const expectedChat = {
-      id: 2,
-      url: 'http://localhost:8000/api/chats/2/',
-      title: 'React Hooks',
-      description: 'Learn to make your components functional using hooks',
-      date: '2020-02-02T12:00:00Z',
-      followups: 'http://localhost:8000/api/chats/2/follow-ups',
-      participants: [
-        {
-          userProfile: 3,
-          role: 'Organizer',
-        },
-      ],
-    }
+    const expectedChat = normalizedChats['1']
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.entities.chats['2']).toEqual(expectedChat)
+      expect(state.entities.chats['1']).toEqual(expectedChat)
     })
   })
 
@@ -145,40 +133,27 @@ describe('chat reducers', () => {
 
     const store = makeMockStore(state)
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       // @ts-ignore
       state = reducer(state, store.getActions()[1])
-      expect(Object.keys(state.entities.chats)).toEqual(['1', '2', '3', '4'])
+      expect(Object.keys(state.entities.chats)).toEqual(['1', '2', '3'])
     })
   })
 
   it('should add participants to the store as user profiles', () => {
     fetchMock.getOnce(`${baseUrl}chats/1/`, {
-      body: { results: chats[1] },
+      body: { results: chats[0] },
       headers: { 'content-type': 'application/json' },
     })
 
     const store = makeMockStore(initialState)
 
-    const expectedUserProfiles = {
-      1: {
-        id: 1,
-        url: 'http://localhost:8000/api/users/1/',
-        email: 'test1@example.com',
-        realName: 'Test User 1',
-      },
-      2: {
-        id: 2,
-        url: 'http://localhost:8000/api/users/2/',
-        email: 'test2@example.com',
-        realName: 'Test User 2',
-      },
-    }
+    const expectedUserProfiles = users
     // @ts-ignore
     return store.dispatch(loadChatDetail('1')).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      expect(state.entities.userProfiles).toEqual(expectedUserProfiles)
+      expect(state.entities.users).toEqual(expectedUserProfiles)
     })
   })
 
@@ -190,10 +165,10 @@ describe('chat reducers', () => {
 
     const store = makeMockStore()
     // @ts-ignore
-    return store.dispatch(loadChatsList('all')).then(() => {
+    return store.dispatch(loadChatsList()).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
-      const expected = chats.map((c) => c.id)
+      const expected = chats.map((c) => c.id.toString())
       expect(state.pagination.chatsByFilter.all.ids).toEqual(expected)
     })
   })

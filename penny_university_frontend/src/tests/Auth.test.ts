@@ -3,6 +3,7 @@ import {
   checkAuth, dispatchLogout, FETCH_USER_REQUEST,
   SET_TOKEN, CHECK_AUTH, LOGOUT_REQUEST, LOGOUT_USER,
 } from '../actions/user'
+import ApiRoutes from '../constants'
 import { makeMockStore, baseUrl } from './config'
 
 describe('auth flow', () => {
@@ -26,7 +27,7 @@ describe('auth flow', () => {
 
   it('should fetch user if token exists', () => {
     document.cookie = 'token=token;'
-    fetchMock.getOnce(`${baseUrl}auth/user/`, {
+    fetchMock.getOnce(`${baseUrl}${ApiRoutes.user}`, {
       body: { user: {} },
       headers: { 'content-type': 'application/json' },
     })

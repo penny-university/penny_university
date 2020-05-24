@@ -1,15 +1,17 @@
 import React from 'react'
 import ChatCard from './ChatCard'
+import { Chat } from '../../models'
 
 type ChatList = {
-  chats: Array<Chat>,
+  chats: Array<number>,
+  getChatByID: (id: number) => Chat,
 }
 
-const ChatList = ({ chats }: ChatList) => (
+const ChatList = ({ chats, getChatByID }: ChatList) => (
   <div>
     {chats && chats.length
-      ? chats.map((chat) => (
-        <ChatCard chat={chat} key={`ChatCard-${chat.id}`} />
+      ? chats.map((chatID) => (
+        <ChatCard chat={getChatByID(chatID)} key={`ChatCard-${chatID}`} />
       )) : null}
   </div>
 )

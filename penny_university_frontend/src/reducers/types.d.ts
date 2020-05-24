@@ -1,70 +1,65 @@
 type StandardAction<P> = { type: string, payload?: P }
 
-type User = {
-
-}
-
-type UserState = {
+interface UserState {
   user: User | null,
   token: string | null,
 }
 
-type Chat = {
-  id: string,
-  title: string,
-  date: string,
-  description: string,
-  participants: Array<Participant>,
-}
-
-type UserProfile = {
-  realName: string,
-  id: string,
+interface Participant {
+  user: number,
   role: 'Participant' | 'Organizer',
 }
 
-type Participant = {
-  userProfile: UserProfile,
-  role: 'Participant' | 'Organizer',
-}
-
-type FollowUp = {
-  id: string,
+interface FollowUp {
+  id: number,
   content: string,
-  userProfile: UserProfile,
+  user: number,
   date: string,
+  pennyChat: string,
+  url: string,
 }
 
-type EntityState = {
+interface Account {
+  chats: string,
+  email: string,
+  firstName: string,
+  id: number,
+  lastName: string,
+  url: string,
+}
+
+interface EntityState {
   chats: {
     [key: string]: Chat
   },
   followUps: {
     [key: string]: FollowUp
   },
-  userProfiles: {
-    [key: string]: UserProfile
+  users: {
+    [key: string]: Account
   },
 }
 
-type PaginationState = {
+interface PaginationState {
   chatsByFilter: {
     all: {
-      nextPageUrl: string,
-      pageCount: number,
-      data: Array<Chat>,
+      next: string | undefined,
+      previous: string | undefined,
+      count: number,
+      ids: Array<Chat>,
     }
   },
   followUpsByChat: {
     [key: string]: {
-      nextPageUrl: string,
-      pageCount: number,
-      data: Array<Chat>,
+      next: string | undefined,
+      previous: string | undefined,
+      count: number,
+      ids: Array<Chat>,
     }
   },
 }
 
-type ErrorState = {
+interface ErrorState {
   status: number,
   message: string,
 }

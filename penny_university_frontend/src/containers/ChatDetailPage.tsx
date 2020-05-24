@@ -5,13 +5,16 @@ import {
   createFollowUp, loadChatDetail, loadFollowUps, updateFollowUp,
 } from '../actions'
 import { ChatDetail } from '../components/chats'
+import * as selectors from '../selectors'
 import { RootState } from '../reducers'
-
+import { Chat, User } from '../models'
 
 type StateProps = {
   id: string,
   chat: Chat,
   followUpsList: Array<FollowUp>,
+  user: User,
+  getUserByID: (id: number) => User,
 }
 
 type DispatchProps = {
@@ -22,11 +25,11 @@ type DispatchProps = {
 }
 
 type ChatDetailPageProps = {
-  match: { params: { id: string } }
+  match: { params: { id: number } }
 } & DispatchProps & StateProps
 
 const ChatDetailPage = ({
-  id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp,
+  id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp, user, getUserByID,
 }: ChatDetailPageProps) => {
   useEffect(() => {
     loadChatDetail(id)
@@ -39,51 +42,20 @@ const ChatDetailPage = ({
       followUps={followUpsList}
       createFollowUp={createFollowUp}
       updateFollowUp={updateFollowUp}
+      user={user}
+      getUserByID={getUserByID}
     />
   )
 }
 
 const mapStateToProps = (state: RootState, ownProps: ChatDetailPageProps) => {
   const { id } = ownProps.match.params
-
-  const {
-    entities: { chats, followUps, userProfiles },
-    pagination,
-  } = state
-
-  const chat = chats[id]
-  if (chat) {
-    // if userProfile is just an ID, populate the full userProfile
-    chat.participants = chat.participants.map((c: Participant) => ((typeof (c.userProfile) === 'number') ? { userProfile: userProfiles[c.userProfile], role: c.role } : c))
-  }
-  // @ts-ignore
-  const followUpsPagination = pagination.followUpsByChat[id] || { ids: [] }
-
-  const decorateUserProfileWithRole = (userProfile: UserProfile) => {
-    if (chat && userProfile) {
-      
-      const participant = chat.participants.find((p: Participant) => p.userProfile?.id === userProfile?.id)
-      return participant ? participant.role : null
-    }
-    return null
-  }
-
-  const followUpsList = followUpsPagination.ids.map((id: string) => {
-    const followUp = followUps[id]
-    
-    followUp.userProfile = {
-      // @ts-ignore
-      ...userProfiles[followUp.userProfile],
-      // @ts-ignore
-      role: decorateUserProfileWithRole(userProfiles[followUp.userProfile]),
-    }
-    return followUp
-  })
-
   return {
     id,
-    chat,
-    followUpsList,
+    chat: selectors.chats.getChatByID(state, id),
+    followUpsList: selectors.chats.getFollowupsForChatID(state, id),
+    user: selectors.user.getUser(state),
+    getUserByID: (id: string) => selectors.entities.getUserByID(state, id),
   }
 }
 

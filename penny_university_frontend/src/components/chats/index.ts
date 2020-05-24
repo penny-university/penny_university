@@ -1,4 +1,4 @@
 import ChatDetail from './ChatDetail'
-import ChatList from './ChatList'
+import ChatCard from './ChatCard'
 
-export { ChatDetail, ChatList }
+export { ChatDetail, ChatCard }

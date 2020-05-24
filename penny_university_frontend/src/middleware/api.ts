@@ -1,5 +1,5 @@
 import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
-import { schema, Schema } from 'normalizr'
+import { Schema } from 'normalizr'
 import { camelizeKeys, decamelizeKeys } from 'humps'
 import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
@@ -14,7 +14,7 @@ export type APIPayload<P> = {
 }
 
 // Makes an API call, and properly formats the response.
-const callApi = (endpoint: string, responseSchema: Schema<any>, method: 'POST' | 'PUT' | 'GET' | 'DELETE', payload: any, token?: string | null) => {
+const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', payload: any, token?: string | null) => {
   const url = (endpoint.indexOf(API_ROOT) === -1) ? API_ROOT + endpoint : endpoint
 
   const jsonPayload = JSON.stringify(decamelizeKeys(payload))
@@ -30,7 +30,7 @@ const callApi = (endpoint: string, responseSchema: Schema<any>, method: 'POST' |
           if (!response.ok) {
             return Promise.reject(response)
           }
-          const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
+          const camelJson = camelizeKeys(json)
           return camelJson
         }))
     default:
@@ -40,39 +40,10 @@ const callApi = (endpoint: string, responseSchema: Schema<any>, method: 'POST' |
             return Promise.reject(response)
           }
 
-          const camelJson = json.results ? camelizeKeys(json.results) : camelizeKeys(json)
+          const camelJson = camelizeKeys(json)
           return camelJson
         }))
   }
-}
-
-const userProfileSchema = new schema.Entity('userProfiles', {}, {
-  idAttribute: (userProfile) => userProfile.id,
-})
-
-const chatSchema = new schema.Entity('chats', {
-  participants: [{
-    userProfile: userProfileSchema,
-  }],
-}, {
-  idAttribute: (chat) => chat.id,
-})
-
-const followUpSchema = new schema.Entity('followUps', {
-  pennyChat: chatSchema,
-  userProfile: userProfileSchema,
-}, {
-  idAttribute: (followUp) => followUp.id,
-})
-
-// Schemas for the responses from the API
-export const Schemas = {
-  CHAT: chatSchema,
-  CHAT_ARRAY: [chatSchema],
-  USER: userProfileSchema,
-  USER_ARRAY: [userProfileSchema],
-  FOLLOW_UP: followUpSchema,
-  FOLLOW_UP_ARRAY: [followUpSchema],
 }
 
 export const CALL_API = 'CALL_API'
@@ -103,11 +74,13 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
     const [requestType, successType, failureType] = types
     next({ type: requestType, payload: { meta } })
     const token = selectors.user.getToken(store.getState())
-    return callApi(endpoint, responseSchema, method, payload, token).then(
-      (response: any) => next({
-        payload: { result: response, responseSchema, meta },
+    return callApi(endpoint, method, payload, token).then(
+      (response: any) => {
+        const metaWithPagination = response.results ? {...meta, count: response.count, next: response.next, previous: response.previous} : meta
+        return next({
+        payload: { result: response.results || response, responseSchema, meta: metaWithPagination },
         type: successType,
-      }),
+      })},
       (error: { message: string, status: number }) => next({
         type: failureType,
         payload: { message: error.message || 'An error occurred.', status: error.status, meta },

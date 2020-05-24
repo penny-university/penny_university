@@ -1,30 +1,49 @@
 import React, { useEffect } from 'react'
+import { AnyAction } from 'redux'
+import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { Button } from 'reactstrap'
+import InfiniteScroll from "react-infinite-scroller"
 import { loadChatsList } from '../actions'
-import { ChatList } from '../components/chats'
+import { ChatCard } from '../components/chats'
 import { RootState } from '../reducers'
+import * as selectors from '../selectors'
+import { Chat } from '../models'
 
 type StateProps = {
   nextPageUrl: string,
-  filteredChats: Array<Chat>,
+  filteredChats: Array<number>,
+  getChatByID: (id: number) => Chat,
+  isFetching: boolean,
 }
 
 type DispatchProps = {
-  loadChatsList: (filter: 'all', nextPageUrl?: string) => void,
+  loadChatsList: (nextPageUrl?: string) => void,
 }
 
 type ChatPageProps = StateProps & DispatchProps
 
-const ChatsPage = ({ filteredChats, nextPageUrl, loadChatsList }: ChatPageProps) => {
+const ChatsPage = ({ filteredChats, nextPageUrl, loadChatsList, getChatByID, isFetching }: ChatPageProps) => {
   useEffect(() => {
-    loadChatsList('all')
+    loadChatsList()
   }, [loadChatsList])
+  const loadMore = (page: number) => {
+    if (nextPageUrl.endsWith(page.toString())) {
+      loadChatsList(nextPageUrl)
+    }
+  }
   return (
     <div>
-      <ChatList chats={filteredChats} />
-      <Button className="mb-3" onClick={(e) => loadChatsList('all', nextPageUrl)}>Load More</Button>
+      <InfiniteScroll
+        pageStart={1}
+        loadMore={loadMore}
+        hasMore={!!nextPageUrl && !isFetching}
+        loader={<div className="loader" key={0}>Loading ...</div>}
+      >
+        {filteredChats.map((chatID) => (
+          <ChatCard chat={getChatByID(chatID)} key={`ChatCard-${chatID}`} />))}
+      </InfiniteScroll>
     </div>
   )
 }
@@ -32,36 +51,22 @@ const ChatsPage = ({ filteredChats, nextPageUrl, loadChatsList }: ChatPageProps)
 const mapStateToProps = (state: RootState) => {
   const {
     pagination: { chatsByFilter },
-    entities: { chats, userProfiles },
+    entities: { chats, users },
   } = state
   // @ts-ignore
   const chatsPagination = chatsByFilter.all || { ids: [] }
-  const { nextPageUrl } = chatsPagination
-  const filteredChats = chatsPagination.ids
-    // @ts-ignore
-    .map((id) => chats[id])
-    // @ts-ignore
-    .map((chat) => {
-      const c = chat
-      // if userProfile is just an ID, populate the full userProfile
-      c.participants = c.participants
-      .map((c: Participant) => ((typeof (c.userProfile) === 'number') ? { userProfile: userProfiles[c.userProfile], role: c.role } : c))
-      .sort((a: UserProfile, b: UserProfile) => {
-        if (a.role === 'Organizer') return -1
-        if (b.role === 'Organizer') return -1
-        return 0
-      })
-      return c
-    })
-
+  const { next: nextPageUrl } = chatsPagination
   return {
-    filteredChats,
+    filteredChats: chatsPagination.ids,
     nextPageUrl,
+    getChatByID: (id: number) => selectors.chats.getChatByID(state, id),
+    isFetching: selectors.pagination.isFetchingChats(state),
   }
 }
 
-const mapDispatchToProps = {
-  loadChatsList,
-}
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+  // @ts-ignore
+  loadChatsList: (nextPageUrl: string) => dispatch(loadChatsList(nextPageUrl)),
+})
 // @ts-ignore
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChatsPage))

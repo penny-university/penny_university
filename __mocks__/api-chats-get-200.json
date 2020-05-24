@@ -1,0 +1,103 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 3,
+      "url": "http://testserver/api/chats/3/",
+      "title": "Chat 3",
+      "description": "The third test chat",
+      "date": "2020-05-20T00:36:43.312777Z",
+      "follow_ups": "http://testserver/api/chats/3/follow-ups/",
+      "participants": [
+        {
+          "user": {
+            "id": 3,
+            "url": "http://testserver/api/users/3/",
+            "email": "three@wherever.com",
+            "first_name": "",
+            "last_name": "",
+            "chats": "http://testserver/api/users/3/chats/"
+          },
+          "role": "Organizer"
+        },
+        {
+          "user": {
+            "id": 1,
+            "url": "http://testserver/api/users/1/",
+            "email": "one@wherever.com",
+            "first_name": "",
+            "last_name": "",
+            "chats": "http://testserver/api/users/1/chats/"
+          },
+          "role": "Attendee"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "url": "http://testserver/api/chats/2/",
+      "title": "Chat 2",
+      "description": "The second test chat",
+      "date": "2020-05-19T00:36:43.312562Z",
+      "follow_ups": "http://testserver/api/chats/2/follow-ups/",
+      "participants": [
+        {
+          "user": {
+            "id": 2,
+            "url": "http://testserver/api/users/2/",
+            "email": "two@wherever.com",
+            "first_name": "",
+            "last_name": "",
+            "chats": "http://testserver/api/users/2/chats/"
+          },
+          "role": "Organizer"
+        },
+        {
+          "user": {
+            "id": 3,
+            "url": "http://testserver/api/users/3/",
+            "email": "three@wherever.com",
+            "first_name": "",
+            "last_name": "",
+            "chats": "http://testserver/api/users/3/chats/"
+          },
+          "role": "Attendee"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "url": "http://testserver/api/chats/1/",
+      "title": "Chat 1",
+      "description": "The first test chat",
+      "date": "2020-04-22T00:36:43.311955Z",
+      "follow_ups": "http://testserver/api/chats/1/follow-ups/",
+      "participants": [
+        {
+          "user": {
+            "id": 1,
+            "url": "http://testserver/api/users/1/",
+            "email": "one@wherever.com",
+            "first_name": "",
+            "last_name": "",
+            "chats": "http://testserver/api/users/1/chats/"
+          },
+          "role": "Organizer"
+        },
+        {
+          "user": {
+            "id": 2,
+            "url": "http://testserver/api/users/2/",
+            "email": "two@wherever.com",
+            "first_name": "",
+            "last_name": "",
+            "chats": "http://testserver/api/users/2/chats/"
+          },
+          "role": "Attendee"
+        }
+      ]
+    }
+  ]
+}

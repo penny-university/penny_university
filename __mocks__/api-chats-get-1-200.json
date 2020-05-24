@@ -1,0 +1,32 @@
+{
+  "id": 1,
+  "url": "http://testserver/api/chats/1/",
+  "title": "Chat 1",
+  "description": "The first test chat",
+  "date": "2020-04-22T00:38:16.525838Z",
+  "follow_ups": "http://testserver/api/chats/1/follow-ups/",
+  "participants": [
+    {
+      "user": {
+        "id": 1,
+        "url": "http://testserver/api/users/1/",
+        "email": "one@wherever.com",
+        "first_name": "",
+        "last_name": "",
+        "chats": "http://testserver/api/users/1/chats/"
+      },
+      "role": "Organizer"
+    },
+    {
+      "user": {
+        "id": 2,
+        "url": "http://testserver/api/users/2/",
+        "email": "two@wherever.com",
+        "first_name": "",
+        "last_name": "",
+        "chats": "http://testserver/api/users/2/chats/"
+      },
+      "role": "Attendee"
+    }
+  ]
+}
