@@ -19,7 +19,7 @@ const composeEnhancers = (<any>window).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || c
 const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, }, action: AnyAction): EntityState => {
   const { result, responseSchema } = action.payload || {}
   if (result && responseSchema) {
-    const { entities: {chats = {}, users = {}, followUps = {}} = {} } = normalize(result, responseSchema)
+    const { entities: { chats = {}, users = {}, followUps = {} } = {} } = normalize(result, responseSchema)
     return {
       chats: {
         ...state.chats,
@@ -36,6 +36,18 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, },
     }
   }
 
+  switch (action.type) {
+    case ActionTypes.DELETE_CHAT_SUCCESS:
+      const { chatID }: { chatID: string } = action.payload.meta
+      const { chats: newChats } = state
+      delete newChats[chatID]
+      return {
+        ...state,
+        chats: {
+          ...newChats
+        }
+      }
+  }
   return state
 }
 
@@ -53,17 +65,17 @@ const pagination = combineReducers({
   chatsByFilter: paginate({
     mapActionToKey: (action?: AnyAction) => 'all', // In the future, we will have different filters
     types: [
-      ActionTypes.CHATS_LIST_REQUEST,
-      ActionTypes.CHATS_LIST_SUCCESS,
-      ActionTypes.CHATS_LIST_FAILURE,
+      [ActionTypes.CHATS_LIST_REQUEST],
+      [ActionTypes.CHATS_LIST_SUCCESS],
+      [ActionTypes.CHATS_LIST_FAILURE],
     ],
   }),
   followUpsByChat: paginate({
     mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.chatID,
     types: [
-      ActionTypes.FOLLOW_UPS_REQUEST,
-      ActionTypes.FOLLOW_UPS_SUCCESS,
-      ActionTypes.FOLLOW_UPS_FAILURE,
+      [ActionTypes.FOLLOW_UPS_REQUEST],
+      [ActionTypes.FOLLOW_UPS_SUCCESS, ActionTypes.CREATE_FOLLOW_UP_SUCCESS],
+      [ActionTypes.FOLLOW_UPS_FAILURE],
     ],
   }),
 })
@@ -93,7 +105,7 @@ const store = createStore(rootReducer, initialState, composeEnhancers(
 
 export type RootState = ReturnType<typeof rootReducer>
 
-export { 
+export {
   Schemas
 }
 

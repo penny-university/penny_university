@@ -9,7 +9,9 @@ import { FollowUpCard } from '../followups'
 import modalDispatch from '../modal/dispatch'
 import { Chat, User } from '../../models'
 
-type ChatDetailProps = {
+require('./styles.scss')
+
+interface ChatDetailProps {
   chat: Chat,
   followUps: Array<FollowUp>,
   createFollowUp: (id: number, content: { content: string }) => void,
@@ -19,7 +21,7 @@ type ChatDetailProps = {
 }
 
 const ChatDetail = ({
-  chat, followUps, createFollowUp, updateFollowUp, user, getUserByID,
+  chat, followUps, createFollowUp, updateFollowUp, user, getUserByID
 }: ChatDetailProps) => {
   const [addFollowUpMode, toggleAddFollowUpMode] = useState(false)
   const [followUpContent, updateFollowUpContent] = useState('')
@@ -37,6 +39,7 @@ const ChatDetail = ({
       modalDispatch.auth()
     }
   }
+
   /*
    * Scrolls to the top of the page when the component is mounted.
    * Sticky navbar causes a bug that keeps the scroll
@@ -49,7 +52,9 @@ const ChatDetail = ({
   if (chat.valid) {
     return (
       <Card body className="mb-3 border-0 shadow-sm">
-        <h3 className="mr-3">{chat.title}</h3>
+        <div className="chat-detail-header">
+          <h3 className="mr-3">{chat.title}</h3>
+        </div>
         <Date className="text-secondary" date={chat.date} />
         {chat.description ? <Content className="mb-4" content={chat.description} /> : null}
         <div className="mb-4">
