@@ -8,7 +8,7 @@ from django.db import IntegrityError
 import pytest
 from slack.errors import SlackApiError
 
-from users.tokens import verification_token
+from users.tokens import verification_token_generator
 from users.models import (
     SocialProfile,
     update_social_profile_from_slack,
@@ -198,8 +198,8 @@ def test_get_or_create_by_slack_ids(mock_slack_client):
 
 @pytest.mark.django_db
 def test_build_verification_url(test_user):
-    token = verification_token.make_token(test_user)
-    url = build_email_verification_url(test_user.email, verification_token.make_token(test_user))
+    token = verification_token_generator.make_token(test_user)
+    url = build_email_verification_url(test_user.email, verification_token_generator.make_token(test_user))
     parsed = urlparse(url)
     assert parsed.scheme == 'http'
     assert parsed.netloc == 'localhost:3000'

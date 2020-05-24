@@ -3,7 +3,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from users.models import User
-from users.tokens import verification_token
+from users.tokens import verification_token_generator
 
 
 @pytest.mark.django_db
@@ -29,7 +29,7 @@ def test_verify_email(test_user):
     client = APIClient()
     test_user.save()
     data = {
-        'token': verification_token.make_token(test_user),
+        'token': verification_token_generator.make_token(test_user),
         'email': test_user.email,
     }
     response = client.post('/api/auth/verify/', data=data, format='json')
@@ -47,7 +47,7 @@ def test_verify_email__invalid_token(test_user):
         password='password',
     )
     data = {
-        'token': verification_token.make_token(other_user),
+        'token': verification_token_generator.make_token(other_user),
         'email': test_user.email
     }
     response = client.post('/api/auth/verify/', data=data, format='json')
@@ -57,6 +57,8 @@ def test_verify_email__invalid_token(test_user):
 @pytest.mark.django_db
 def test_checking_user_exists(test_user):
     client = APIClient()
+    test_user.is_verified = True
+    test_user.save()
     data_does_exist = {
         'email': 'test@profile.com',
     }
@@ -64,10 +66,21 @@ def test_checking_user_exists(test_user):
         'email': 'fail@profile.com',
     }
     response = client.post('/api/auth/exists/', data_does_exist, format='json')
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     response = client.post('/api/auth/exists/', data_does_not_exist, format='json')
-    assert response.status_code == 400
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_checking_user_exists__not_verified(test_user):
+    client = APIClient()
+    data = {
+        'email': 'test@profile.com',
+    }
+    response = client.post('/api/auth/exists/', data, format='json')
+    assert response.status_code == 403
+
 
 
 @pytest.mark.django_db

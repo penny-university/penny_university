@@ -5,19 +5,20 @@ from rest_framework import (
 )
 from rest_framework.response import Response
 from rest_framework.status import (
-    HTTP_200_OK,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
 
 from pennychat.serializers import UserChatSerializer
 from pennychat.models import Participant
 from .models import User
-from .tokens import verification_token
+from .tokens import verification_token_generator
 from .serializers import (
     UserSerializer,
     VerifyEmailSerializer,
+    GenericEmailSerializer,
 )
 
 
@@ -39,7 +40,7 @@ class RegisterUser(generics.CreateAPIView):
                 user.last_name = serializer.validated_data['last_name']
             except User.DoesNotExist:
                 user = serializer.save()
-            token = verification_token.make_token(user)
+            token = verification_token_generator.make_token(user)
             user.send_verification_email(token=token)
             return Response(status=HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
@@ -51,7 +52,7 @@ class VerifyEmail(views.APIView):
         if serializer.is_valid(raise_exception=True):
             try:
                 user = User.objects.get(email=serializer.validated_data['email'])
-                if verification_token.check_token(user, serializer.validated_data['token']):
+                if verification_token_generator.check_token(user, serializer.validated_data['token']):
                     user.is_verified = True
                     user.save()
                     return Response(status=HTTP_204_NO_CONTENT)
@@ -61,16 +62,32 @@ class VerifyEmail(views.APIView):
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
-class UserExists(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class SendVerificationEmail(views.APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = GenericEmailSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                user = User.objects.get(email=serializer.validated_data['email'])
+                token = verification_token_generator.make_token(user)
+                user.send_verification_email(token=token)
+                return Response(status=HTTP_204_NO_CONTENT)
+            except User.DoesNotExist:
+                return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-    def post(self, request):
-        data = request.data
-        user = self.get_queryset().filter(email=data.get('email', ''))
-        if user.exists():
-            return Response({}, status=HTTP_200_OK)
-        return Response({}, status=HTTP_400_BAD_REQUEST)
+
+class UserExists(views.APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = GenericEmailSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                user = User.objects.get(email=serializer.validated_data['email'])
+                if not user.is_verified:
+                    return Response({'detail': 'User email has not been verified.'}, status=HTTP_403_FORBIDDEN)
+                return Response(status=HTTP_204_NO_CONTENT)
+            except User.DoesNotExist:
+                return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class UserDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
