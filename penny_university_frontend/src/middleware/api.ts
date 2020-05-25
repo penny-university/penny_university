@@ -26,15 +26,18 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
     case 'PUT':
     case 'DELETE':
       return fetch(url, { method, body: jsonPayload, headers })
-        .then((response: Response) => response.json().then((json) => {
+        .then(async (response: Response) => {
           if (!response.ok) {
             return Promise.reject(response)
           }
-          const camelJson = camelizeKeys(json)
+          let camelJson = {}
+          console.log(response)
+          if (response.status !== 204) {
+            await response.json().then((json) => {
+              camelJson = camelizeKeys(json)
+            }).catch()
+          }
           return camelJson
-        })).catch(err => {
-          // Couldn't parse the json
-          return {}
         })
     default:
       return fetch(url, { headers })
@@ -79,7 +82,7 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
     const token = selectors.user.getToken(store.getState())
     return callApi(endpoint, method, payload, token).then(
       (response: any) => {
-        const metaWithPagination = response.results ? {...meta, count: response.count, next: response.next, previous: response.previous} : meta
+        const metaWithPagination = response.results ? { ...meta, count: response.count, next: response.next, previous: response.previous } : meta
         return next({
         payload: { result: response.results || response, responseSchema, meta: metaWithPagination },
         type: successType,
@@ -88,9 +91,9 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
         type: failureType,
         payload: { message: error.message || 'An error occurred.', status: error.status, meta },
       }),
-      )
-    }
-    return next(action)
+    )
+  }
+  return next(action)
 }
 
 export default api
