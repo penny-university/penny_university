@@ -67,6 +67,7 @@ export const signup = (payload: { email: string, password: string }): AnyAction 
     endpoint: ApiRoutes.register,
     method: 'POST',
     payload,
+    meta: { email: payload.email },
   },
 })
 
