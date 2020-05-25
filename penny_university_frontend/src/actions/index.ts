@@ -38,78 +38,45 @@ export const loadChatsList = (nextPageUrl: string = ApiRoutes.chats) => ({
 })
 
 // Creates an action that will fetch a chat
-const fetchChat = (url: string) => ({
+export const loadChatDetail = (chatID: number) => ({
   type: CALL_API,
   payload: {
     types: [CHAT_DETAIL_REQUEST, CHAT_DETAIL_SUCCESS, CHAT_DETAIL_FAILURE],
-    endpoint: url,
+    endpoint: ApiRoutes.chatDetail(chatID),
     schema: Schemas.CHAT,
   },
 })
 
 // Creates an action that will fetch the follow ups associated with a chat
-const fetchFollowUps = (chatID: number, nextPageUrl: string) => ({
+export const loadFollowUps = (chatID: number, nextPageUrl: string | undefined) => ({
   type: CALL_API,
   payload: {
     meta: { chatID },
     types: [FOLLOW_UPS_REQUEST, FOLLOW_UPS_SUCCESS, FOLLOW_UPS_FAILURE],
-    endpoint: nextPageUrl,
+    endpoint: nextPageUrl || `chats/${chatID}/follow-ups/`,
     schema: Schemas.FOLLOW_UP_ARRAY,
   },
 })
 
-const putFollowUp = (url: string, followUp: FollowUp) => ({
+export const updateFollowUp = (followUp: FollowUp) => ({
   type: CALL_API,
   payload: {
     types: [UPDATE_FOLLOW_UP_REQUEST, UPDATE_FOLLOW_UP_SUCCESS, UPDATE_FOLLOW_UP_FAILURE],
-    endpoint: url,
+    endpoint: `follow-ups/${followUp.id}/`,
     schema: Schemas.FOLLOW_UP,
     method: 'PUT',
     payload: followUp,
   },
 })
 
-const postFollowUp = (url: string, followUp: string) => ({
+export const createFollowUp = (chatID: number, followUp: { content: string }) => ({
   type: CALL_API,
   payload: {
     types: [CREATE_FOLLOW_UP_REQUEST, CREATE_FOLLOW_UP_SUCCESS, CREATE_FOLLOW_UP_FAILURE],
-    endpoint: url,
+    endpoint: `chats/${chatID}/follow-ups/`,
     schema: Schemas.FOLLOW_UP,
     method: 'POST',
     payload: followUp,
+    meta: { chatID },
   },
 })
-
-export const loadChatDetail = (chatID: number) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
-  const chat = getState().entities.chats[chatID]
-
-  if (chat) {
-    return null
-  }
-
-  return dispatch(fetchChat(`chats/${chatID}/`))
-}
-
-export const loadFollowUps = (chatID: number, nextPage: string) => (dispatch: ThunkDispatch<{}, {}, AnyAction>, getState: () => RootState) => {
-  const {
-    next,
-    count,
-    // @ts-ignore
-  } = getState().pagination.followUpsByChat[chatID] || {next: undefined, count: 0}
-  if (count > 0 && !next) {
-    return null
-  }
-  return dispatch(fetchFollowUps(chatID, next || `chats/${chatID}/follow-ups/`))
-}
-
-export const updateFollowUp = (followUp: FollowUp) => (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
-  const url = `follow-ups/${followUp.id}/`
-  return dispatch(putFollowUp(url, followUp))
-}
-
-export const createFollowUp = (chatID: number, followUp: string) => async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
-  const url = `chats/${chatID}/follow-ups/`
-  await dispatch(postFollowUp(url, followUp))
-
-  return dispatch(fetchFollowUps(chatID, `${url}?page=last`))
-}

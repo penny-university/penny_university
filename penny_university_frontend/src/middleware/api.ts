@@ -25,6 +25,7 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
   switch (method) {
     case 'POST':
     case 'PUT':
+    case 'DELETE':
       return fetch(url, { method, body: jsonPayload, headers })
         .then((response: Response) => response.json().then((json) => {
           if (!response.ok) {
@@ -32,7 +33,10 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
           }
           const camelJson = camelizeKeys(json)
           return camelJson
-        }))
+        })).catch(err => {
+          // Couldn't parse the json
+          return {}
+        })
     default:
       return fetch(url, { headers })
         .then((response: Response) => response.json().then((json) => {
