@@ -24,10 +24,7 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     filterset_fields = ['participants__user_id']
 
     def list(self, request, *args, **kwargs):
-        logger.info(request)
-        logger.info(self.get_queryset())
         queryset = self.filter_queryset(self.get_queryset())
-        logger.info(queryset)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
