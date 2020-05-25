@@ -7,34 +7,35 @@ import { connect } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { Container } from 'reactstrap'
 import { Modal } from './components'
-import { Navigation } from './components/nav'
-import AlertContainer from './containers/AlertContainer'
-import ChatsPage from './containers/ChatsPage'
-import ChatDetailPage from './containers/ChatDetailPage'
-import { checkAuth, logout } from './actions/user'
+import { Navigation, Alert, PrivateRoute } from './components'
+import ChatsPage from './pages/Chats'
+import ChatDetailPage from './pages/ChatDetail'
+import ProfilePage from './pages/Profile'
+import { bootstrap, logout } from './actions/user'
 import * as selectors from './selectors'
 import { RootState } from './reducers'
 import { Routes } from './constants'
+import { User } from './models'
 
 type StateProps = {
-  authed: boolean,
+  user: User,
 }
 
 type DispatchProps = {
-  dispatchCheckAuth: () => void,
+  dispatchBootstrap: () => void,
   dispatchLogout: () => void,
 }
 
 type Props = StateProps & DispatchProps
 
 const App = (props: Props) => {
-  const { dispatchCheckAuth, authed, dispatchLogout } = props
+  const { dispatchBootstrap, user, dispatchLogout } = props
   useEffect(() => {
-    dispatchCheckAuth()
-  })
+    dispatchBootstrap()
+  }, [dispatchBootstrap])
   return (
     <>
-      <Navigation authed={authed} logout={dispatchLogout} />
+      <Navigation user={user} logout={dispatchLogout} />
       <Container className="mt-3">
         <Switch>
           <Route path={Routes.ChatDetail}>
@@ -43,11 +44,12 @@ const App = (props: Props) => {
           <Route path={Routes.Chats}>
             <ChatsPage />
           </Route>
+          <PrivateRoute path={Routes.Profile} component={ProfilePage} />
           <Route path={Routes.Home}>
             <Redirect to={Routes.Chats} />
           </Route>
         </Switch>
-        <AlertContainer />
+        <Alert />
         <Modal />
       </Container>
     </>
@@ -55,11 +57,11 @@ const App = (props: Props) => {
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  authed: selectors.user.getAuthed(state),
+  user: selectors.user.getUser(state),
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>): DispatchProps => ({
-  dispatchCheckAuth: () => dispatch(checkAuth()),
+  dispatchBootstrap: () => dispatch(bootstrap()),
   dispatchLogout: () => dispatch(logout()),
 })
 

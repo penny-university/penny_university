@@ -5,7 +5,7 @@ import { render, fireEvent, screen } from '@testing-library/react'
 import ChatDetail from './ChatDetail'
 import { normalizedChat, normalizedFollowUps, users } from '../../tests/data'
 import { User } from '../../models'
-import { TestIDs } from '../followups/FollowUpCard'
+import { TestIDs } from '../follow-ups/FollowUpCard'
 
 const followUps = Object.values(normalizedFollowUps)
 
