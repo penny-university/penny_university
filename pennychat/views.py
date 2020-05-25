@@ -1,3 +1,4 @@
+import logging
 from rest_framework import viewsets, mixins, generics
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +11,7 @@ from .serializers import PennyChatSerializer, FollowUpSerializer
 from .permissions import IsOwner, method_is_authenticated, perform_is_authenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
+logger = logging.getLogger(__name__)
 
 class PennyChatViewSet(viewsets.ModelViewSet):
     """
@@ -19,6 +21,19 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     serializer_class = PennyChatSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['participants__user_id']
+
+    def list(self, request, *args, **kwargs):
+        logger.debug(args)
+        logger.debug(kwargs)
+        logger.debug(self.get_queryset())
+        queryset = self.filter_queryset(self.get_queryset())
+        logger.debug(queryset)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @perform_is_authenticated
     def perform_create(self, serializer):
