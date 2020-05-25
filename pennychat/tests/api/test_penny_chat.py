@@ -21,7 +21,7 @@ def test_penny_chat_list(test_chats_1):
     # first chat should be most recent chat
     assert 'participants' in response.data['results'][0]
     assert response.data['results'][0]['participants'][0]['role'] == 'Organizer'
-    assert response.data['results'][0]['participants'][0]['user']['id'] == 3
+    assert response.data['results'][0]['participants'][0]['user']['id'] == most_recent_chat.get_organizer().id
     assert chats[0]['title'] == most_recent_chat.title
 
 
@@ -45,7 +45,7 @@ def test_penny_chat_detail(test_chats_1):
     assert response.status_code == 200
     assert 'participants' in response.data
     assert response.data['participants'][0]['role'] == 'Organizer'
-    assert response.data['participants'][0]['user']['id'] == 1
+    assert response.data['participants'][0]['user']['id'] == penny_chat.get_organizer().id
     assert response.data['title'] == penny_chat.title
 
 
