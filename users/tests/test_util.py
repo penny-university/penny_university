@@ -1,14 +1,20 @@
 from copy import deepcopy
+from urllib.parse import (
+    urlparse,
+    urlencode,
+)
 
 from django.db import IntegrityError
 import pytest
 from slack.errors import SlackApiError
 
+from users.tokens import verification_token_generator
 from users.models import (
     SocialProfile,
     update_social_profile_from_slack,
     update_social_profile_from_slack_user,
     get_or_create_social_profile_from_slack_ids,
+    build_email_verification_url,
 )
 
 
@@ -188,3 +194,15 @@ def test_get_or_create_by_slack_ids(mock_slack_client):
     bill_user = SocialProfile.objects.get(slack_id=bill_user_id)
 
     assert resp == {bill_user_id: bill_user}
+
+
+@pytest.mark.django_db
+def test_build_verification_url(test_user):
+    token = verification_token_generator.make_token(test_user)
+    url = build_email_verification_url(test_user.email, verification_token_generator.make_token(test_user))
+    parsed = urlparse(url)
+    assert parsed.scheme == 'http'
+    assert parsed.netloc == 'localhost:3000'
+    assert parsed.path == '/verify'
+    assert urlencode({'email': test_user.email}) in parsed.query
+    assert token in parsed.query

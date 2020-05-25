@@ -173,5 +173,19 @@ REST_FRAMEWORK = {
 }
 
 
+# Twilio SendGrid
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
+
+
+# Override Auth Serializers
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer'
+}
+
+
 # Background Tasks
 REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # to make sure we remind them MORE than an hour in advance
