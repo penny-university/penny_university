@@ -1,10 +1,11 @@
 import fetchMock from 'fetch-mock'
 import {
-  checkAuth, dispatchLogout, FETCH_USER_REQUEST,
-  SET_TOKEN, CHECK_AUTH, LOGOUT_REQUEST, LOGOUT_USER,
+  bootstrap, dispatchLogout, Actions,
 } from '../actions/user'
+import { ChatActions } from '../actions'
 import ApiRoutes from '../constants'
 import { makeMockStore, baseUrl } from './config'
+import { chats } from './data'
 
 describe('auth flow', () => {
   beforeEach(() => {
@@ -15,12 +16,12 @@ describe('auth flow', () => {
     fetchMock.restore()
   })
 
-  it('should do nothing if token doesnt exist', () => {
+  it('should only fetch chats if token doesnt exist', () => {
     document.cookie = ''
     const store = makeMockStore()
 
-    const expectedActionTypes = [CHECK_AUTH]
-    store.dispatch(checkAuth())
+    const expectedActionTypes = [ChatActions.CHATS_LIST_REQUEST, Actions.BOOTSTRAP,]
+    store.dispatch(bootstrap())
 
     expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
   })
@@ -31,11 +32,15 @@ describe('auth flow', () => {
       body: { user: {} },
       headers: { 'content-type': 'application/json' },
     })
+    fetchMock.getOnce(`${baseUrl}chats/`, {
+      body: { results: chats },
+      headers: { 'content-type': 'application/json' },
+    })
 
     const store = makeMockStore()
 
-    const expectedActionTypes = [SET_TOKEN, FETCH_USER_REQUEST, CHECK_AUTH]
-    store.dispatch(checkAuth())
+    const expectedActionTypes = [Actions.SET_TOKEN, Actions.FETCH_USER_REQUEST, ChatActions.CHATS_LIST_REQUEST, Actions.BOOTSTRAP]
+    store.dispatch(bootstrap())
     expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
   })
 
@@ -48,7 +53,7 @@ describe('auth flow', () => {
 
     const store = makeMockStore()
 
-    const expectedActionTypes = [LOGOUT_REQUEST, LOGOUT_USER]
+    const expectedActionTypes = [Actions.LOGOUT_REQUEST, Actions.LOGOUT_USER]
     // @ts-ignore
     return store.dispatch(dispatchLogout()).then(() => {
       expect(document.cookie).toEqual('')

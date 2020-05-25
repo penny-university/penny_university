@@ -34,7 +34,7 @@ def generate_follow_ups(chat, social_profiles):
     return followups
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def test_chats_1():
     social_profile_1 = generate_social_profile('one')
     social_profile_2 = generate_social_profile('two')

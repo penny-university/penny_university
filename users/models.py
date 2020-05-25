@@ -1,15 +1,34 @@
+from urllib.parse import urlencode
+
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models, IntegrityError
 from django.db.models import Q
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
 from slack.errors import SlackApiError
 
 from common.utils import pprint_obj, get_slack_client
 
 
 class User(AbstractUser):
-    # Eventually, we will add fields here to extend this class
-    pass
+    is_verified = models.BooleanField(default=False)
+
+    def send_verification_email(self, token):
+        context = {
+            'verification_url': build_email_verification_url(self.email, token),
+            'first_name': self.first_name
+        }
+        text_email = render_to_string('users/verify_email.txt', context)
+        html_email = render_to_string('users/verify_email.html', context)
+        send_mail(
+            'Welcome to Penny University | Verify Your Email',
+            text_email,
+            'penny.university.mod@gmail.com',  # TODO: Replace email with one that has a Penny U domain
+            [self.email],
+            html_message=html_email,
+        )
 
 
 class SocialProfile(models.Model):
@@ -39,7 +58,7 @@ class SocialProfile(models.Model):
 
         email_team_identification = self.email and self.slack_team_id
         if not (email_team_identification or self.slack_id):
-            raise ValidationError('UserProfile must be created with either 1) slack_id or 2) email AND slack_team_id')
+            raise ValidationError('SocialProfile must be created with either 1) slack_id or 2) email AND slack_team_id')
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -143,3 +162,17 @@ def get_or_create_social_profile_from_slack_ids(slack_user_ids, slack_client=Non
         profiles[slack_user_id] = profile
 
     return profiles
+
+
+def build_email_verification_url(email, token):
+    """
+    Generates a url for the user to visit in the web app. If FRONT_END_HOST is not set, an exception will be raised.
+    :param email: A valid user email
+    :param token: Unique token to verify user email
+    """
+    base = settings.FRONT_END_HOST
+    query = {
+        'email': email,
+        'token': token,
+    }
+    return f'{base}/verify?{urlencode(query)}'

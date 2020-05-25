@@ -26,6 +26,18 @@ def test_penny_chat_list(test_chats_1):
 
 
 @pytest.mark.django_db
+def test_penny_chat_participants_list(test_chats_1):
+    client = APIClient()
+    user_id = test_chats_1[0].participants.all()[0].user_id
+    response = client.get(f'/api/chats/?participants__user_id={user_id}')
+    assert response.status_code == 200
+    assert response.data['count'] == 2
+    chats = response.data['results']
+    for chat in chats:
+        assert int(user_id) in [participant['user']['id'] for participant in chat['participants']]
+
+
+@pytest.mark.django_db
 def test_penny_chat_detail(test_chats_1):
     client = APIClient()
     penny_chat = test_chats_1[0]

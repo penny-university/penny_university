@@ -8,12 +8,14 @@ const ApiRoutes = {
   exists: 'auth/exists/',
   chats:  'chats/',
   chatDetail: (id: number) => `chats/${id}/`,
+  userChats: (userID: string) => `chats/?participants__user_id=${userID}`
 }
 
 export const Routes = {
-  Home:"/",
-  ChatDetail: "/chats/:id",
-  Chats: "/chats",
+  Profile: '/profile',
+  Chats: '/chats',
+  ChatDetail: '/chats/:id',
+  Home: '/',
 }
 
 export default ApiRoutes

@@ -1,5 +1,4 @@
 import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
-import { Schema } from 'normalizr'
 import { camelizeKeys, decamelizeKeys } from 'humps'
 import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
