@@ -13,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 logger = logging.getLogger(__name__)
 
+
 class PennyChatViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows penny chats to be viewed or edited.
@@ -23,11 +24,10 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     filterset_fields = ['participants__user_id']
 
     def list(self, request, *args, **kwargs):
-        logger.debug(args)
-        logger.debug(kwargs)
-        logger.debug(self.get_queryset())
+        logger.info(request)
+        logger.info(self.get_queryset())
         queryset = self.filter_queryset(self.get_queryset())
-        logger.debug(queryset)
+        logger.info(queryset)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
