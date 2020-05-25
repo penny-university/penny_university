@@ -31,8 +31,7 @@ type ChatListProps = StateProps & DispatchProps & OwnProps
 const ChatList = ({ chats, getChatByID, nextPageUrl, isFetching, loadChatsList }: ChatListProps) => {
   const loadMore = (page: number) => {
     if (nextPageUrl.endsWith(page.toString()) && !isFetching) {
-      const r = loadChatsList(nextPageUrl)
-      console.log({nextPageUrl, page, r})
+      loadChatsList(nextPageUrl)
     }
   }
   return (

@@ -31,7 +31,6 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
             return Promise.reject(response)
           }
           let camelJson = {}
-          console.log(response)
           if (response.status !== 204) {
             await response.json().then((json) => {
               camelJson = camelizeKeys(json)
