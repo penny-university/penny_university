@@ -1,6 +1,7 @@
 import pytest
 
 from rest_framework.test import APIClient
+from rest_framework.authtoken.models import Token
 
 from users.models import User
 from users.tokens import verification_token_generator
@@ -134,4 +135,67 @@ def test_user_log_in__not_verified(test_user):
 def test_user_detail(test_user):
     client = APIClient()
     response = client.get(f'/api/users/{test_user.id}/')
-    assert response.data['email'] == 'test@profile.com'
+    assert response.data['first_name'] == 'test'
+    assert response.data['last_name'] == 'user'
+
+
+@pytest.mark.django_db
+def test_update_user_detail(test_user):
+    data = {
+        'first_name': 'Bill',
+        'last_name': 'Update'
+    }
+    token = Token.objects.create(user=test_user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    client.put(f'/api/users/{test_user.id}/', data=data, format='json')
+    test_user.refresh_from_db()
+    assert test_user.first_name == 'Bill'
+    assert test_user.last_name == 'Update'
+
+
+@pytest.mark.django_db
+def test_update_user_detail__wrong_user(test_user):
+    wrong_user = User.objects.create_user(
+        username='wrong@user.com',
+        password='password',
+    )
+    data = {
+        'first_name': 'Bill',
+        'last_name': 'Update'
+    }
+    token = Token.objects.create(user=wrong_user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    response = client.put(f'/api/users/{test_user.id}/', data=data, format='json')
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_partial_user_detail(test_user):
+    data = {
+        'first_name': 'Bill'
+    }
+    token = Token.objects.create(user=test_user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    client.patch(f'/api/users/{test_user.id}/', data=data, format='json')
+    test_user.refresh_from_db()
+    assert test_user.first_name == 'Bill'
+    assert test_user.last_name == 'user'
+
+
+@pytest.mark.django_db
+def test_partial_user_detail__wrong_user(test_user):
+    wrong_user = User.objects.create_user(
+        username='wrong@user.com',
+        password='password',
+    )
+    data = {
+        'first_name': 'Bill'
+    }
+    token = Token.objects.create(user=wrong_user)
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    response = client.patch(f'/api/users/{test_user.id}/', data=data, format='json')
+    assert response.status_code == 403

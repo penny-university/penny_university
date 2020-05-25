@@ -1,6 +1,6 @@
 from functools import wraps
 
-from rest_framework.exceptions import NotAuthenticated
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import BasePermission
 
 
@@ -39,6 +39,23 @@ def method_is_authenticated(func):
         request = args[1]
         if not request.auth:
             raise NotAuthenticated
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def method_user_is_self(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        """
+        Checks whether the object being accessed is the authenticated user.
+        If not, it raises a PermissionDenied exception.
+        This decorator is meant to be used when writing HTTP methods for APIViews, such as get() and put().
+        """
+        user = args[0].get_object()
+        request = args[1]
+        if not request.user == user:
+            raise PermissionDenied
         return func(*args, **kwargs)
 
     return wrapper
