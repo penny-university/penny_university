@@ -3,10 +3,11 @@ import pytest
 from rest_framework.test import APIClient
 
 from users.models import User
+from users.tokens import verification_token_generator
 
 
 @pytest.mark.django_db
-def test_register_user(test_social_profile):
+def test_register_user(test_social_profile, mocker):
     client = APIClient()
     data = {
         'email': 'test@profile.com',
@@ -14,35 +15,93 @@ def test_register_user(test_social_profile):
         'first_name': 'test',
         'last_name': 'profile',
     }
-    response = client.post('/api/auth/register/', data=data, format='json')
-    assert response.status_code == 200
-    assert response.data['key'] is not None
+    with mocker.patch.object(User, 'send_verification_email'):
+        response = client.post('/api/auth/register/', data=data, format='json')
+    assert response.status_code == 204
     user = User.objects.get(email='test@profile.com')
-    assert test_social_profile in user.social_profiles.all()
+    assert not user.is_verified
+    assert user.has_usable_password()
+    assert user.first_name == 'test' and user.last_name == 'profile'
 
 
 @pytest.mark.django_db
-def test_checking_user_exists():
+def test_verify_email(test_user):
     client = APIClient()
+    test_user.save()
+    data = {
+        'token': verification_token_generator.make_token(test_user),
+        'email': test_user.email,
+    }
+    response = client.post('/api/auth/verify/', data=data, format='json')
+    test_user.refresh_from_db()
+    assert response.status_code == 204
+    assert test_user.is_verified
+
+
+@pytest.mark.django_db
+def test_verify_email__invalid_token(test_user):
+    client = APIClient()
+    data = {
+        'email': test_user.email
+    }
+    response = client.post('/api/auth/verification-email/', data=data, format='json')
+    assert response.status_code == 204
+
+
+@pytest.mark.django_db
+def test_send_verification_email(test_user):
+    client = APIClient()
+    data = {
+        'email': test_user.email
+    }
+    response = client.post('/api/auth/verification-email/', data=data, format='json')
+    assert response.status_code == 204
+
+
+@pytest.mark.django_db
+def test_send_verification_email__user_does_not_exist(test_user):
+    client = APIClient()
+    data = {
+        'email': 'notregistered@test.com'
+    }
+    response = client.post('/api/auth/verification-email/', data=data, format='json')
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_checking_user_exists(test_user):
+    client = APIClient()
+    test_user.is_verified = True
+    test_user.save()
     data_does_exist = {
         'email': 'test@profile.com',
     }
     data_does_not_exist = {
-        'email': 'test@profile.com',
+        'email': 'fail@profile.com',
     }
-    User.objects.create_user(username='test@profile.com', email='test@profile.com', password='password')
     response = client.post('/api/auth/exists/', data_does_exist, format='json')
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     response = client.post('/api/auth/exists/', data_does_not_exist, format='json')
-    assert response.status_code == 200
+    assert response.status_code == 404
 
 
 @pytest.mark.django_db
-def test_user_log_in_and_protected_request(test_social_profile):
+def test_checking_user_exists__not_verified(test_user):
     client = APIClient()
-    user = User.objects.create_user(username='test@profile.com', email='test@profile.com', password='password')
-    test_social_profile.user = user
+    data = {
+        'email': 'test@profile.com',
+    }
+    response = client.post('/api/auth/exists/', data, format='json')
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_user_log_in__verified_and_protected_request(test_social_profile, test_user):
+    client = APIClient()
+    test_user.is_verified = True
+    test_user.save()
+    test_social_profile.user = test_user
     test_social_profile.save()
     data = {
         'email': 'test@profile.com',
@@ -61,8 +120,18 @@ def test_user_log_in_and_protected_request(test_social_profile):
 
 
 @pytest.mark.django_db
-def test_user_detail(test_social_profile):
+def test_user_log_in__not_verified(test_user):
     client = APIClient()
-    user = User.objects.create_user(username='test@profile.com', email='test@profile.com', password='password')
-    response = client.get(f'/api/users/{user.id}/')
+    data = {
+        'email': 'test@profile.com',
+        'password': 'password'
+    }
+    response = client.post('/api/auth/login/', data=data, format='json')
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_user_detail(test_user):
+    client = APIClient()
+    response = client.get(f'/api/users/{test_user.id}/')
     assert response.data['email'] == 'test@profile.com'

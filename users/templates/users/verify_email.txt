@@ -1,0 +1,5 @@
+{% autoescape off %}
+Welcome to Penny University!
+Thank you for signing up, {{ first_name }}. Before we get started, please verify your email by clicking this link:
+{{ verification_url }}
+{% endautoescape %}
