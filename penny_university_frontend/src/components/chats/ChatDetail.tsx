@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Card } from 'reactstrap'
 import {
-  HeartButton, CreateButton, SaveButton, CancelButton,
+  CreateButton, SaveButton, CancelButton,
 } from '../buttons'
 import Date from '../Date'
 import { Content, EditContent } from '../content'
@@ -58,7 +58,6 @@ const ChatDetail = ({
         <Date className="text-secondary" date={chat.date} />
         {chat.description ? <Content className="mb-4" content={chat.description} /> : null}
         <div className="mb-4">
-          <HeartButton className="mr-2" count={followUps.length} />
           <CreateButton type="Follow Up" onClick={createOnPress} />
         </div>
         <h5 className="mb-3">
