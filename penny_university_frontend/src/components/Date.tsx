@@ -6,7 +6,7 @@ type DateProps = {
   className: string,
 }
 
-const Date = ({date, className}: DateProps) => {
+const Date = ({ date, className }: DateProps) => {
   let format = moment(date) > moment() ? 'M/D/YYYY @ h:mm A' : 'M/D/YYYY'
   return (
     <p className={className}><strong>{moment(date).format(format)}</strong></p>
