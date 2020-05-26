@@ -21,7 +21,7 @@ const ChatCard = ({ chat }: ChatCardProps) =>
     <Card body className="mb-3 border-0 shadow-sm">
       <CardTitle tag="h5" className="d-flex">
         <Link className="text-reset" to={`/chats/${chat.id}`}>{chat.title}</Link>
-        {moment(chat.date) > moment() ? <Badge className="ml-2" color="danger">Upcoming</Badge> : null}
+        {chat.upcoming && <Badge className="ml-2" color="danger">Upcoming</Badge>}
       </CardTitle>
       <Date className="text-secondary" date={chat.date} />
       {chat.description

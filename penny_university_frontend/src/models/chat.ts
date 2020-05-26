@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export interface ChatType {
   id: number,
   title: string,
@@ -13,6 +15,7 @@ class Chat implements ChatType {
   id: number
   title: string
   date: string
+  upcoming: boolean
   description: string
   followups: string
   url: string
@@ -20,7 +23,9 @@ class Chat implements ChatType {
   constructor(data: ChatType = { id: NaN, title: '', date: '', description: '', followups: '', url: '', participants: []}) {
     this.id = data.id
     this.title = data.title
-    this.date = data.date
+    let dateFormat = moment(data.date) > moment() ? 'M/D/YYYY @ h:mm A' : 'M/D/YYYY'
+    this.date = moment(data.date).format(dateFormat)
+    this.upcoming = moment(data.date) > moment()
     this.description = data.description
     this.followups = data.followups
     this.url = data.url
