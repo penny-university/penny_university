@@ -1,5 +1,4 @@
 from rest_framework import (
-    mixins,
     generics,
     views,
 )
@@ -11,12 +10,17 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from common.permissions import (
+    method_user_is_self,
+    method_is_authenticated,
+)
 from pennychat.serializers import UserChatSerializer
 from pennychat.models import Participant
 from .models import User
 from .tokens import verification_token_generator
 from .serializers import (
-    UserSerializer,
+    RegisterUserSerializer,
+    UserDetailSerializer,
     VerifyEmailSerializer,
     GenericEmailSerializer,
 )
@@ -24,11 +28,11 @@ from .serializers import (
 
 class RegisterUser(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = RegisterUserSerializer
 
     def post(self, request, format=None, **kwargs):
         user_data = request.data
-        serializer = UserSerializer(data=user_data, context={'request': request})
+        serializer = RegisterUserSerializer(data=user_data, context={'request': request})
 
         if serializer.is_valid():
             try:
@@ -90,12 +94,22 @@ class UserExists(views.APIView):
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
-class UserDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
+class UserDetail(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserDetailSerializer
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+
+    @method_is_authenticated
+    @method_user_is_self
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    @method_is_authenticated
+    @method_user_is_self
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
 
 class ListUserChats(generics.GenericAPIView):

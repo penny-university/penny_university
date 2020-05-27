@@ -10,16 +10,15 @@ class SocialProfileSerializer(serializers.ModelSerializer):
         fields = ['id', 'real_name', 'slack_team_id']
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class RegisterUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
     first_name = serializers.CharField()
     last_name = serializers.CharField()
-    chats = serializers.HyperlinkedIdentityField(view_name='user-chat-list')
 
     class Meta:
         model = User
-        fields = ['id', 'url', 'email', 'password', 'first_name', 'last_name', 'chats']
+        fields = ['id', 'email', 'password', 'first_name', 'last_name']
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -32,6 +31,15 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         )
 
         return user
+
+
+class UserDetailSerializer(serializers.HyperlinkedModelSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'url', 'first_name', 'last_name']
 
 
 class CustomLoginSerializer(serializers.Serializer):
