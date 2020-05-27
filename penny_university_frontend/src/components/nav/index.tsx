@@ -23,7 +23,7 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
           <DropdownMenu>
             <div>
               <Link
-                to={Routes.Profile}
+                to={Routes.Profile.replace(':id', user.id.toString())}
                 className="btn btn-link"
               >
                 Profile
