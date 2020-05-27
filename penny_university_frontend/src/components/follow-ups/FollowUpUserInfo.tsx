@@ -1,8 +1,10 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import Date from '../Date'
 import { User } from '../../models'
+import { Routes } from '../../constants'
 
 type FollowUpUserInfo = {
   user: User,
@@ -17,7 +19,11 @@ const FollowUpUserInfo = ({ date, user, role }: FollowUpUserInfo) => (
     </div>
     <div>
       <h6>
-        {user.displayName}
+        <Link
+          to={Routes.Profile.replace(':id', user.id.toString())}
+        >
+          {user.displayName}
+        </Link>
         {role === 'Organizer' ? ` - ${role}` : ''}
       </h6>
       <Date className="text-secondary" date={date} />
