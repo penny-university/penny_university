@@ -55,7 +55,7 @@ const ChatDetail = ({
         <div className="chat-detail-header">
           <h3 className="mr-3">{chat.title}</h3>
         </div>
-        <Date className="text-secondary" date={chat.date} />
+        <Date className="text-secondary" date={chat.formattedDate} />
         {chat.description ? <Content className="mb-4" content={chat.description} /> : null}
         <div className="mb-4">
           <CreateButton type="Follow Up" onClick={createOnPress} />
