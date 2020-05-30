@@ -101,7 +101,7 @@ jobs:
           CI: false
         run: |
           npm install
-          npm run build
+          API_ROOT='/api/' npm run build
       - name: Commit frontend build
         run: |
           git config --global user.email "penny@university.com"
