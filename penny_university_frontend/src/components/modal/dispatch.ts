@@ -34,10 +34,8 @@ const modalDispatch = () => {
   })
 
   const settings = (user: User) => open({
-    payload: {
-      name: ModalNames.SETTINGS,
-      props: { user },
-    },
+    name: ModalNames.SETTINGS,
+    props: { user },
   })
 
   const authPassword = (email: string) => open({
