@@ -143,7 +143,8 @@ def test_user_detail(test_user):
 def test_update_user_detail(test_user):
     data = {
         'first_name': 'Bill',
-        'last_name': 'Update'
+        'last_name': 'Update',
+        'email': 'email@update.com'
     }
     token = Token.objects.create(user=test_user)
     client = APIClient()
