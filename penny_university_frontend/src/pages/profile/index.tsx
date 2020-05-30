@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
@@ -23,19 +23,25 @@ type DispatchProps = {
 
 type TParams = { id: string };
 
-type ChatPageProps = StateProps & DispatchProps & RouteComponentProps<TParams>
+type ProfilePageProps = StateProps & DispatchProps & RouteComponentProps<TParams>
 
-const ChatsPage = ({ loadChatsList, match, me, user }: ChatPageProps) => {
+const ProfilePage = ({ loadChatsList, match, me, user }: ProfilePageProps) => {
   const { id } = match.params
   useEffect(() => {
     loadChatsList(ApiRoutes.userChats(id), id)
   }, [loadChatsList, id])
   const myProfile = user?.id === me?.id
-  const possesive =  myProfile ? 'My ' : `${user?.displayName}'s`
+  const possesive = myProfile ? 'My ' : `${user?.displayName}'s`
+  const openSettingsModal = useCallback(
+    () => {
+      modalDispatch.settings(me)
+    },
+    [me],
+  );
   return (
     <div>
       <div className="d-flex flex-row-reverse">
-        { myProfile ? <SettingsButton onClick={() => modalDispatch.settings(user)} /> : null}
+        {myProfile ? <SettingsButton onClick={openSettingsModal} /> : null}
       </div>
       <h1>{`${possesive} Chats`}</h1>
       <ChatList filter={{ key: id, query: `participants__user_id=${id}` }} />
@@ -43,10 +49,13 @@ const ChatsPage = ({ loadChatsList, match, me, user }: ChatPageProps) => {
   )
 }
 
-const mapStateToProps = (state: RootState, ownProps: ChatPageProps) => ({
-  me: selectors.user.getUser(state),
-  user: selectors.entities.getUserByID(state, ownProps.match.params.id)
-})
+const mapStateToProps = (state: RootState, ownProps: ProfilePageProps) => {
+  console.log(selectors.entities.getUserByID(state, ownProps.match.params.id))
+  return ({
+    me: selectors.user.getUser(state),
+    user: selectors.entities.getUserByID(state, ownProps.match.params.id),
+  })
+}
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
   // @ts-ignore
@@ -54,4 +63,4 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
 })
 
 // @ts-ignore
-export default connect(mapStateToProps, mapDispatchToProps)(ChatsPage)
+export default connect(mapStateToProps, mapDispatchToProps, null)(ProfilePage)

@@ -103,7 +103,7 @@ export const updateUser = (payload: {firstName: string, lastName: string}, id: s
   payload: {
     types: [Actions.UPDATE_USER_REQUEST, Actions.UPDATE_USER_SUCCESS, Actions.UPDATE_USER_FAILURE],
     endpoint: ApiRoutes.updateUser(id),
-    method: 'PUT',
+    method: 'PATCH',
     payload,
   },
 })
