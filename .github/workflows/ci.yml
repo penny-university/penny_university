@@ -6,7 +6,8 @@ on:
       - '*'
   push:
     branches:
-      - master
+      # TODO!  should be master
+      - mvp
 
 jobs:
   test-backend:
@@ -62,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ '10' ]
+        node: [ '12' ]
     steps:
     - uses: actions/checkout@v1
     - name: Set Up Node ${{ matrix.node }}
@@ -87,6 +88,19 @@ jobs:
     steps:
       - uses: actions/checkout@v1
         if: github.event_name == 'push'
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: Build Frontend
+          working-directory: ./penny_university_frontend
+          run: |
+            npm install
+            npm run build
+      - name: Commit frontend build
+        run: |
+          git add .
+          git commit -m"commit frontend build"
       - name: Add Heroku credentials
         if: github.event_name == 'push'
         run: |
@@ -101,10 +115,11 @@ jobs:
         run: |
           echo "NOTE: this isn't going to work once the db gets too large, but while we can take advantage of this extra safety, why not?"
           heroku pg:backups:capture -a penny-university || ./script/message_to_slack "${{ secrets.SLACK_API_KEY }}" "DEPLOY FAILED" 1
-      - name: Push
+      - name: Push to Production
         if: github.event_name == 'push'
         run: |
           echo "NOTE: if this suddenly breaks, it might be because of an expired API key"
-          git remote add heroku https://git.heroku.com/penny-university.git  || ./script/message_to_slack "${{ secrets.SLACK_API_KEY }}" "DEPLOY FAILED" 1
+          # TODO! john -> university
+          git remote add heroku https://git.heroku.com/penny-john.git  || ./script/message_to_slack "${{ secrets.SLACK_API_KEY }}" "DEPLOY FAILED" 1
           git push heroku HEAD:master -f  || ./script/message_to_slack "${{ secrets.SLACK_API_KEY }}" "DEPLOY FAILED" 1
           ./script/message_to_slack "${{ secrets.SLACK_API_KEY }}" "SUCCESSFUL DEPLOY"
