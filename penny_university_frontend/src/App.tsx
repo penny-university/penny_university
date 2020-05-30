@@ -11,6 +11,7 @@ import { Navigation, Alert } from './components'
 import ChatsPage from './pages/Chats'
 import ChatDetailPage from './pages/ChatDetail'
 import { ProfilePage } from './pages'
+import VerifyPage from './pages/Verify'
 import { bootstrap, logout } from './actions/user'
 import * as selectors from './selectors'
 import { RootState } from './reducers'
@@ -38,12 +39,9 @@ const App = (props: Props) => {
       <Navigation user={user} logout={dispatchLogout} />
       <Container className="mt-3">
         <Switch>
-          <Route path={Routes.ChatDetail}>
-            <ChatDetailPage />
-          </Route>
-          <Route path={Routes.Chats}>
-            <ChatsPage />
-          </Route>
+          <Route path={Routes.ChatDetail} component={ChatDetailPage} />
+          <Route path={Routes.Chats} component={ChatsPage} />
+          <Route path={Routes.VerifyEmail} component={VerifyPage} />
           <Route path={Routes.Profile} component={ProfilePage} />
           <Route path={Routes.Home}>
             <Redirect to={Routes.Chats} />

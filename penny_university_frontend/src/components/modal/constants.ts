@@ -8,6 +8,7 @@ const ModalNames = {
   AUTH_PASSWORD: 'AUTH_PASSWORD',
   AUTH_SIGNUP: 'AUTH_SIGNUP',
   SETTINGS: 'SETTINGS',
+  VERIFY_EMAIL: 'VERIFY_EMAIL',
 }
 
 export {

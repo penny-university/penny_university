@@ -1,7 +1,7 @@
 import { combineReducers, applyMiddleware, createStore, compose } from 'redux'
 import { AnyAction } from 'redux'
 import { normalize } from 'normalizr'
-import { ChatActions } from '../actions'
+import { ChatActions, UserActions } from '../actions'
 import paginate, { paginationInitialState } from './paginate'
 import user, { initialState as userInitialState } from './user'
 import { Actions as UserAction } from '../actions/user'
@@ -16,6 +16,21 @@ const composeEnhancers = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ||
 
 // Updates an entity cache in response to any action
 // with response.entities, such as a CHATS_LIST_SUCCESS
+
+const failureTypes = [
+  ChatActions.CHATS_LIST_FAILURE,
+  ChatActions.CHAT_DETAIL_FAILURE,
+  ChatActions.FOLLOW_UPS_FAILURE,
+  ChatActions.CREATE_FOLLOW_UP_FAILURE,
+  ChatActions.UPDATE_FOLLOW_UP_FAILURE,
+  UserActions.FETCH_USER_FAILURE,
+  UserActions.LOGIN_FAILURE,
+  UserActions.SIGNUP_FAILURE,
+  UserActions.LOGOUT_FAILURE,
+  UserActions.USER_EXISTS_FAILURE,
+  UserActions.RESEND_VERIFY_EMAIL_FAILURE,
+  UserActions.VERIFY_EMAIL_FAILURE,
+]
 
 const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, }, action: AnyAction): EntityState => {
   const { result, responseSchema } = action.payload || {}
@@ -49,7 +64,7 @@ const errorReducer = (state = { status: NaN, message: '' }, action: AnyAction): 
   const { type, payload } = action
   if (type === ChatActions.CLEAR_ERROR_MESSAGE) {
     return { status: NaN, message: '' }
-  } if (payload) {
+  } else if (failureTypes.includes(action.type)) {
     return payload
   }
   return state

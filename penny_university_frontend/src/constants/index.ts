@@ -9,7 +9,9 @@ const ApiRoutes = {
   chats:  'chats/',
   chatDetail: (id: number) => `chats/${id}/`,
   userChats: (userID: string) => `chats/?participants__user_id=${userID}`,
-  updateUser: (id: string) => `users/${id}/`
+  updateUser: (id: string) => `users/${id}/`,
+  resendEmail: 'auth/verification-email/',
+  verifyEmail: 'auth/verify/', 
 }
 
 export const Routes = {
@@ -17,6 +19,7 @@ export const Routes = {
   Chats: '/chats',
   ChatDetail: '/chats/:id',
   Home: '/',
+  VerifyEmail: '/verify',
 }
 
 export default ApiRoutes
