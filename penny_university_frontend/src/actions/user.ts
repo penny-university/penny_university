@@ -23,6 +23,12 @@ export const Actions = {
   USER_EXISTS_REQUEST: 'USER_EXISTS_REQUEST',
   USER_EXISTS_SUCCESS: 'USER_EXISTS_SUCCESS',
   USER_EXISTS_FAILURE: 'USER_EXISTS_FAILURE',
+  RESEND_VERIFY_EMAIL_REQUEST: 'RESEND_VERIFY_EMAIL_REQUEST',
+  RESEND_VERIFY_EMAIL_SUCCESS: 'RESEND_VERIFY_EMAIL_SUCCESS',
+  RESEND_VERIFY_EMAIL_FAILURE: 'RESEND_VERIFY_EMAIL_FAILURE',
+  VERIFY_EMAIL_REQUEST: 'VERIFY_EMAIL_REQUEST',
+  VERIFY_EMAIL_SUCCESS: 'VERIFY_EMAIL_SUCCESS',
+  VERIFY_EMAIL_FAILURE: 'VERIFY_EMAIL_FAILURE',
 }
 
 
@@ -61,11 +67,12 @@ export const signup = (payload: { email: string, password: string }): AnyAction 
     endpoint: ApiRoutes.register,
     method: 'POST',
     payload,
+    meta: { email: payload.email },
   },
 })
 
 
-const userExists = (email: string) => ({
+export const userExists = (email: string) => ({
   type: CALL_API,
   payload: {
     types: [Actions.USER_EXISTS_REQUEST, Actions.USER_EXISTS_SUCCESS, Actions.USER_EXISTS_FAILURE],
@@ -79,6 +86,7 @@ const userExists = (email: string) => ({
 export const logout = () => ({
   type: Actions.LOGOUT_USER,
 })
+
 export const logoutRequest = () => ({
   type: CALL_API,
   payload: {
@@ -88,8 +96,28 @@ export const logoutRequest = () => ({
   },
 })
 
+export const resendVerifyEmail = (email: string) => ({
+  type: CALL_API,
+  payload: {
+    types: [Actions.RESEND_VERIFY_EMAIL_REQUEST, Actions.RESEND_VERIFY_EMAIL_SUCCESS, Actions.RESEND_VERIFY_EMAIL_FAILURE],
+    endpoint: ApiRoutes.resendEmail,
+    payload: { email },
+    method: 'POST',
+  },
+})
+
+export const verifyEmail = (payload: {token: string, email: string }) => ({
+  type: CALL_API,
+  payload: {
+    types: [Actions.VERIFY_EMAIL_REQUEST, Actions.VERIFY_EMAIL_SUCCESS, Actions.VERIFY_EMAIL_FAILURE],
+    endpoint: ApiRoutes.verifyEmail,
+    payload,
+    method: 'POST',
+  },
+})
+
+
+
 export const dispatchLogin = (payload: { email: string, password: string }) => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(login(payload))
 
 export const dispatchLogout = () => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
-
-export const dispatchUserExists = (email: string ) => async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => dispatch(userExists(email))
