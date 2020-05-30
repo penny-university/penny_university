@@ -55,7 +55,7 @@ instead.
 * Create new app and call it "penny-<your_name>' and then follow instructions. Basically:
     * `brew install heroku cli`
     * Add your ssh key
-    * Configure Heroku as a git remote: `heroku git:remote -a penny-<your_name>`
+    * Configure Heroku as a git remote: `heroku git:remote -a penny-<your_name>`    
 * Push your dev PennyU into that project: `git push heroku master`
 * Set up environment vars:
     * `heroku config:set `heroku config:edit -a penny-<your_name>`
