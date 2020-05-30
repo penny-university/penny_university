@@ -8,7 +8,8 @@ const ApiRoutes = {
   exists: 'auth/exists/',
   chats:  'chats/',
   chatDetail: (id: number) => `chats/${id}/`,
-  userChats: (userID: string) => `chats/?participants__user_id=${userID}`
+  userChats: (userID: string) => `chats/?participants__user_id=${userID}`,
+  updateUser: (id: string) => `users/${id}/`
 }
 
 export const Routes = {

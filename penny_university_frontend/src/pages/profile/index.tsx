@@ -3,12 +3,14 @@ import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { RouteComponentProps } from 'react-router-dom'
-import { ChatList } from '../components'
-import { User } from '../models'
-import { RootState } from '../reducers'
-import * as selectors from '../selectors'
-import { loadChatsList } from '../actions/chat'
-import ApiRoutes from '../constants'
+import { ChatList } from '../../components'
+import { SettingsButton } from '../../components/buttons'
+import modalDispatch from '../../components/modal/dispatch'
+import { User } from '../../models'
+import { RootState } from '../../reducers'
+import * as selectors from '../../selectors'
+import { loadChatsList } from '../../actions/chat'
+import ApiRoutes from '../../constants'
 
 type StateProps = {
   user: User,
@@ -27,18 +29,22 @@ const ChatsPage = ({ loadChatsList, match, me, user }: ChatPageProps) => {
   const { id } = match.params
   useEffect(() => {
     loadChatsList(ApiRoutes.userChats(id), id)
-  }, [loadChatsList])
-  const possesive = user?.id === me?.id ? 'My ' : `${user?.displayName}'s`
+  }, [loadChatsList, id])
+  const myProfile = user?.id === me?.id
+  const possesive =  myProfile ? 'My ' : `${user?.displayName}'s`
   return (
     <div>
+      <div className="d-flex flex-row-reverse">
+        { myProfile ? <SettingsButton onClick={() => modalDispatch.settings(user)} /> : null}
+      </div>
       <h1>{`${possesive} Chats`}</h1>
-      <ChatList filter={{key: id, query: `participants__user_id=${id}`}} />
+      <ChatList filter={{ key: id, query: `participants__user_id=${id}` }} />
     </div>
   )
 }
 
 const mapStateToProps = (state: RootState, ownProps: ChatPageProps) => ({
-  me: selectors.user.getUser(state,),
+  me: selectors.user.getUser(state),
   user: selectors.entities.getUserByID(state, ownProps.match.params.id)
 })
 

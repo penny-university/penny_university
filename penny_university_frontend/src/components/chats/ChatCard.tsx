@@ -10,13 +10,17 @@ import ParticipantList from './ParticipantList'
 import { Chat } from '../../models'
 
 
+export const TestIDs = {
+  chatCard: 'chart-card'
+}
+
 type ChatCardProps = {
   chat: Chat | undefined
 }
 
 const ChatCard = ({ chat }: ChatCardProps) =>
   chat ? (
-    <Card body className="mb-3 border-0 shadow-sm">
+    <Card body className="mb-3 border-0 shadow-sm" data-testid={TestIDs.chatCard}>
       <CardTitle tag="h5">
         <Link className="text-reset" to={`/chats/${chat.id}`}>{chat.title}</Link>
       </CardTitle>

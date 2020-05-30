@@ -1,7 +1,7 @@
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faPlus, faTimes, faPen, faSave, faHeart, IconDefinition, faBan, faEllipsisH,
+  faPlus, faTimes, faPen, faSave, faHeart, IconDefinition, faCog, faEllipsisH, 
 } from '@fortawesome/free-solid-svg-icons'
 import classNames from 'classnames/dedupe'
 import { Button } from 'reactstrap'
@@ -93,8 +93,18 @@ MoreOptions.defaultProps = {
   onClick: () => {  },
 }
 
+const SettingsButton = ({
+  className, onClick,
+}: { className: string, onClick: () => void }) => (
+  <IconButton className={className} onClick={onClick} icon={faCog} title="Settings" />
+)
+
+SettingsButton.defaultProps = {
+  className: '',
+}
+
 export {
-  HeartButton, CreateButton, EditButton, SaveButton, CancelButton, MoreOptions,
+  HeartButton, CreateButton, EditButton, SaveButton, CancelButton, MoreOptions, SettingsButton,
 }
 
 export default IconButton

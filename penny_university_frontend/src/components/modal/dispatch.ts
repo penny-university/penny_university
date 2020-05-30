@@ -1,6 +1,7 @@
 import { Dispatch } from 'react'
 import { Action } from '.'
 import Actions, { ModalNames } from './constants'
+import { User } from '../../models'
 
 const modalDispatch = () => {
   let _dispatch: Dispatch<Action> | null = null // eslint-disable-line no-underscore-dangle
@@ -41,6 +42,14 @@ const modalDispatch = () => {
     },
   })
 
+  const settings = (user: User) => ({
+    type: Actions.OPEN_MODAL,
+    payload: {
+      name: ModalNames.SETTINGS,
+      props: { user },
+    },
+  })
+
   const close = () => ({
     type: Actions.CLOSE_MODAL,
     payload: null,
@@ -52,6 +61,7 @@ const modalDispatch = () => {
     auth: call(authUsername),
     authSignup: call(authSignup),
     authPassword: call(authPassword),
+    settings: call(settings),
     close: call(close),
   }
 }

@@ -15,6 +15,7 @@ const user = (state = initialState, action: AnyAction): UserState => {
       newState.token = payload
       break
     case Actions.FETCH_USER_SUCCESS:
+    case Actions.UPDATE_USER_SUCCESS:
       newState.user = new User(action.payload.result)
       break
     case Actions.LOGOUT_SUCCESS:

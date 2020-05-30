@@ -23,6 +23,9 @@ export const Actions = {
   USER_EXISTS_REQUEST: 'USER_EXISTS_REQUEST',
   USER_EXISTS_SUCCESS: 'USER_EXISTS_SUCCESS',
   USER_EXISTS_FAILURE: 'USER_EXISTS_FAILURE',
+  UPDATE_USER_REQUEST: 'UPDATE_USER_REQUEST',
+  UPDATE_USER_SUCCESS: 'UPDATE_USER_SUCCESS',
+  UPDATE_USER_FAILURE: 'UPDATE_USER_FAILURE',
 }
 
 
@@ -79,6 +82,7 @@ const userExists = (email: string) => ({
 export const logout = () => ({
   type: Actions.LOGOUT_USER,
 })
+
 export const logoutRequest = () => ({
   type: CALL_API,
   payload: {
@@ -93,3 +97,13 @@ export const dispatchLogin = (payload: { email: string, password: string }) => a
 export const dispatchLogout = () => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
 
 export const dispatchUserExists = (email: string ) => async (dispatch: ThunkDispatch<{}, {}, AnyAction>) => dispatch(userExists(email))
+
+export const updateUser = (payload: {firstName: string, lastName: string}, id: string) => ({
+  type: CALL_API,
+  payload: {
+    types: [Actions.UPDATE_USER_REQUEST, Actions.UPDATE_USER_SUCCESS, Actions.UPDATE_USER_FAILURE],
+    endpoint: ApiRoutes.updateUser(id),
+    method: 'PUT',
+    payload,
+  },
+})
