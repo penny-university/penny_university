@@ -7,7 +7,7 @@ import { connect } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { Container } from 'reactstrap'
 import { Modal } from './components'
-import { Navigation, Alert, PrivateRoute } from './components'
+import { Navigation, Alert } from './components'
 import ChatsPage from './pages/Chats'
 import ChatDetailPage from './pages/ChatDetail'
 import ProfilePage from './pages/Profile'
@@ -42,7 +42,7 @@ const App = (props: Props) => {
           <Route path={Routes.ChatDetail} component={ChatDetailPage} />
           <Route path={Routes.Chats} component={ChatsPage} />
           <Route path={Routes.VerifyEmail} component={VerifyPage} />
-          <PrivateRoute path={Routes.Profile} component={ProfilePage} />
+          <Route path={Routes.Profile} component={ProfilePage} />
           <Route path={Routes.Home}>
             <Redirect to={Routes.Chats} />
           </Route>
