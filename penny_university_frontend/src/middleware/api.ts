@@ -21,34 +21,19 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
   if (token) {
     headers.Authorization = `Token ${token}`
   }
-  switch (method) {
-    case 'POST':
-    case 'PUT':
-    case 'DELETE':
-      return fetch(url, { method, body: jsonPayload, headers })
-        .then(async (response: Response) => {
-          if (!response.ok) {
-            return Promise.reject(response)
-          }
-          let camelJson = {}
-          if (response.status !== 204) {
-            await response.json().then((json) => {
-              camelJson = camelizeKeys(json)
-            }).catch()
-          }
-          return camelJson
-        })
-    default:
-      return fetch(url, { headers })
-        .then((response: Response) => response.json().then((json) => {
-          if (!response.ok) {
-            return Promise.reject(response)
-          }
-
-          const camelJson = camelizeKeys(json)
-          return camelJson
-        }))
-  }
+  return fetch(url, { method, body: jsonPayload, headers })
+    .then(async (response: Response) => {
+      if (!response.ok) {
+        return Promise.reject(response)
+      }
+      let camelJson = {}
+      if (response.status !== 204) {
+        await response.json().then((json) => {
+          camelJson = camelizeKeys(json)
+        }).catch()
+      }
+      return camelJson
+    })
 }
 
 export const CALL_API = 'CALL_API'
