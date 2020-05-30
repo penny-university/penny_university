@@ -103,7 +103,7 @@ jobs:
         run: |
           git config --global user.email "penny@university.com"
           git config --global user.name "Penny University"
-          git add .
+          git add -f penny_university_frontend/build
           git commit -m"commit frontend build"
       - name: Add Heroku credentials
         if: github.event_name == 'push'
