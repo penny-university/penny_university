@@ -42,7 +42,7 @@ const ChatList = ({ chats, getChatByID, nextPageUrl, isFetching, loadChatsList, 
         loader={<div className="loader" key={0}>Loading ...</div>}
         threshold={200}
       >
-        {chats.map((chatID) => (
+        {chats.map((chatID: number) => (
           <ChatCard chat={getChatByID(chatID)} key={`ChatCard-${chatID}`} />))}
       </InfiniteScroll>
     </div >
