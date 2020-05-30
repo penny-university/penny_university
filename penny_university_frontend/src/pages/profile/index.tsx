@@ -49,13 +49,10 @@ const ProfilePage = ({ loadChatsList, match, me, user }: ProfilePageProps) => {
   )
 }
 
-const mapStateToProps = (state: RootState, ownProps: ProfilePageProps) => {
-  console.log(selectors.entities.getUserByID(state, ownProps.match.params.id))
-  return ({
-    me: selectors.user.getUser(state),
-    user: selectors.entities.getUserByID(state, ownProps.match.params.id),
-  })
-}
+const mapStateToProps = (state: RootState, ownProps: ProfilePageProps) => ({
+  me: selectors.user.getUser(state),
+  user: selectors.entities.getUserByID(state, ownProps.match.params.id),
+})
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
   // @ts-ignore
