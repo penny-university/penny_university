@@ -97,11 +97,10 @@ jobs:
       - name: Build Frontend
         working-directory: ./penny_university_frontend
         env:
-          API_ROOT: '/api/'
           CI: false
         run: |
           npm install
-          API_ROOT='/api/' npm run build
+          npm run build
       - name: Commit frontend build
         run: |
           git config --global user.email "penny@university.com"
