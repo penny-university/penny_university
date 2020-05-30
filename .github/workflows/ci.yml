@@ -98,6 +98,7 @@ jobs:
         working-directory: ./penny_university_frontend
         env:
           CI: false
+          REACT_APP_API_ROOT: "/api/"
         run: |
           npm install
           npm run build
