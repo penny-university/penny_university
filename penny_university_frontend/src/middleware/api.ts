@@ -2,7 +2,7 @@ import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
 import { camelizeKeys, decamelizeKeys } from 'humps'
 import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
-const API_ROOT = 'http://localhost:8000/api/'
+const API_ROOT = process.env.API_ROOT || 'http://localhost:8000/api/'
 
 
 export type APIPayload<P> = {
