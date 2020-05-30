@@ -93,10 +93,10 @@ jobs:
         with:
           node-version: '12.x'
       - name: Build Frontend
-          working-directory: ./penny_university_frontend
-          run: |
-            npm install
-            npm run build
+        working-directory: ./penny_university_frontend
+        run: |
+          npm install
+          npm run build
       - name: Commit frontend build
         run: |
           git add .
