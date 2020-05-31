@@ -88,10 +88,12 @@ jobs:
       - uses: actions/checkout@v1
         if: github.event_name == 'push'
       - name: Use Node.js
+        if: github.event_name == 'push'
         uses: actions/setup-node@v1
         with:
           node-version: '12.x'
       - name: Build Frontend
+        if: github.event_name == 'push'
         working-directory: ./penny_university_frontend
         env:
           CI: false
@@ -100,6 +102,7 @@ jobs:
           npm install
           npm run build
       - name: Commit frontend build
+        if: github.event_name == 'push'
         run: |
           git config --global user.email "penny@university.com"
           git config --global user.name "Penny University"
