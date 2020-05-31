@@ -22,7 +22,7 @@ class Chat implements ChatType {
   constructor(data: ChatType = { id: NaN, title: '', date: '', description: '', followups: '', url: '', participants: []}) {
     this.id = data.id
     this.title = data.title
-    this.date = '12/12/2022'
+    this.date = data.date
     this.description = data.description
     this.followups = data.followups
     this.url = data.url

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { User } from '../../models'
+import { FollowUp, User } from '../../models'
 import { Dropdown } from '../../components'
 import { Content, EditContent } from '../content'
 import { EditButton, SaveButton } from '../buttons'
@@ -34,7 +34,7 @@ const FollowUpCard = ({ followUp, updateFollowUp, canEdit, user, role }: FollowU
   const [content, updateContent] = useState(followUp.content)
 
   const saveFollowUp = () => {
-    const fllwUp = { ...followUp }
+    const fllwUp = new FollowUp({ ...followUp })
     fllwUp.content = content
     updateFollowUp(fllwUp)
     toggleEditMode(false)
@@ -44,7 +44,7 @@ const FollowUpCard = ({ followUp, updateFollowUp, canEdit, user, role }: FollowU
   return (
     <div className="pt-2">
       <div className="d-flex justify-content-between">
-        <FollowUpUserInfo user={user} date={followUp.date} role={role} />
+        <FollowUpUserInfo user={user} date={followUp.formattedDate} role={role} />
         {canEdit ? <FollowUpButtons id={followUp.id} editMode={editMode} saveOnPress={saveFollowUp} editOnPress={editOnPress} /> : null}
       </div>
       {editMode

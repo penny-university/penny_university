@@ -1,6 +1,7 @@
 import { CALL_API } from '../middleware/api'
 import { Schemas } from '../models/schemas'
 import ApiRoutes from '../constants'
+import { FollowUp } from '../models';
 
 export const Actions = {
   CHATS_LIST_REQUEST: 'CHATS_LIST_REQUEST',

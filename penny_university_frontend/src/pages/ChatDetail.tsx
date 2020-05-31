@@ -9,7 +9,7 @@ import {
 import { ChatDetail } from '../components/chats'
 import * as selectors from '../selectors'
 import { RootState } from '../reducers'
-import { Chat, User } from '../models'
+import { Chat, FollowUp, User } from '../models'
 
 type StateProps = {
   id: number,
