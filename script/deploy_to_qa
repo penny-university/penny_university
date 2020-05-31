@@ -23,12 +23,8 @@ REACT_APP_API_ROOT="/api/" npm run build
 branch_name="temp_deploy_branch_$(date +%s)"
 git checkout -b "$branch_name"
 git add -f build
-git commit -am"adding build folder"
+git commit -am"adding build folder" --no-verify
 git push qa HEAD:master -f
 git checkout - # go back to previous branch
 git branch -D "$branch_name"
 popd  # cd into previous directory
-
-
-
-
