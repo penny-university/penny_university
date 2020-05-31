@@ -40,10 +40,10 @@ const ProfilePage = ({ loadChatsList, match, me, user }: ProfilePageProps) => {
   );
   return (
     <div>
-      <div className="d-flex flex-row-reverse">
-        {myProfile ? <SettingsButton onClick={openSettingsModal} /> : null}
+      <div className="d-flex flex-row justify-content-between align-items-center">
+        <h1>{`${possesive} Chats`}</h1>
+        {myProfile ? <SettingsButton onClick={openSettingsModal} className="h-100" /> : null}
       </div>
-      <h1>{`${possesive} Chats`}</h1>
       <ChatList filter={{ key: id, query: `participants__user_id=${id}` }} />
     </div>
   )
