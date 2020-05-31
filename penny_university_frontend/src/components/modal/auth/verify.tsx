@@ -5,35 +5,28 @@ import { connect } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { AnyAction } from 'redux'
 import {
-  Form, ModalHeader, ModalBody, Button,
+  ModalHeader, ModalBody, Button,
 } from 'reactstrap'
-import { Input } from '../../fields'
 import modalDispatch from '../dispatch'
-import { userExists } from '../../../actions/user'
+import { resendVerifyEmail } from '../../../actions/user'
 
 type AuthEmailModalProps = {
-  userExists: (email: string) => AnyAction
+  email: string,
+  resendVerifyEmail: (email: string) => AnyAction
 }
 
-const AuthEmailModal = ({ userExists }: AuthEmailModalProps) => {
-  const [email, setEmail] = useState('')
+const AuthEmailModal = ({ email, resendVerifyEmail }: AuthEmailModalProps) => {
   return (
     <>
       <ModalHeader toggle={modalDispatch.close}>Sign up or log in</ModalHeader>
       <ModalBody>
-        <Form onSubmit={(e) => {
-          e.preventDefault()
-          userExists(email)
-          return false
-        }}
-        >
-          <Input label="Email" type="email" name="email" id="email" placeholder="" required onChange={setEmail} value={email} />
           <div className="text-center">
-            <Button>
-              Let&rsquo;s Go
+            <p>{email} needs to be verified.</p>
+            <p>Check your email for a verification link.</p>
+            <Button onClick={() => resendVerifyEmail(email)}>
+              Resend Verification email
             </Button>
           </div>
-        </Form>
       </ModalBody>
     </>
   )
@@ -44,6 +37,6 @@ const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  userExists: (email: string) => dispatch(userExists(email)),
+  resendVerifyEmail: (email: string) => dispatch(resendVerifyEmail(email)),
 })
 export default connect(mapStateToProps, mapDispatchToProps)(AuthEmailModal)

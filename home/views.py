@@ -1,9 +1,10 @@
-from django.shortcuts import render, HttpResponseRedirect
+import os
+
+from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from django.conf import settings
 
 from common.utils import get_slack_client
 from .forms import InviteForm
-import slack
 
 from bot.utils import notify_admins
 
@@ -41,3 +42,18 @@ def index(request):
 
 def thank_you(request):
     return render(request, 'home/thank_you.html')
+
+
+def frontend(request):
+    try:
+        with open(os.path.join(settings.REACT_APP_DIR, 'build', 'index.html')) as f:
+            return HttpResponse(f.read())
+    except FileNotFoundError:
+        return HttpResponse(
+            """
+            This URL is only used when you have built the production
+            version of the app. Visit http://localhost:3000/ instead, or
+            run `npm run build` to test the production version.
+            """,
+            status=501,
+        )

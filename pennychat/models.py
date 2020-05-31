@@ -69,7 +69,7 @@ class PennyChatSlackInvitation(PennyChat):
 
     # TODO can we get rid of view? it's currently just a weird way to retrieve the penny_chat_invite
     view = models.TextField()
-    organizer_tz = models.TextField()  # change to organizer_tz
+    organizer_tz = models.TextField()
     organizer_slack_id = models.TextField(null=True)
     invitees = models.TextField()
     channels = models.TextField()

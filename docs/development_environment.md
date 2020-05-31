@@ -55,7 +55,7 @@ instead.
 * Create new app and call it "penny-<your_name>' and then follow instructions. Basically:
     * `brew install heroku cli`
     * Add your ssh key
-    * Configure Heroku as a git remote: `heroku git:remote -a penny-<your_name>`
+    * Configure Heroku as a git remote: `heroku git:remote -a penny-<your_name>`    
 * Push your dev PennyU into that project: `git push heroku master`
 * Set up environment vars:
     * `heroku config:set `heroku config:edit -a penny-<your_name>`
@@ -68,6 +68,7 @@ instead.
     SLACK_API_KEY=xoxb-<we'll get to this soon>
     ```
 * **Check:** visit https://penny-<your_name>.herokuapp.com/ and make sure it loads
+* NOTE: The above instructions don't set up the React app on QA. To do this refer to the notes in the maintenance guide.
 
 ### Set up Slack QA/dev:
 * Create your own Slack team (https://slack.com/create) and call it "penny-<your_name>"

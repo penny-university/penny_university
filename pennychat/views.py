@@ -8,7 +8,7 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer
-from .permissions import IsOwner, method_is_authenticated, perform_is_authenticated
+from common.permissions import IsOwner, method_is_authenticated, perform_is_authenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
 logger = logging.getLogger(__name__)

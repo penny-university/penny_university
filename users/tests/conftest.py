@@ -19,4 +19,6 @@ def test_user():
         username='test@profile.com',
         email='test@profile.com',
         password='password',
+        first_name='test',
+        last_name='user',
     )
