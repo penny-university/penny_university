@@ -120,8 +120,11 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
+REACT_APP_DIR = os.path.join(BASE_DIR, 'penny_university_frontend')
+
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "penny_university/static")
+    os.path.join(REACT_APP_DIR, 'build', 'static'),
+    os.path.join(BASE_DIR, 'penny_university/static')
 ]
 
 LOGGING = {
