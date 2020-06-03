@@ -143,7 +143,8 @@ def test_user_detail(test_user):
 def test_update_user_detail(test_user):
     data = {
         'first_name': 'Bill',
-        'last_name': 'Update'
+        'last_name': 'Update',
+        'email': 'email@update.com'
     }
     token = Token.objects.create(user=test_user)
     client = APIClient()
@@ -152,6 +153,7 @@ def test_update_user_detail(test_user):
     test_user.refresh_from_db()
     assert test_user.first_name == 'Bill'
     assert test_user.last_name == 'Update'
+    assert test_user.email == 'email@update.com'
 
 
 @pytest.mark.django_db

@@ -4,6 +4,7 @@ import { normalize } from 'normalizr'
 import { ChatActions, UserActions } from '../actions'
 import paginate, { paginationInitialState } from './paginate'
 import user, { initialState as userInitialState } from './user'
+import { Actions as UserAction } from '../actions/user'
 import thunk from 'redux-thunk'
 import api from '../middleware/api'
 import logging from '../middleware/logging'
@@ -49,6 +50,12 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, },
         ...followUps,
       }
     }
+  }
+  if (action.type === UserAction.UPDATE_USER_SUCCESS) {
+    const newState = { ...state }
+    newState.users[action.payload.result.id] = Object.assign({}, newState.users[action.payload.result.id], action.payload.result)
+    return newState
+
   }
   return state
 }

@@ -1,6 +1,7 @@
 import { Dispatch } from 'react'
 import { Action } from '.'
 import Actions, { ModalNames } from './constants'
+import { User } from '../../models'
 
 const modalDispatch = () => {
   let _dispatch: Dispatch<Action> | null = null // eslint-disable-line no-underscore-dangle
@@ -18,18 +19,23 @@ const modalDispatch = () => {
     }
   }
 
-  const open = (payload: Object) => ({
+  const open = call((payload: Object) => ({
     type: Actions.OPEN_MODAL,
     payload,
-  })
+  }))
 
-  const close = () => ({
+  const close = call(() => ({
     type: Actions.CLOSE_MODAL,
     payload: null,
-  })
+  }))
 
   const authUsername = () => open({
     name: ModalNames.AUTH_EMAIL,
+  })
+
+  const settings = (user: User) => open({
+    name: ModalNames.SETTINGS,
+    props: { user },
   })
 
   const authPassword = (email: string) => open({
@@ -50,11 +56,12 @@ const modalDispatch = () => {
   return {
     mount,
     unmount,
-    auth: call(authUsername),
-    authSignup: call(authSignup),
-    authPassword: call(authPassword),
-    verifyEmail: call(verifyEmail),
-    close: call(close),
+    auth: authUsername,
+    authSignup,
+    authPassword,
+    settings,
+    verifyEmail,
+    close,
   }
 }
 

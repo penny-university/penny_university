@@ -33,6 +33,16 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return user
 
 
+class AuthUserSerializer(serializers.HyperlinkedModelSerializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.EmailField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'url', 'first_name', 'last_name', 'email']
+
+
 class UserDetailSerializer(serializers.HyperlinkedModelSerializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()

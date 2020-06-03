@@ -1,5 +1,5 @@
 import React from 'react'
-import { UncontrolledPopover, PopoverHeader, PopoverBody } from 'reactstrap'
+import { UncontrolledPopover, PopoverHeader } from 'reactstrap'
 import { MoreOptions } from '../buttons'
 
 interface DropdownProps {
