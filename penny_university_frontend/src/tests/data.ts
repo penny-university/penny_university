@@ -5,6 +5,20 @@ import chatList from '../../../__mocks__/api-chats-get-200.json'
 import followUpsList from '../../../__mocks__/api-chats-get-1-follow-ups-200.json'
 
 import { Schemas } from '../models/schemas'
+import { User } from '../models'
+
+const allChats = camelizeKeys(chatList)
+// @ts-ignore
+const { entities: allEntities, result: allChatIDs } = normalize(allChats.results, Schemas.CHAT_ARRAY)
+const { chats: allChatsNormalized } = allEntities
+// @ts-ignore
+const allUsers: {[key: string]: User} | undefined = allEntities.users
+export {
+  allChatsNormalized,
+  allChats,
+  allChatIDs,
+  allUsers,
+}
 
 // Chats
 export const chats = camelizeKeys(chatList.results.slice(2,3))

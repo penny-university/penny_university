@@ -9,6 +9,7 @@ const ApiRoutes = {
   chats:  'chats/',
   chatDetail: (id: number) => `chats/${id}/`,
   userChats: (userID: string) => `chats/?participants__user_id=${userID}`,
+  updateUser: (id: string) => `users/${id}/`,
   resendEmail: 'auth/verification-email/',
   verifyEmail: 'auth/verify/', 
 }

@@ -51,8 +51,9 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
         const { status } = action.payload
         if (status === 403) {
           modalDispatch.verifyEmail(action.payload.meta.email)
+        } else {
+          modalDispatch.authSignup(action.payload.meta.email)
         }
-        modalDispatch.authSignup(action.payload.meta.email)
       break
       case Actions.VERIFY_EMAIL_SUCCESS:
         modalDispatch.auth()
