@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { FollowUp, User } from '../../models'
+import { FollowUpType} from '../../models/followUp'
 import { Dropdown } from '../../components'
 import { Content, EditContent } from '../content'
 import { EditButton, SaveButton } from '../buttons'
@@ -12,7 +13,7 @@ export const TestIDs ={
 
 type FollowUpCard = {
   followUp: FollowUp,
-  updateFollowUp: (followUp: FollowUp) => void,
+  updateFollowUp: (followUp: FollowUpType) => void,
   canEdit: boolean,
   user: User,
   role: 'Organizer' | 'Participant' | ''
@@ -34,7 +35,7 @@ const FollowUpCard = ({ followUp, updateFollowUp, canEdit, user, role }: FollowU
   const [content, updateContent] = useState(followUp.content)
 
   const saveFollowUp = () => {
-    const fllwUp = new FollowUp({ ...followUp })
+    const fllwUp = { ...followUp }
     fllwUp.content = content
     updateFollowUp(fllwUp)
     toggleEditMode(false)

@@ -9,7 +9,6 @@ import Date from '../Date'
 import { Content } from '../content'
 import ParticipantList from './ParticipantList'
 import { Chat } from '../../models'
-import moment from 'moment'
 
 
 type ChatCardProps = {

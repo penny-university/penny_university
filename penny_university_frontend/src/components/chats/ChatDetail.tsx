@@ -8,6 +8,7 @@ import { Content, EditContent } from '../content'
 import { FollowUpCard } from '../follow-ups'
 import modalDispatch from '../modal/dispatch'
 import { Chat, FollowUp, User } from '../../models'
+import { FollowUpType } from '../../models/followUp'
 
 require('./styles.scss')
 
@@ -15,7 +16,7 @@ interface ChatDetailProps {
   chat: Chat,
   followUps: Array<FollowUp>,
   createFollowUp: (id: number, content: { content: string }) => void,
-  updateFollowUp: (followup: FollowUp) => void,
+  updateFollowUp: (followup: FollowUpType) => void,
   user: User,
   getUserByID: (id: number) => User,
 }
