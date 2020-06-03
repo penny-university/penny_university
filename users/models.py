@@ -25,7 +25,7 @@ class User(AbstractUser):
         send_mail(
             'Welcome to Penny University | Verify Your Email',
             text_email,
-            'penny.university.mod@gmail.com',  # TODO: Replace email with one that has a Penny U domain
+            'invite@pennyuniversity.org',
             [self.email],
             html_message=html_email,
         )
