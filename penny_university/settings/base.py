@@ -182,6 +182,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
 
+FRONT_END_HOST = os.getenv('FRONT_END_HOST', 'http://localhost:3000')
 
 # Override Auth Serializers
 REST_AUTH_SERIALIZERS = {
