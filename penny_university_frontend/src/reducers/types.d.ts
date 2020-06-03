@@ -10,15 +10,6 @@ interface Participant {
   role: 'Participant' | 'Organizer',
 }
 
-interface FollowUp {
-  id: number,
-  content: string,
-  user: number,
-  date: string,
-  pennyChat: string,
-  url: string,
-}
-
 interface Account {
   chats: string,
   email: string,
