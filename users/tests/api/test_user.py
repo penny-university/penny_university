@@ -99,7 +99,7 @@ def test_checking_user_exists__not_verified(test_user):
 
 @pytest.mark.django_db
 def test_checking_user_exists__with_unusable_password():
-    user = User.objects.create_user(username='test@user.com', email='test@user.com')
+    User.objects.create_user(username='test@user.com', email='test@user.com')
     client = APIClient()
     data = {
         'email': 'test@user.com'
