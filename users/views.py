@@ -23,6 +23,7 @@ from .serializers import (
     UserDetailSerializer,
     VerifyEmailSerializer,
     GenericEmailSerializer,
+    AuthUserSerializer,
 )
 
 
@@ -99,6 +100,13 @@ class UserExists(views.APIView):
 class UserDetail(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return UserDetailSerializer
+        if self.request.method == 'PUT' or self.request.method == 'PATCH':
+            return AuthUserSerializer
+        return UserDetailSerializer
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)

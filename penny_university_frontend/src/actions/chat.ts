@@ -1,6 +1,7 @@
 import { CALL_API } from '../middleware/api'
 import { Schemas } from '../models/schemas'
 import ApiRoutes from '../constants'
+import { FollowUpType } from '../models/followUp';
 
 export const Actions = {
   CHATS_LIST_REQUEST: 'CHATS_LIST_REQUEST',
@@ -53,7 +54,7 @@ export const loadFollowUps = (chatID: number, nextPageUrl: string | undefined) =
   },
 })
 
-export const updateFollowUp = (followUp: FollowUp) => ({
+export const updateFollowUp = (followUp: FollowUpType) => ({
   type: CALL_API,
   payload: {
     types: [Actions.UPDATE_FOLLOW_UP_REQUEST, Actions.UPDATE_FOLLOW_UP_SUCCESS, Actions.UPDATE_FOLLOW_UP_FAILURE],

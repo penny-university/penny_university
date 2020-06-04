@@ -16,8 +16,8 @@
             "id": 3,
             "url": "http://testserver/api/users/3/",
             "email": "three@wherever.com",
-            "first_name": "",
-            "last_name": "",
+            "first_name": "Firstthree",
+            "last_name": "Lastthree",
             "chats": "http://testserver/api/users/3/chats/"
           },
           "role": "Organizer"
@@ -27,8 +27,8 @@
             "id": 1,
             "url": "http://testserver/api/users/1/",
             "email": "one@wherever.com",
-            "first_name": "",
-            "last_name": "",
+            "first_name": "Firstone",
+            "last_name": "Lastone",
             "chats": "http://testserver/api/users/1/chats/"
           },
           "role": "Attendee"
@@ -48,8 +48,8 @@
             "id": 2,
             "url": "http://testserver/api/users/2/",
             "email": "two@wherever.com",
-            "first_name": "",
-            "last_name": "",
+            "first_name": "Firsttwo",
+            "last_name": "Lasttwo",
             "chats": "http://testserver/api/users/2/chats/"
           },
           "role": "Organizer"
@@ -59,8 +59,8 @@
             "id": 3,
             "url": "http://testserver/api/users/3/",
             "email": "three@wherever.com",
-            "first_name": "",
-            "last_name": "",
+            "first_name": "Firstthree",
+            "last_name": "Lastthree",
             "chats": "http://testserver/api/users/3/chats/"
           },
           "role": "Attendee"
@@ -80,8 +80,8 @@
             "id": 1,
             "url": "http://testserver/api/users/1/",
             "email": "one@wherever.com",
-            "first_name": "",
-            "last_name": "",
+            "first_name": "Firstone",
+            "last_name": "Lastone",
             "chats": "http://testserver/api/users/1/chats/"
           },
           "role": "Organizer"
@@ -91,8 +91,8 @@
             "id": 2,
             "url": "http://testserver/api/users/2/",
             "email": "two@wherever.com",
-            "first_name": "",
-            "last_name": "",
+            "first_name": "Firsttwo",
+            "last_name": "Lasttwo",
             "chats": "http://testserver/api/users/2/chats/"
           },
           "role": "Attendee"

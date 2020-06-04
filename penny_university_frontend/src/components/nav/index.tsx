@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  Button, Navbar, NavbarBrand, Dropdown, DropdownToggle, DropdownMenu,
+  Button, Navbar, NavbarBrand, Dropdown, DropdownToggle, DropdownMenu, Container,
 } from 'reactstrap'
 import { Link } from 'react-router-dom'
 import modalDispatch from '../modal/dispatch'
@@ -13,8 +13,9 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
   const toggle = () => setDropdownOpen((prevState: boolean) => !prevState)
   return (
     <Navbar className="h2 bg-white shadow-sm" light sticky="top">
-      <NavbarBrand href="/">Penny University</NavbarBrand>
-      {user.valid ? (
+      <Container>
+        <NavbarBrand href="/">Penny University</NavbarBrand>
+        {user.valid ? (
 
         <Dropdown isOpen={dropdownOpen} toggle={toggle}>
           <DropdownToggle caret>
@@ -32,18 +33,18 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
             <div>
               <Button
                 onClick={logout}
-
-                color={'link'}
-              >
-                Logout
-        </Button>
-            </div>
-          </DropdownMenu>
-        </Dropdown>
-      )
-        : (
-          <Button onClick={modalDispatch.auth}>Login</Button>
-        )}
+                  color={'link'}
+                >
+                  Logout
+          </Button>
+              </div>
+            </DropdownMenu>
+          </Dropdown>
+        )
+          : (
+            <Button onClick={modalDispatch.auth}>Login</Button>
+          )}
+      </Container>
     </Navbar >
   )
 }

@@ -1,6 +1,5 @@
-import { normalize, Schema } from 'normalizr'
+import { normalize } from 'normalizr'
 import { AnyAction } from 'redux'
-import * as ActionTypes from '../actions'
 
 export const paginationInitialState = {
   chatsByFilter: {

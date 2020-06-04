@@ -23,6 +23,9 @@ export const Actions = {
   USER_EXISTS_REQUEST: 'USER_EXISTS_REQUEST',
   USER_EXISTS_SUCCESS: 'USER_EXISTS_SUCCESS',
   USER_EXISTS_FAILURE: 'USER_EXISTS_FAILURE',
+  UPDATE_USER_REQUEST: 'UPDATE_USER_REQUEST',
+  UPDATE_USER_SUCCESS: 'UPDATE_USER_SUCCESS',
+  UPDATE_USER_FAILURE: 'UPDATE_USER_FAILURE',
   RESEND_VERIFY_EMAIL_REQUEST: 'RESEND_VERIFY_EMAIL_REQUEST',
   RESEND_VERIFY_EMAIL_SUCCESS: 'RESEND_VERIFY_EMAIL_SUCCESS',
   RESEND_VERIFY_EMAIL_FAILURE: 'RESEND_VERIFY_EMAIL_FAILURE',
@@ -121,3 +124,13 @@ export const verifyEmail = (payload: {token: string, email: string }) => ({
 export const dispatchLogin = (payload: { email: string, password: string }) => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(login(payload))
 
 export const dispatchLogout = () => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
+
+export const updateUser = (payload: {firstName: string, lastName: string}, id: string) => ({
+  type: CALL_API,
+  payload: {
+    types: [Actions.UPDATE_USER_REQUEST, Actions.UPDATE_USER_SUCCESS, Actions.UPDATE_USER_FAILURE],
+    endpoint: ApiRoutes.updateUser(id),
+    method: 'PATCH',
+    payload,
+  },
+})
