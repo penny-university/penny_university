@@ -98,6 +98,17 @@ def test_checking_user_exists__not_verified(test_user):
 
 
 @pytest.mark.django_db
+def test_checking_user_exists__with_unusable_password():
+    user = User.objects.create_user(username='test@user.com', email='test@user.com')
+    client = APIClient()
+    data = {
+        'email': 'test@user.com'
+    }
+    response = client.post('/api/auth/exists/', data, format='json')
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
 def test_user_log_in__verified_and_protected_request(test_social_profile, test_user):
     client = APIClient()
     test_user.is_verified = True

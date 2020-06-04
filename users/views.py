@@ -86,6 +86,8 @@ class UserExists(views.APIView):
         if serializer.is_valid(raise_exception=True):
             try:
                 user = User.objects.get(email=serializer.validated_data['email'])
+                if not user.has_usable_password():
+                    return Response({'detail': 'User has an unusable password.'}, status=HTTP_404_NOT_FOUND)
                 if not user.is_verified:
                     return Response({'detail': 'User email has not been verified.'}, status=HTTP_403_FORBIDDEN)
                 return Response(status=HTTP_204_NO_CONTENT)
