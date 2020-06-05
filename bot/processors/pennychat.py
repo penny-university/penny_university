@@ -291,12 +291,13 @@ class PennyChatBotModule(BotModule):
         view = event['view']
         penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=view['id'])
         state = view['state']['values']
-        penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
-        penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
 
         if event['type'] == VIEW_CLOSED:
-            penny_chat_invitation.save()
+            # note, if it's a view_closed event then we don't get updated title or description, so no need to save
             return
+
+        penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
+        penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
 
         if len(penny_chat_invitation.invitees.strip()) == 0 and len(penny_chat_invitation.channels.strip()) == 0:
             penny_chat_invitation.save()
