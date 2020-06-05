@@ -291,8 +291,15 @@ class PennyChatBotModule(BotModule):
         view = event['view']
         penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=view['id'])
         state = view['state']['values']
+        penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
+        penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
+
+        if event['type'] == VIEW_CLOSED:
+            penny_chat_invitation.save()
+            return
 
         if len(penny_chat_invitation.invitees.strip()) == 0 and len(penny_chat_invitation.channels.strip()) == 0:
+            penny_chat_invitation.save()
             return {
                 'response_action': 'errors',
                 'errors': {
@@ -302,18 +309,12 @@ class PennyChatBotModule(BotModule):
             }
 
         # Ready to share
-        penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
-        penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
         penny_chat_invitation.status = PennyChatSlackInvitation.SHARED
         penny_chat_invitation.save()
 
         post_organizer_edit_after_share_blocks.now(view['id'])
-
         penny_chat_invitation.save_organizer_from_slack_id(penny_chat_invitation.organizer_slack_id)
-
         share_penny_chat_invitation(penny_chat_invitation.id)
-
-        return
 
     @is_block_interaction_event
     @has_action_id(PENNY_CHAT_EDIT)
