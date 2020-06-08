@@ -143,7 +143,7 @@ def test_PennyChatBotModule_share(mocker):
         },
         'actions': [{'action_id': penny_chat_constants.PENNY_CHAT_SHARE}],
         'response_url': 'http://some_website.com',
-        'type': penny_chat_constants.VIEW_SUBMISSION,
+        'type': penny_chat_constants.VIEW_CLOSED,
         'callback_id': penny_chat_constants.PENNY_CHAT_DETAILS,
     }
 
@@ -152,8 +152,16 @@ def test_PennyChatBotModule_share(mocker):
         'bot.processors.pennychat.post_organizer_edit_after_share_blocks'
     )
 
-    # The Actual Test
+    # The Actual Test (premature close)
     with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock),\
+            post_organizer_edit_after_share_blocks:
+        PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
+
+    assert share_penny_chat_invitation.call_count == 0
+
+    # The Actual Test (actual submission)
+    event['type'] = penny_chat_constants.VIEW_SUBMISSION
+    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), \
             post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
