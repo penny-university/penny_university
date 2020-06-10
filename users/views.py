@@ -43,6 +43,7 @@ class RegisterUser(generics.CreateAPIView):
                 user.set_password(serializer.validated_data['password'])
                 user.first_name = serializer.validated_data['first_name']
                 user.last_name = serializer.validated_data['last_name']
+                user.save()
             except User.DoesNotExist:
                 user = serializer.save()
             token = verification_token_generator.make_token(user)
