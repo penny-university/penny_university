@@ -18,7 +18,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: this fails
       run: |
-        exit 1
         script/message_to_slack ${{ secrets.SLACK_API_KEY }} "success"
     - name: alert if failed
       if: ${{ failure() }}
