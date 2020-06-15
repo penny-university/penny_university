@@ -48,6 +48,9 @@ jobs:
           git remote add heroku https://git.heroku.com/penny-university.git  || ./script/message_to_slack "${{ secrets.SLACK_API_KEY }}" "DEPLOY FAILED" 1
           git push heroku HEAD:master -f
           script/message_to_slack ${{ secrets.SLACK_API_KEY }} "Successfully deployed to production"
+          echo "SUCCEEDED"
       - name: Alert if failed
         if: ${{ failure() }}
-        run: script/message_to_slack ${{ secrets.SLACK_API_KEY }} "Failed during deployment to production"
+        run: |
+          script/message_to_slack ${{ secrets.SLACK_API_KEY }} "Failed during deployment to production"
+          echo "FAILED"
