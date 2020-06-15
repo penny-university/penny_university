@@ -16,5 +16,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - run: script/message_to_slack ${{ secrets.HEROKU_API_KEY }} "test"
-      
+    - run: |
+        script/message_to_slack ${{ secrets.SLACK_API_KEY }} "test"
+        echo $SLACK_API_KEY | cut -c52-
