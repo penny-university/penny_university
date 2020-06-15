@@ -49,5 +49,5 @@ jobs:
           git push heroku HEAD:master -f
           script/message_to_slack ${{ secrets.SLACK_API_KEY }} "Successfully deployed to production"
       - name: Alert if failed
-          if: ${{ failure() }}
-          run: script/message_to_slack ${{ secrets.SLACK_API_KEY }} "Failed during deployment to production"
+        if: ${{ failure() }}
+        run: script/message_to_slack ${{ secrets.SLACK_API_KEY }} "Failed during deployment to production"
