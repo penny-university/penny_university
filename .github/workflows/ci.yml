@@ -16,6 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - run: |
-        script/message_to_slack ${{ secrets.SLACK_API_KEY }} "test $(date)"
-        echo $SLACK_API_KEY | cut -c52-
+    - name: this fails
+      run: |
+        exit 1
+        script/message_to_slack ${{ secrets.SLACK_API_KEY }} "success"
+    - name: alert if failed
+      if: ${{ failure() }}
+      run: script/message_to_slack ${{ secrets.SLACK_API_KEY }} "failure"
