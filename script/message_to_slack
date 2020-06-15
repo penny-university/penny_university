@@ -7,5 +7,5 @@ CHANNEL=CHCM2MFHU  #penny-labs
 
 curl -X POST -H "Authorization: Bearer $SLACK_API_KEY" \
 -H 'Content-type: application/json; charset=utf-8' \
---data '{"channel":"'$CHANNEL'","text":"'$MESSAGE'"}' \
+--data '{"channel":"'$CHANNEL'","text":"'"$MESSAGE"'"}' \
 https://slack.com/api/chat.postMessage
