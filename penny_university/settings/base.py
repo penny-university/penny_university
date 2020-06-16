@@ -158,7 +158,8 @@ AUTH_USER_MODEL = 'users.User'
 
 sentry_sdk.init(
     dsn=os.environ.get('SENTRY_DSN'),
-    integrations=[DjangoIntegration()]
+    integrations=[DjangoIntegration()],
+    send_default_pii=True,  # TODO consider NOT sending PII (e.g. user ids) once we mature the code base
 )
 
 ############################################
