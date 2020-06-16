@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  # TODO modify script/deploy_to_qa so that it can be used here in order to dry up code
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: Build Frontend
+        working-directory: ./penny_university_frontend
+        env:
+          CI: false
+          REACT_APP_API_ROOT: "/api/"
+        run: |
+          npm install
+          npm run build
+      - name: Commit frontend build
+        run: |
+          git config --global user.email "penny@university.com"
+          git config --global user.name "Penny University"
+          git add -f penny_university_frontend/build
+          git commit -m"commit frontend build"
+      - name: Add Heroku credentials
+        run: |
+          echo "machine api.heroku.com" > ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+      - name: Backup DB
+        run: |
+          echo "NOTE: this isn't going to work once the db gets too large, but while we can take advantage of this extra safety, why not?"
+          heroku pg:backups:capture -a penny-university
+      - name: Push to Production
+        run: |
+          echo "NOTE: if this suddenly breaks, it might be because of an expired API key"
+          git remote add heroku https://git.heroku.com/penny-university.git  || ./script/message_to_slack "${{ secrets.SLACK_API_KEY }}" "DEPLOY FAILED" 1
+          git push heroku HEAD:master -f
+          script/message_to_slack ${{ secrets.SLACK_API_KEY }} "Successfully deployed to production"
+          echo "SUCCEEDED"
+      - name: Alert if failed
+        if: ${{ failure() }}
+        run: |
+          script/message_to_slack ${{ secrets.SLACK_API_KEY }} "Failed during deployment to production"
+          echo "FAILED"
