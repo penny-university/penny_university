@@ -8,7 +8,7 @@ from users.tokens import verification_token_generator
 
 
 @pytest.mark.django_db
-def test_register_user(test_social_profile, mocker):
+def test_register_user(mocker):
     client = APIClient()
     data = {
         'email': 'test@profile.com',
@@ -23,6 +23,27 @@ def test_register_user(test_social_profile, mocker):
     assert not user.is_verified
     assert user.has_usable_password()
     assert user.first_name == 'test' and user.last_name == 'profile'
+
+
+@pytest.mark.django_db
+def test_register_user__exists_with_unusable_password(test_user, mocker):
+    test_user.set_unusable_password()
+    test_user.save()
+    client = APIClient()
+    data = {
+        'email': 'test@profile.com',
+        'password': 'password',
+        'first_name': 'existing',
+        'last_name': 'person',
+    }
+    with mocker.patch.object(User, 'send_verification_email'):
+        response = client.post('/api/auth/register/', data=data, format='json')
+    assert response.status_code == 204
+    user = User.objects.get(email='test@profile.com')
+    assert not user.is_verified
+    assert user.has_usable_password()
+    assert user.first_name == 'existing'
+    assert user.last_name == 'person'
 
 
 @pytest.mark.django_db
