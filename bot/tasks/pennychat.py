@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from background_task import background as original_background
 from django.conf import settings
 from pytz import timezone, utc
+from sentry_sdk import capture_exception
 
 from common.utils import get_slack_client
 from pennychat.models import PennyChatSlackInvitation, Participant
@@ -74,6 +75,7 @@ def share_penny_chat_invitation(penny_chat_id):
         try:
             slack_client.chat_delete(channel=channel, ts=ts)
         except Exception as e:  # noqa
+            capture_exception(e)
             # can't do anything about it anyway... might as well continue
             pass
     invitation_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=INVITE)

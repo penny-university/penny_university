@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import logging
 from pytz import timezone, utc
 import requests
+from sentry_sdk import capture_exception
 
 from bot.tasks import (
     post_organizer_edit_after_share_blocks,
@@ -324,6 +325,7 @@ class PennyChatBotModule(BotModule):
             value = json.loads(event['actions'][0]['value'])
             penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=value['penny_chat_id'])
         except Exception as e:  # noqa
+            capture_exception(e)
             requests.post(event['response_url'], json={'delete_original': True})
             self.slack_client.chat_postEphemeral(
                 channel=event['channel']['id'],
@@ -414,6 +416,7 @@ class PennyChatBotModule(BotModule):
                     text=we_will_notify_organizer,
                 )
         except RuntimeError as e:
+            capture_exception(e)
             chat_postEphemeral_with_fallback(
                 self.slack_client,
                 channel=event['channel']['id'],

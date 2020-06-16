@@ -9,6 +9,7 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
+from sentry_sdk import capture_exception
 
 from common.permissions import (
     method_user_is_self,
@@ -45,6 +46,7 @@ class RegisterUser(generics.CreateAPIView):
                 user.last_name = serializer.validated_data['last_name']
                 user.save()
             except User.DoesNotExist as e:
+                capture_exception(e)
                 user = serializer.save()
             token = verification_token_generator.make_token(user)
             user.send_verification_email(token=token)
@@ -64,6 +66,7 @@ class VerifyEmail(views.APIView):
                     return Response(status=HTTP_204_NO_CONTENT)
                 return Response({'detail': 'Verification token is invalid.'}, status=HTTP_400_BAD_REQUEST)
             except User.DoesNotExist as e:
+                capture_exception(e)
                 return Response(status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -78,6 +81,7 @@ class SendVerificationEmail(views.APIView):
                 user.send_verification_email(token=token)
                 return Response(status=HTTP_204_NO_CONTENT)
             except User.DoesNotExist as e:
+                capture_exception(e)
                 return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -94,6 +98,7 @@ class UserExists(views.APIView):
                     return Response({'detail': 'User email has not been verified.'}, status=HTTP_403_FORBIDDEN)
                 return Response(status=HTTP_204_NO_CONTENT)
             except User.DoesNotExist as e:
+                capture_exception(e)
                 return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
