@@ -192,7 +192,7 @@ def get_chats(messages):
         while message['in_reply_to'] is not None:
             try:
                 message = messages_by_id[message['in_reply_to']]
-            except KeyError:
+            except KeyError as e:
                 homeless_messages.append(message)
                 break
         unsorted_chats.setdefault(message['message_id'], []).append(original_message)

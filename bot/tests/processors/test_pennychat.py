@@ -295,7 +295,7 @@ def test_PennyChatBotModule_attendance_selection(
     actual_final_role = None
     try:
         actual_final_role = Participant.objects.get(penny_chat=penny_chat, user=profile.user).role
-    except Participant.DoesNotExist:
+    except Participant.DoesNotExist as e:
         # presumably we weren't supposed to make a participant. this will be tested below
         pass
 

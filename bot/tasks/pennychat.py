@@ -73,7 +73,7 @@ def share_penny_chat_invitation(penny_chat_id):
         # until this is resolved we will not be able to remove shared messages in private channels
         try:
             slack_client.chat_delete(channel=channel, ts=ts)
-        except:  # noqa
+        except Exception as e:  # noqa
             # can't do anything about it anyway... might as well continue
             pass
     invitation_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=INVITE)

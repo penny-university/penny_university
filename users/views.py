@@ -44,7 +44,7 @@ class RegisterUser(generics.CreateAPIView):
                 user.first_name = serializer.validated_data['first_name']
                 user.last_name = serializer.validated_data['last_name']
                 user.save()
-            except User.DoesNotExist:
+            except User.DoesNotExist as e:
                 user = serializer.save()
             token = verification_token_generator.make_token(user)
             user.send_verification_email(token=token)
@@ -63,7 +63,7 @@ class VerifyEmail(views.APIView):
                     user.save()
                     return Response(status=HTTP_204_NO_CONTENT)
                 return Response({'detail': 'Verification token is invalid.'}, status=HTTP_400_BAD_REQUEST)
-            except User.DoesNotExist:
+            except User.DoesNotExist as e:
                 return Response(status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -77,7 +77,7 @@ class SendVerificationEmail(views.APIView):
                 token = verification_token_generator.make_token(user)
                 user.send_verification_email(token=token)
                 return Response(status=HTTP_204_NO_CONTENT)
-            except User.DoesNotExist:
+            except User.DoesNotExist as e:
                 return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -93,7 +93,7 @@ class UserExists(views.APIView):
                 if not user.is_verified:
                     return Response({'detail': 'User email has not been verified.'}, status=HTTP_403_FORBIDDEN)
                 return Response(status=HTTP_204_NO_CONTENT)
-            except User.DoesNotExist:
+            except User.DoesNotExist as e:
                 return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 

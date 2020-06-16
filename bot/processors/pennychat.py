@@ -323,7 +323,7 @@ class PennyChatBotModule(BotModule):
         try:
             value = json.loads(event['actions'][0]['value'])
             penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=value['penny_chat_id'])
-        except:  # noqa
+        except Exception as e:  # noqa
             requests.post(event['response_url'], json={'delete_original': True})
             self.slack_client.chat_postEphemeral(
                 channel=event['channel']['id'],
@@ -413,7 +413,7 @@ class PennyChatBotModule(BotModule):
                     user=profile.slack_id,
                     text=we_will_notify_organizer,
                 )
-        except RuntimeError:
+        except RuntimeError as e:
             chat_postEphemeral_with_fallback(
                 self.slack_client,
                 channel=event['channel']['id'],
