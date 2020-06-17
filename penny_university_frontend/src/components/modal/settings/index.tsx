@@ -7,10 +7,10 @@ import { AnyAction } from 'redux'
 import {
   Form, ModalHeader, ModalBody, Button,
 } from 'reactstrap'
-import modalDispatch from '../dispatch'
-import { updateUser } from '../../../actions/user'
-import { Input } from '../../fields'
-import { User } from '../../../models'
+import modalDispatch from '../dispatch.ts'
+import { updateUser } from '../../../actions/user.ts'
+import { Input } from '../../fields/index.ts'
+import { User } from '../../../models/index.ts'
 
 type SettingsModalProps = {
   update: (payload: {
@@ -35,8 +35,26 @@ const SettingsModal = ({ update, user }: SettingsModalProps) => {
           modalDispatch.close()
         }}
         >
-          <Input label="First Name" type="text" name="firstName" id="firstName" placeholder="" onChange={setFirstName} value={firstName} required />
-          <Input label="Last Name" type="text" name="lastName" id="lastName" placeholder="" onChange={setLastName} value={lastName} required />
+          <Input
+            label="First Name"
+            type="text"
+            name="firstName"
+            id="firstName"
+            placeholder=""
+            onChange={setFirstName}
+            value={firstName}
+            required
+          />
+          <Input
+            label="Last Name"
+            type="text"
+            name="lastName"
+            id="lastName"
+            placeholder=""
+            onChange={setLastName}
+            value={lastName}
+            required
+          />
           <div className="text-center">
             <Button>
               Update

@@ -2,9 +2,9 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
-import Date from '../Date'
-import { User } from '../../models'
-import { Routes } from '../../constants'
+import Date from '../Date.tsx'
+import { User } from '../../models/index.ts'
+import { Routes } from '../../constants/index.ts'
 
 type FollowUpUserInfo = {
   user: User,

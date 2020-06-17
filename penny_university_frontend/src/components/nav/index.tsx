@@ -3,9 +3,9 @@ import {
   Button, Navbar, NavbarBrand, Dropdown, DropdownToggle, DropdownMenu, Container,
 } from 'reactstrap'
 import { Link } from 'react-router-dom'
-import modalDispatch from '../modal/dispatch'
-import { User } from '../../models'
-import { Routes } from '../../constants'
+import modalDispatch from '../modal/dispatch.ts'
+import { User } from '../../models/index.ts'
+import { Routes } from '../../constants/index.ts'
 
 const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -17,26 +17,26 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
         <NavbarBrand href="/">Penny University</NavbarBrand>
         {user.valid ? (
 
-        <Dropdown isOpen={dropdownOpen} toggle={toggle}>
-          <DropdownToggle caret>
-            {`Hi, ${user.displayName}!`}
-          </DropdownToggle>
-          <DropdownMenu>
-            <div>
-              <Link
-                to={Routes.Profile.replace(':id', user.id.toString())}
-                className="btn btn-link"
-              >
-                Profile
-              </Link>
-            </div>
-            <div>
-              <Button
-                onClick={logout}
-                  color={'link'}
+          <Dropdown isOpen={dropdownOpen} toggle={toggle}>
+            <DropdownToggle caret>
+              {`Hi, ${user.displayName}!`}
+            </DropdownToggle>
+            <DropdownMenu>
+              <div>
+                <Link
+                  to={Routes.Profile.replace(':id', user.id.toString())}
+                  className="btn btn-link"
+                >
+                  Profile
+                </Link>
+              </div>
+              <div>
+                <Button
+                  onClick={logout}
+                  color="link"
                 >
                   Logout
-          </Button>
+                </Button>
               </div>
             </DropdownMenu>
           </Dropdown>
@@ -45,7 +45,7 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
             <Button onClick={modalDispatch.auth}>Login</Button>
           )}
       </Container>
-    </Navbar >
+    </Navbar>
   )
 }
 

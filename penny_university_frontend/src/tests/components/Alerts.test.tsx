@@ -1,7 +1,7 @@
 import React from 'react'
 import { shallow, mount } from 'enzyme'
 import { Alert } from 'reactstrap'
-import { ErrorAlert } from '../../components/alerts'
+import { ErrorAlert } from '../../components/alerts/index.tsx'
 
 describe('error alert component', () => {
   it('renders correctly', () => {

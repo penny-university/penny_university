@@ -1,11 +1,11 @@
 import fetchMock from 'fetch-mock'
 import {
   bootstrap, dispatchLogout, Actions,
-} from '../actions/user'
-import { ChatActions } from '../actions'
-import ApiRoutes from '../constants'
-import { makeMockStore, baseUrl } from './config'
-import { chats } from './data'
+} from '../actions/user.ts'
+import { ChatActions } from '../actions/index.ts'
+import ApiRoutes from '../constants/index.ts'
+import { makeMockStore, baseUrl } from './config.tsx'
+import { chats } from './data.ts'
 
 describe('auth flow', () => {
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe('auth flow', () => {
     document.cookie = ''
     const store = makeMockStore()
 
-    const expectedActionTypes = [ChatActions.CHATS_LIST_REQUEST, Actions.BOOTSTRAP,]
+    const expectedActionTypes = [ChatActions.CHATS_LIST_REQUEST, Actions.BOOTSTRAP]
     store.dispatch(bootstrap())
 
     expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
@@ -39,7 +39,10 @@ describe('auth flow', () => {
 
     const store = makeMockStore()
 
-    const expectedActionTypes = [Actions.SET_TOKEN, Actions.FETCH_USER_REQUEST, ChatActions.CHATS_LIST_REQUEST, Actions.BOOTSTRAP]
+    const expectedActionTypes = [
+      Actions.SET_TOKEN, Actions.FETCH_USER_REQUEST,
+      ChatActions.CHATS_LIST_REQUEST, Actions.BOOTSTRAP,
+    ]
     store.dispatch(bootstrap())
     expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
   })

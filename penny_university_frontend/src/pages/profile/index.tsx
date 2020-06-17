@@ -3,14 +3,14 @@ import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { RouteComponentProps } from 'react-router-dom'
-import { ChatList } from '../../components'
-import { SettingsButton } from '../../components/buttons'
-import modalDispatch from '../../components/modal/dispatch'
-import { User } from '../../models'
-import { RootState } from '../../reducers'
-import * as selectors from '../../selectors'
-import { loadChatsList } from '../../actions/chat'
-import ApiRoutes from '../../constants'
+import { ChatList } from '../../components/index.ts'
+import { SettingsButton } from '../../components/buttons/index.tsx'
+import modalDispatch from '../../components/modal/dispatch.ts'
+import { User } from '../../models/index.ts'
+import { RootState } from '../../reducers/index.ts'
+import * as selectors from '../../selectors/index.ts'
+import { loadChatsList } from '../../actions/chat.ts'
+import ApiRoutes from '../../constants/index.ts'
 
 type StateProps = {
   user: User,
@@ -25,7 +25,9 @@ type TParams = { id: string };
 
 type ProfilePageProps = StateProps & DispatchProps & RouteComponentProps<TParams>
 
-const ProfilePage = ({ loadChatsList, match, me, user }: ProfilePageProps) => {
+const ProfilePage = ({
+  loadChatsList, match, me, user,
+}: ProfilePageProps) => {
   const { id } = match.params
   useEffect(() => {
     loadChatsList(ApiRoutes.userChats(id), id)

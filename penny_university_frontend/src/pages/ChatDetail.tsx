@@ -5,12 +5,12 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import {
   createFollowUp, loadChatDetail, loadFollowUps, updateFollowUp,
-} from '../actions/chat'
-import { ChatDetail } from '../components/chats'
-import * as selectors from '../selectors'
-import { RootState } from '../reducers'
-import { Chat, FollowUp, User } from '../models'
-import { FollowUpType } from '../models/followUp';
+} from '../actions/chat.ts'
+import { ChatDetail } from '../components/chats/index.ts'
+import * as selectors from '../selectors/index.ts'
+import { RootState } from '../reducers/index.ts'
+import { Chat, FollowUp, User } from '../models/index.ts'
+import { FollowUpType } from '../models/followUp.ts';
 
 type StateProps = {
   id: number,

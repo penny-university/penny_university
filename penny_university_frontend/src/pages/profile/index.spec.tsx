@@ -2,16 +2,17 @@
 import '@testing-library/jest-dom'
 import React from 'react'
 import { render, fireEvent, screen } from '@testing-library/react'
-import ProfilePage from '.'
-import { authenticatedState, unauthenticatedState, MockAppState } from '../../tests/config'
-import { Modal } from '../../components'
-import { TestIDs } from '../../components/chats/ChatCard'
+import ProfilePage from './index.tsx'
+import { authenticatedState, unauthenticatedState, MockAppState } from '../../tests/config.tsx'
+import { Modal } from '../../components/index.ts'
+import { TestIDs } from '../../components/chats/ChatCard.tsx'
 
 test('profile page shows list of users chats', () => {
   render(
     <MockAppState store={authenticatedState}>
       <ProfilePage match={{ params: { id: '1' } }} />
-    </MockAppState>)
+    </MockAppState>,
+  )
 
   const chats = screen.getAllByTestId(TestIDs.chatCard)
   // AuthedUser has only two follups
@@ -23,15 +24,14 @@ test('profile page displays settings gear on authenticated user profile', () => 
     <MockAppState store={authenticatedState}>
       <ProfilePage match={{ params: { id: '1' } }} />
       <Modal />
-    </MockAppState>
+    </MockAppState>,
   )
 
-  const settingsButton = screen.getAllByText("Settings")
+  const settingsButton = screen.getAllByText('Settings')
   fireEvent.click(settingsButton[0])
 
-  const modalHeader = screen.getByText("Update Profile")
+  const modalHeader = screen.getByText('Update Profile')
   expect(modalHeader).toBeTruthy()
-
 })
 
 
@@ -39,10 +39,10 @@ test('profile page does not display settings gear on other user profile when aut
   render(
     <MockAppState store={authenticatedState}>
       <ProfilePage match={{ params: { id: '2' } }} />
-    </MockAppState>
+    </MockAppState>,
   )
 
-  const settingsButton = screen.queryByText("Settings")
+  const settingsButton = screen.queryByText('Settings')
   expect(settingsButton).toBeNull()
 })
 
@@ -50,9 +50,9 @@ test('profile page does not display settings gear on unauthenticated user profil
   render(
     <MockAppState store={unauthenticatedState}>
       <ProfilePage match={{ params: { id: '2' } }} />
-    </MockAppState>
+    </MockAppState>,
   )
 
-  const settingsButton = screen.queryByText("Settings")
+  const settingsButton = screen.queryByText('Settings')
   expect(settingsButton).toBeNull()
 })

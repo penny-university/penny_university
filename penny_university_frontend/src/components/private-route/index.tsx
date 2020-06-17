@@ -3,11 +3,11 @@
 import React, { FunctionComponent } from 'react'
 import { connect } from 'react-redux'
 import { Route, Redirect } from 'react-router-dom'
-import * as selectors from '../../selectors'
-import { User } from '../../models'
-import { Routes } from '../../constants'
-import { RootState } from '../../reducers'
-import { CookieHelper } from '../../helpers'
+import * as selectors from '../../selectors/index.ts'
+import { User } from '../../models/index.ts'
+import { Routes } from '../../constants/index.ts'
+import { RootState } from '../../reducers/index.ts'
+import { CookieHelper } from '../../helpers/index.ts'
 
 type StateToPropsType = {
   user: User,
@@ -20,12 +20,14 @@ type PrivateRouteProps = StateToPropsType & {
 }
 
 const PrivateRoute = (props: PrivateRouteProps) => {
-  const { component, user, path, exact } = props
+  const {
+    component, user, path, exact,
+  } = props
   const token = CookieHelper.getToken()
   if (user.valid || token) {
-    return <Route exact={ exact } path = { path } component={component} />
-   }
-  return <Redirect to={ Routes.Home } />
+    return <Route exact={exact} path={path} component={component} />
+  }
+  return <Redirect to={Routes.Home} />
 }
 
 const mapStateToProps = (state: RootState): StateToPropsType => ({

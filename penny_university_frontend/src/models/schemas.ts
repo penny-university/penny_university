@@ -1,7 +1,7 @@
 import { schema } from 'normalizr'
-import Chat, { ChatType } from './chat'
-import User, { UserType } from './user'
-import FollowUp, { FollowUpType } from './followUp';
+import Chat, { ChatType } from './chat.ts'
+import User, { UserType } from './user.ts'
+import FollowUp, { FollowUpType } from './followUp.ts'
 
 const userSchema = new schema.Entity('users', {}, {
   idAttribute: (user: User) => user.id.toString(),

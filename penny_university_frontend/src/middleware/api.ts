@@ -1,7 +1,10 @@
-import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
+import {
+  MiddlewareAPI, Dispatch, Middleware, AnyAction,
+} from 'redux'
 import { camelizeKeys, decamelizeKeys } from 'humps'
-import * as selectors from '../selectors'
-import ApiRoutes from '../constants'
+import * as selectors from '../selectors/index.ts'
+import ApiRoutes from '../constants/index.ts'
+
 const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 
 
@@ -66,7 +69,9 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
     const token = selectors.user.getToken(store.getState())
     return callApi(endpoint, method, payload, token).then(
       (response: any) => {
-        const metaWithPagination = response.results ? { ...meta, count: response.count, next: response.next, previous: response.previous } : meta
+        const metaWithPagination = response.results ? {
+          ...meta, count: response.count, next: response.next, previous: response.previous,
+        } : meta
         return next({
           payload: { result: response.results || response, responseSchema, meta: metaWithPagination },
           type: successType,

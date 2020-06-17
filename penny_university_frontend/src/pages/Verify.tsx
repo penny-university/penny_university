@@ -4,9 +4,8 @@ import { ThunkDispatch } from 'redux-thunk'
 import { AnyAction } from 'redux'
 import { RouteComponentProps } from 'react-router-dom'
 import queryString from 'query-string'
-import { User } from '../models'
-import { RootState } from '../reducers'
-import { verifyEmail } from '../actions/user'
+import { RootState } from '../reducers/index.ts'
+import { verifyEmail } from '../actions/user.ts'
 
 type StateProps = {
   error: string | null,
@@ -24,8 +23,8 @@ const VerifyPage = ({ verify, location, error }: VerifyPageProps) => {
     if (typeof parsed?.token === 'string' && typeof parsed?.email === 'string') {
       verify({ token: parsed?.token, email: parsed?.email })
     }
-  }, [verify])
-  const message = error ?  'There was an issue verifying your email 😞' : 'Thanks for verifying your email 🙂'
+  }, [verify, parsed])
+  const message = error ? 'There was an issue verifying your email 😞' : 'Thanks for verifying your email 🙂'
   return (
     <div>
       <h1 className="text-center">{message}</h1>
@@ -39,7 +38,7 @@ const mapStateToProps = (state: RootState) => {
 }
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  verify: (payload: { token: string, email: string }) => dispatch(verifyEmail(payload))
+  verify: (payload: { token: string, email: string }) => dispatch(verifyEmail(payload)),
 })
 
 // @ts-ignore

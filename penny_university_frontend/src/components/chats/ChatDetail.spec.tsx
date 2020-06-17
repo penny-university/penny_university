@@ -3,11 +3,12 @@ import '@testing-library/jest-dom'
 import React from 'react'
 import { createMemoryHistory } from 'history'
 import { render, fireEvent, screen } from '@testing-library/react'
-import ChatDetail from './ChatDetail'
 import { Router } from 'react-router-dom'
-import { normalizedChat, normalizedFollowUps, users } from '../../tests/data'
-import { User } from '../../models'
-import { TestIDs } from '../follow-ups/FollowUpCard'
+import ChatDetail from './ChatDetail.tsx'
+import { normalizedChat, normalizedFollowUps, users } from '../../tests/data.ts'
+import { User } from '../../models/index.ts'
+import { TestIDs } from '../follow-ups/FollowUpCard.tsx'
+
 const history = createMemoryHistory()
 const followUps = Object.values(normalizedFollowUps)
 
@@ -26,7 +27,8 @@ test('users can only edit followups they created', () => {
         user={users['1']}
         getUserByID={(id: string) => users[id]}
       />
-    </Router>)
+    </Router>,
+  )
 
   const buttons = screen.getAllByTestId(TestIDs.subMenu)
   // There should be two followUps
@@ -46,14 +48,14 @@ test('users can only create follow ups when authenticated', () => {
         user={users['1']}
         getUserByID={(id: string) => users[id]}
       />
-    </Router>)
+    </Router>,
+  )
 
-  const addNewButton = screen.getAllByText("Add New Follow Up")
+  const addNewButton = screen.getAllByText('Add New Follow Up')
   fireEvent.click(addNewButton[0])
 
-  const markdownButton = screen.getByText("Save Follow Up")
+  const markdownButton = screen.getByText('Save Follow Up')
   expect(markdownButton).toBeTruthy()
-
 })
 
 test('users can only create follow ups when authenticated', () => {
@@ -67,11 +69,12 @@ test('users can only create follow ups when authenticated', () => {
         user={new User()}
         getUserByID={(id: string) => users[id]}
       />
-    </Router>)
+    </Router>,
+  )
 
-  const addNewButton = screen.getAllByText("Add New Follow Up")
+  const addNewButton = screen.getAllByText('Add New Follow Up')
   fireEvent.click(addNewButton[0])
 
-  const markdownButton = screen.queryByText("Save Follow Up")
+  const markdownButton = screen.queryByText('Save Follow Up')
   expect(markdownButton).toBeNull()
 })

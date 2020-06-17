@@ -7,9 +7,9 @@ import { AnyAction } from 'redux'
 import {
   Form, ModalHeader, ModalBody, Button,
 } from 'reactstrap'
-import { Input } from '../../fields'
-import modalDispatch from '../dispatch'
-import { userExists } from '../../../actions/user'
+import { Input } from '../../fields/index.ts'
+import modalDispatch from '../dispatch.ts'
+import { userExists } from '../../../actions/user.ts'
 
 type AuthEmailModalProps = {
   userExists: (email: string) => AnyAction
@@ -27,7 +27,16 @@ const AuthEmailModal = ({ userExists }: AuthEmailModalProps) => {
           return false
         }}
         >
-          <Input label="Email" type="email" name="email" id="email" placeholder="" required onChange={setEmail} value={email} />
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            id="email"
+            placeholder=""
+            required
+            onChange={setEmail}
+            value={email}
+          />
           <div className="text-center">
             <Button>
               Let&rsquo;s Go

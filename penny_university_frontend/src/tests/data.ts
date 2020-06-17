@@ -4,15 +4,17 @@ import chatDetail from '../../../__mocks__/api-chats-get-1-200.json'
 import chatList from '../../../__mocks__/api-chats-get-200.json'
 import followUpsList from '../../../__mocks__/api-chats-get-1-follow-ups-200.json'
 
-import { Schemas } from '../models/schemas'
-import { User } from '../models'
+import { Schemas } from '../models/schemas.ts'
+import { User } from '../models/index.ts'
 
 const allChats = camelizeKeys(chatList)
 // @ts-ignore
-const { entities: allEntities, result: allChatIDs } = normalize(allChats.results, Schemas.CHAT_ARRAY)
+const { entities: allEntities, result: allChatIDs } = normalize(
+  allChats.results, Schemas.CHAT_ARRAY,
+)
 const { chats: allChatsNormalized } = allEntities
 // @ts-ignore
-const allUsers: {[key: string]: User} | undefined = allEntities.users
+const allUsers: { [key: string]: User } | undefined = allEntities.users
 export {
   allChatsNormalized,
   allChats,
@@ -21,10 +23,10 @@ export {
 }
 
 // Chats
-export const chats = camelizeKeys(chatList.results.slice(2,3))
+export const chats = camelizeKeys(chatList.results.slice(2, 3))
 export const { chats: normalizedChats, users } = normalize(chats, Schemas.CHAT_ARRAY).entities
 // Mocked Chat paging
-export const chatsNext = camelizeKeys(chatList.results.slice(0,1))
+export const chatsNext = camelizeKeys(chatList.results.slice(0, 1))
 export const { chats: normalizedNextChats } = normalize(chatsNext, Schemas.CHAT_ARRAY).entities
 // Single Chat
 export const chat = camelizeKeys(chatDetail)
@@ -32,4 +34,6 @@ export const { chats: normalizedChat } = normalize(chat, Schemas.CHAT).entities
 
 export const followUps = camelizeKeys(followUpsList)
 
-export const { followUps: normalizedFollowUps}  = normalize(followUps, Schemas.FOLLOW_UP_ARRAY).entities
+export const { followUps: normalizedFollowUps } = normalize(
+  followUps, Schemas.FOLLOW_UP_ARRAY,
+).entities

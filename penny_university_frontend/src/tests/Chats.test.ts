@@ -1,9 +1,11 @@
 import fetchMock from 'fetch-mock'
-import { loadChatDetail, loadChatsList } from '../actions/chat'
-import {rootReducer as  reducer} from '../reducers'
-import { makeMockStore, initialState, baseUrl } from './config'
-import { chats, chatsNext, normalizedChats, users } from './data'
-import ApiRoutes from '../constants'
+import { loadChatDetail, loadChatsList } from '../actions/chat.ts'
+import { rootReducer as reducer } from '../reducers/index.ts'
+import { makeMockStore, initialState, baseUrl } from './config.tsx'
+import {
+  chats, chatsNext, normalizedChats, users,
+} from './data.ts'
+import ApiRoutes from '../constants/index.ts'
 
 
 describe('chat actions', () => {
@@ -42,7 +44,7 @@ describe('chat actions', () => {
       },
       {
         type: 'CHATS_LIST_FAILURE',
-        payload: { message: 'It failed!', status: undefined, meta: { userID: undefined }, },
+        payload: { message: 'It failed!', status: undefined, meta: { userID: undefined } },
       },
     ]
     // @ts-ignore
@@ -75,7 +77,7 @@ describe('chat actions', () => {
     const expectedActions = [
       {
         type: 'CHAT_DETAIL_REQUEST',
-        payload: { meta: undefined }
+        payload: { meta: undefined },
       },
       {
         type: 'CHAT_DETAIL_FAILURE',

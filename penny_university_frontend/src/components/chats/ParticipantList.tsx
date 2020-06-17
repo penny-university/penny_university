@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import { Popover, PopoverHeader, PopoverBody } from 'reactstrap'
 import { Link } from 'react-router-dom'
-import * as selectors from '../../selectors'
-import { RootState } from '../../reducers'
-import User from '../../models/user'
+import * as selectors from '../../selectors/index.ts'
+import { RootState } from '../../reducers/index.ts'
+import User from '../../models/user.ts'
 
 type ParticipantListProps = {
   className: string,
@@ -13,7 +13,9 @@ type ParticipantListProps = {
   getUserByID: (id: number) => User,
 }
 
-const ParticipantList = ({ className, participants, chatID, getUserByID }: ParticipantListProps) => {
+const ParticipantList = ({
+  className, participants, chatID, getUserByID,
+}: ParticipantListProps) => {
   const [popoverOpen, setPopoverOpen] = useState(false)
 
   const openPopover = () => setPopoverOpen(true)

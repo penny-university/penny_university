@@ -1,5 +1,3 @@
-import { ApiRoutes } from '../constants'
-
 type APIPayload<P> = {
   types: [string, string, string],
   endpoint: string,

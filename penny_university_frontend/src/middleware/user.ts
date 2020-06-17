@@ -1,11 +1,14 @@
-import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
+import {
+  MiddlewareAPI, Dispatch, Middleware, AnyAction,
+} from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import {
-  setToken, fetchUser, Actions, logoutRequest } from '../actions/user'
-import { loadChatsList } from '../actions/chat'
-import CookieHelper from '../helpers/cookie'
-import modalDispatch from '../components/modal/dispatch'
-import ApiRoutes from "../constants"
+  setToken, fetchUser, Actions, logoutRequest,
+} from '../actions/user.ts'
+import { loadChatsList } from '../actions/chat.ts'
+import CookieHelper from '../helpers/cookie.ts'
+import modalDispatch from '../components/modal/dispatch.ts'
+import ApiRoutes from '../constants/index.ts'
 
 const logout = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
   CookieHelper.clearCookies()
@@ -30,8 +33,8 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       store.dispatch(loadChatsList(ApiRoutes.chats))
       break
     case Actions.SIGNUP_SUCCESS:
-        modalDispatch.verifyEmail(action.payload.meta.email)
-      break    
+      modalDispatch.verifyEmail(action.payload.meta.email)
+      break
     case Actions.LOGIN_SUCCESS:
       CookieHelper.setToken(action.payload.result.key)
       store.dispatch(setToken(action.payload.result.key))
@@ -40,23 +43,22 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       break
     case Actions.FETCH_USER_SUCCESS:
       // Load data
-      const user = action.payload.result
-      const pk = user.pk.toString()
+      const pk = action.payload.result.pk.toString() // eslint-disable-line no-case-declarations
       store.dispatch(loadChatsList(ApiRoutes.userChats(pk), pk))
       break
     case Actions.USER_EXISTS_SUCCESS:
       modalDispatch.authPassword(action.payload.meta.email)
       break
-      case Actions.USER_EXISTS_FAILURE:
-        const { status } = action.payload
-        if (status === 403) {
-          modalDispatch.verifyEmail(action.payload.meta.email)
-        } else {
-          modalDispatch.authSignup(action.payload.meta.email)
-        }
+    case Actions.USER_EXISTS_FAILURE:
+      const { status } = action.payload // eslint-disable-line no-case-declarations
+      if (status === 403) {
+        modalDispatch.verifyEmail(action.payload.meta.email)
+      } else {
+        modalDispatch.authSignup(action.payload.meta.email)
+      }
       break
-      case Actions.VERIFY_EMAIL_SUCCESS:
-        modalDispatch.auth()
+    case Actions.VERIFY_EMAIL_SUCCESS:
+      modalDispatch.auth()
       break
     default:
   }

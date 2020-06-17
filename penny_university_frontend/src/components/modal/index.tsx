@@ -3,10 +3,12 @@
 
 import React, { useReducer, useEffect } from 'react'
 import { Modal as ModalStrap } from 'reactstrap'
-import modalDispatch from './dispatch'
-import Actions, { ModalNames } from './constants'
-import { AuthEmail, AuthPassword, AuthSignup, VerifyEmail } from './auth'
-import Settings  from './settings'
+import modalDispatch from './dispatch.ts'
+import Actions, { ModalNames } from './constants.ts'
+import {
+  AuthEmail, AuthPassword, AuthSignup, VerifyEmail,
+} from './auth/index.ts'
+import Settings from './settings/index.tsx'
 
 
 type State = { name: string | null, open: boolean, props: { email?: string | undefined } }

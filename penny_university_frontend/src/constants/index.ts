@@ -6,12 +6,12 @@ const ApiRoutes = {
   register: 'auth/register/',
   logout: 'auth/logout/',
   exists: 'auth/exists/',
-  chats:  'chats/',
+  chats: 'chats/',
   chatDetail: (id: number) => `chats/${id}/`,
   userChats: (userID: string) => `chats/?participants__user_id=${userID}`,
   updateUser: (id: string) => `users/${id}/`,
   resendEmail: 'auth/verification-email/',
-  verifyEmail: 'auth/verify/', 
+  verifyEmail: 'auth/verify/',
 }
 
 export const Routes = {

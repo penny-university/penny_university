@@ -1,15 +1,17 @@
-import { combineReducers, applyMiddleware, createStore, compose } from 'redux'
-import { AnyAction } from 'redux'
+import {
+  combineReducers, applyMiddleware, createStore, compose, AnyAction,
+} from 'redux'
+
 import { normalize } from 'normalizr'
-import { ChatActions, UserActions } from '../actions'
-import paginate, { paginationInitialState } from './paginate'
-import user, { initialState as userInitialState } from './user'
-import { Actions as UserAction } from '../actions/user'
 import thunk from 'redux-thunk'
-import api from '../middleware/api'
-import logging from '../middleware/logging'
-import userMiddleware from '../middleware/user'
-import { Schemas } from '../models/schemas'
+import { ChatActions, UserActions } from '../actions/index.ts'
+import paginate, { paginationInitialState } from './paginate.ts'
+import user, { initialState as userInitialState } from './user.ts'
+import { Actions as UserAction } from '../actions/user.ts'
+import api from '../middleware/api.ts'
+import logging from '../middleware/logging.ts'
+import userMiddleware from '../middleware/user.ts'
+import { Schemas } from '../models/schemas.ts'
 
 // Eventually we will want to move this into a DEV configuration
 const composeEnhancers = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -32,7 +34,7 @@ const failureTypes = [
   UserActions.VERIFY_EMAIL_FAILURE,
 ]
 
-const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, }, action: AnyAction): EntityState => {
+const entities = (state: EntityState = { chats: {}, followUps: {}, users: {} }, action: AnyAction): EntityState => {
   const { result, responseSchema } = action.payload || {}
   if (result && responseSchema) {
     const { entities: { chats = {}, users = {}, followUps = {} } = {} } = normalize(result, responseSchema)
@@ -48,14 +50,13 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, },
       followUps: {
         ...state.followUps,
         ...followUps,
-      }
+      },
     }
   }
   if (action.type === UserAction.UPDATE_USER_SUCCESS) {
     const newState = { ...state }
-    newState.users[action.payload.result.id] = Object.assign({}, newState.users[action.payload.result.id], action.payload.result)
+    newState.users[action.payload.result.id] = { ...newState.users[action.payload.result.id], ...action.payload.result }
     return newState
-
   }
   return state
 }
@@ -64,7 +65,7 @@ const errorReducer = (state = { status: NaN, message: '' }, action: AnyAction): 
   const { type, payload } = action
   if (type === ChatActions.CLEAR_ERROR_MESSAGE) {
     return { status: NaN, message: '' }
-  } else if (failureTypes.includes(action.type)) {
+  } if (failureTypes.includes(action.type)) {
     return payload
   }
   return state
@@ -72,9 +73,7 @@ const errorReducer = (state = { status: NaN, message: '' }, action: AnyAction): 
 
 const pagination = combineReducers({
   chatsByFilter: paginate({
-    mapActionToKey: (action?: AnyAction) => {
-      return action?.payload?.meta?.userID || 'all'
-    },
+    mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.userID || 'all',
     types: [
       [ChatActions.CHATS_LIST_REQUEST],
       [ChatActions.CHATS_LIST_SUCCESS],
@@ -117,7 +116,7 @@ const store = createStore(rootReducer, initialState, composeEnhancers(
 export type RootState = ReturnType<typeof rootReducer>
 
 export {
-  Schemas
+  Schemas,
 }
 
 export default store

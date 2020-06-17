@@ -1,4 +1,4 @@
-import Content from './Content'
-import EditContent from './EditContent'
+import Content from './Content.tsx'
+import EditContent from './EditContent.tsx'
 
 export { Content, EditContent }

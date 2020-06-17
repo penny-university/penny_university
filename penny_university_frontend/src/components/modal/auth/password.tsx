@@ -7,13 +7,13 @@ import { AnyAction } from 'redux'
 import {
   Form, ModalHeader, ModalBody, Button,
 } from 'reactstrap'
-import modalDispatch from '../dispatch'
-import { dispatchLogin } from '../../../actions/user'
-import { Input } from '../../fields'
+import modalDispatch from '../dispatch.ts'
+import { dispatchLogin } from '../../../actions/user.ts'
+import { Input } from '../../fields/index.ts'
 
 type AuthPasswordModalProps = {
   email: string,
-  login: (payload: {email: string, password: string}) => void,
+  login: (payload: { email: string, password: string }) => void,
 }
 
 const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
@@ -27,7 +27,16 @@ const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
           login({ email, password })
         }}
         >
-          <Input label="Password" type="password" name="password" id="password" placeholder="" onChange={setPassword} value={password} required />
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            id="password"
+            placeholder=""
+            onChange={setPassword}
+            value={password}
+            required
+          />
           <div className="text-center">
             <Button>Let&rsquo;s Go</Button>
           </div>
@@ -42,7 +51,7 @@ const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  login: (payload: {email: string, password: string}) => dispatch(dispatchLogin(payload)),
+  login: (payload: { email: string, password: string }) => dispatch(dispatchLogin(payload)),
 })
 
 

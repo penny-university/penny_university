@@ -1,7 +1,7 @@
-import { CALL_API, APIPayload } from '../middleware/api'
 import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
-import ApiRoutes from '../constants'
+import { CALL_API, APIPayload } from '../middleware/api.ts'
+import ApiRoutes from '../constants/index.ts'
 
 export const Actions = {
   HYDRATE_USER: 'HYDRATE_USER',
@@ -119,10 +119,9 @@ export const verifyEmail = (payload: {token: string, email: string }) => ({
   },
 })
 
-
-
+// eslint-disable-next-line max-len
 export const dispatchLogin = (payload: { email: string, password: string }) => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(login(payload))
-
+// eslint-disable-next-line max-len
 export const dispatchLogout = () => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
 
 export const updateUser = (payload: {firstName: string, lastName: string}, id: string) => ({

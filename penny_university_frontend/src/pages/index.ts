@@ -1,5 +1,5 @@
-import ProfilePage from './profile'
+import ProfilePage from './profile/index.tsx'
 
 export {
-  ProfilePage
+  ProfilePage,
 }
