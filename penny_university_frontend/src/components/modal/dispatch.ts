@@ -19,7 +19,7 @@ const modalDispatch = () => {
     }
   }
 
-  const open = call((payload: Object) => ({
+  const open = call((payload: {name: string, props: Object}) => ({
     type: Actions.OPEN_MODAL,
     payload,
   }))
@@ -29,8 +29,9 @@ const modalDispatch = () => {
     payload: null,
   }))
 
-  const authUsername = () => open({
+  const auth = (followUpText?: string | undefined) => open({
     name: ModalNames.AUTH_EMAIL,
+    props: { followUpText },
   })
 
   const settings = (user: User) => open({
@@ -38,25 +39,25 @@ const modalDispatch = () => {
     props: { user },
   })
 
-  const authPassword = (email: string) => open({
+  const authPassword = (email: string, followUpText: string | undefined) => open({
     name: ModalNames.AUTH_PASSWORD,
-    props: { email },
+    props: { email, followUpText },
   })
 
-  const authSignup = (email: string) => open({
+  const authSignup = (email: string, followUpText: string | undefined) => open({
     name: ModalNames.AUTH_SIGNUP,
-    props: { email },
+    props: { email, followUpText },
   })
 
-  const verifyEmail = (email: string) => open({
+  const verifyEmail = (email: string, followUpText?: string | undefined | boolean) => open({
     name: ModalNames.VERIFY_EMAIL,
-    props: { email },
+    props: { email, followUpText },
   })
 
   return {
     mount,
     unmount,
-    auth: authUsername,
+    auth,
     authSignup,
     authPassword,
     settings,
