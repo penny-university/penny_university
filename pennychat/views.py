@@ -58,8 +58,15 @@ class ListCreateFollowUps(generics.GenericAPIView):
     queryset = FollowUp.objects.all().order_by('-date')
     serializer_class = FollowUpSerializer
 
+    def get_queryset(self):
+        """
+        Queryset all followups by verified users for the chat id in the url
+        """
+        pk = self.kwargs['pk']
+        return FollowUp.objects.filter(penny_chat_id=pk, user__is_verified=True)
+
     def get(self, request, pk, format=None):
-        follow_ups = FollowUp.objects.filter(penny_chat_id=pk)
+        follow_ups = self.get_queryset()
         queryset = self.filter_queryset(follow_ups)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
