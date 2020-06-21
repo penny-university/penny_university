@@ -7,7 +7,6 @@ import ApiRoutes from '../constants/index.ts'
 
 const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 
-
 export type APIPayload<P> = {
   types: [string, string, string],
   endpoint: valueof<typeof ApiRoutes>,

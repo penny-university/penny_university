@@ -3,7 +3,6 @@ import ReactMde from 'react-mde'
 import * as Showdown from 'showdown'
 import 'react-mde/lib/styles/css/react-mde-all.css'
 
-
 type EditorTabs = 'write' | 'preview'
 
 type EditContentType = {

@@ -6,7 +6,6 @@ import { connect } from 'react-redux'
 import { ChatActions } from '../../actions/index.ts'
 import { RootState } from '../../reducers/index.ts'
 
-
 type AlertProps = {
   error: string,
   dismiss: () => void,
@@ -28,7 +27,6 @@ export const ErrorAlert = ({ error, dismiss }: AlertProps) => {
     </div>
   ) : null
 }
-
 
 const mapStateToProps = (state: RootState) => {
   const { error } = state

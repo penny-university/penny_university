@@ -63,5 +63,4 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>): Dispatc
   dispatchLogout: () => dispatch(logout()),
 })
 
-
 export default connect(mapStateToProps, mapDispatchToProps)(App)

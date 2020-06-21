@@ -34,7 +34,6 @@ export const Actions = {
   VERIFY_EMAIL_FAILURE: 'VERIFY_EMAIL_FAILURE',
 }
 
-
 export const setToken = (token: string) => ({
   type: Actions.SET_TOKEN,
   payload: token,
@@ -73,7 +72,6 @@ export const signup = (payload: { email: string, password: string }): AnyAction 
     meta: { email: payload.email },
   },
 })
-
 
 export const userExists = (email: string) => ({
   type: CALL_API,

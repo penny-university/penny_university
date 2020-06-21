@@ -10,7 +10,6 @@ export interface ChatType {
   participants: Array<Participant>,
 }
 
-
 class Chat implements ChatType {
   id: number
 

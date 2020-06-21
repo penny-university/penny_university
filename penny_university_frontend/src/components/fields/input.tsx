@@ -16,7 +16,6 @@ type InputProps = {
   helperText?: string,
 }
 
-
 const Input = ({
   type, name, id, placeholder, onChange, label, value, required, helperText,
 }: InputProps) => (

@@ -1,4 +1,3 @@
-
 import '@testing-library/jest-dom'
 import React from 'react'
 import { render, fireEvent, screen } from '@testing-library/react'
@@ -33,7 +32,6 @@ test('profile page displays settings gear on authenticated user profile', () => 
   const modalHeader = screen.getByText('Update Profile')
   expect(modalHeader).toBeTruthy()
 })
-
 
 test('profile page does not display settings gear on other user profile when authenticated', () => {
   render(

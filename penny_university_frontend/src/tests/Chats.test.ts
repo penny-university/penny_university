@@ -7,7 +7,6 @@ import {
 } from './data.ts'
 import ApiRoutes from '../constants/index.ts'
 
-
 describe('chat actions', () => {
   afterEach(() => {
     fetchMock.restore()

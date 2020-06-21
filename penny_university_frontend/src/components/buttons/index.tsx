@@ -6,7 +6,6 @@ import {
 import classNames from 'classnames/dedupe'
 import { Button } from 'reactstrap'
 
-
 require('./style.scss')
 
 interface Props {
@@ -66,7 +65,6 @@ const CreateButton = ({
 }: { className: string, type: string, onClick: () => void }) => (
   <IconButton onClick={onClick} className={className} detail={detail} title="Add New" icon={faPlus} />
 )
-
 
 CreateButton.defaultProps = {
   className: '',

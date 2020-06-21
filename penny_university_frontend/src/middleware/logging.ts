@@ -1,4 +1,3 @@
-
 import {
   MiddlewareAPI, Dispatch, Middleware, AnyAction,
 } from 'redux'

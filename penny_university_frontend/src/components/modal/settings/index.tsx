@@ -66,7 +66,6 @@ const SettingsModal = ({ update, user }: SettingsModalProps) => {
   )
 }
 
-
 const mapStateToProps = () => ({
 })
 

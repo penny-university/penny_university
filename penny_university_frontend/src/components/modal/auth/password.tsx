@@ -46,13 +46,11 @@ const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
   )
 }
 
-
 const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
   login: (payload: { email: string, password: string }) => dispatch(dispatchLogin(payload)),
 })
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthPasswordModal)

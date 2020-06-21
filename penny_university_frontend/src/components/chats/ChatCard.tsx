@@ -10,7 +10,6 @@ import { Content } from '../content/index.ts'
 import ParticipantList from './ParticipantList.tsx'
 import { Chat } from '../../models/index.ts'
 
-
 export const TestIDs = {
   chatCard: 'chart-card',
 }
@@ -37,6 +36,5 @@ const ChatCard = ({ chat }: ChatCardProps) => (chat ? (
     </div>
   </Card>
 ) : null)
-
 
 export default ChatCard

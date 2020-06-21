@@ -10,7 +10,6 @@ import {
 } from './auth/index.ts'
 import Settings from './settings/index.tsx'
 
-
 type State = { name: string | null, open: boolean, props: { email?: string | undefined } }
 
 export type Action = { type: string, payload: { open: boolean, name: string, props?: { email?: string } } }

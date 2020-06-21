@@ -92,7 +92,6 @@ const AuthSignupModal = ({ signup, email: orignalEmail }: AuthSignupModalProps) 
   )
 }
 
-
 const mapStateToProps = () => ({
 })
 

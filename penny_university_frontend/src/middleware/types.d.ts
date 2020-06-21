@@ -5,7 +5,6 @@ type APIPayload<P> = {
   payload: P,
 }
 
-
 type ResponseType = {
   ok: boolean,
 }

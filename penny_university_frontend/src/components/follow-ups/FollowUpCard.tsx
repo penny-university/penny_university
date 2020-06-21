@@ -6,7 +6,6 @@ import { Content, EditContent } from '../content/index.ts'
 import { EditButton, SaveButton } from '../buttons/index.tsx'
 import FollowUpUserInfo from './FollowUpUserInfo.tsx'
 
-
 export const TestIDs = {
   subMenu: 'followup-submenu',
 }

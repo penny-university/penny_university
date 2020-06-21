@@ -1,4 +1,3 @@
-
 const ApiRoutes = {
   user: 'auth/user/',
   userProfile: 'users/profile/',

@@ -34,7 +34,6 @@ const AuthEmailModal = ({ email, resendVerifyEmail }: AuthEmailModalProps) => (
   </>
 )
 
-
 const mapStateToProps = () => ({
 })
 

@@ -12,14 +12,12 @@ const isFetchingChats = (state: RootState, key: string): boolean => {
   return false
 }
 
-
 const getChatsPagination = (state: RootState, filter: string):
 { ids: Array<string>, next: string | null } => {
   const chatsPagination = getPaginationStore(state).chatsByFilter[filter]
   // @ts-ignore
   return { ids: chatsPagination?.ids || [], next: chatsPagination?.next }
 }
-
 
 export {
   isFetchingChats,
