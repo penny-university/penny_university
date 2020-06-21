@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from sentry_sdk import capture_exception
 
 from users.models import update_social_profile_from_slack
 
@@ -39,6 +40,7 @@ class Command(BaseCommand):
                     raise RuntimeError('not committing')
                 print('COMMITTED')
         except Exception as e:
+            capture_exception(e)
             if str(e) == 'not committing':
                 pass
             else:
