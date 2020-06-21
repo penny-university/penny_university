@@ -1,8 +1,9 @@
 import fetchMock from 'fetch-mock'
-import { loadChatDetail, loadChatsList } from '../actions'
+import { loadChatDetail, loadChatsList } from '../actions/chat'
 import {rootReducer as  reducer} from '../reducers'
 import { makeMockStore, initialState, baseUrl } from './config'
 import { chats, chatsNext, normalizedChats, users } from './data'
+import ApiRoutes from '../constants'
 
 
 describe('chat actions', () => {
@@ -20,7 +21,7 @@ describe('chat actions', () => {
 
     const expectedActionTypes = ['CHATS_LIST_REQUEST', 'CHATS_LIST_SUCCESS']
     // @ts-ignore
-    return store.dispatch(loadChatsList()).then(() => {
+    return store.dispatch(loadChatsList(ApiRoutes.chats)).then(() => {
       expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
     })
   })
@@ -36,16 +37,16 @@ describe('chat actions', () => {
       {
         type: 'CHATS_LIST_REQUEST',
         payload: {
-          meta: undefined,
+          meta: { userID: undefined },
         },
       },
       {
         type: 'CHATS_LIST_FAILURE',
-        payload: { message: 'It failed!', status: undefined },
+        payload: { message: 'It failed!', status: undefined, meta: { userID: undefined }, },
       },
     ]
     // @ts-ignore
-    return store.dispatch(loadChatsList()).then(() => {
+    return store.dispatch(loadChatsList(ApiRoutes.chats)).then(() => {
       expect(store.getActions()).toEqual(expectedActions)
     })
   })
@@ -103,7 +104,7 @@ describe('chat reducers', () => {
 
     const expectedChat = normalizedChats['1']
     // @ts-ignore
-    return store.dispatch(loadChatsList()).then(() => {
+    return store.dispatch(loadChatsList(ApiRoutes.chats)).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
       expect(state.entities.chats['1']).toEqual(expectedChat)
@@ -133,7 +134,7 @@ describe('chat reducers', () => {
 
     const store = makeMockStore(state)
     // @ts-ignore
-    return store.dispatch(loadChatsList()).then(() => {
+    return store.dispatch(loadChatsList(ApiRoutes.chats)).then(() => {
       // @ts-ignore
       state = reducer(state, store.getActions()[1])
       expect(Object.keys(state.entities.chats)).toEqual(['1', '2', '3'])
@@ -165,7 +166,7 @@ describe('chat reducers', () => {
 
     const store = makeMockStore()
     // @ts-ignore
-    return store.dispatch(loadChatsList()).then(() => {
+    return store.dispatch(loadChatsList(ApiRoutes.chats)).then(() => {
       // @ts-ignore
       const state = reducer(initialState, store.getActions()[1])
       const expected = chats.map((c) => c.id.toString())

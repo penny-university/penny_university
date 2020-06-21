@@ -13,7 +13,8 @@ from users.models import User, SocialProfile
 
 def generate_social_profile(name):
     email = name + '@wherever.com'
-    user = User.objects.create_user(username=email, password='password', email=email)
+    user = User.objects.create_user(
+        username=email, password='password', email=email, first_name=f'First{name}', last_name=f'Last{name}')
     social_profile, created = SocialProfile.objects.get_or_create(
         slack_id=name,  # SocialProfiles are required to have unique slack_id
         real_name=name,
@@ -34,7 +35,7 @@ def generate_follow_ups(chat, social_profiles):
     return followups
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def test_chats_1():
     social_profile_1 = generate_social_profile('one')
     social_profile_2 = generate_social_profile('two')

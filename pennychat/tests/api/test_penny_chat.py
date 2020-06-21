@@ -21,8 +21,20 @@ def test_penny_chat_list(test_chats_1):
     # first chat should be most recent chat
     assert 'participants' in response.data['results'][0]
     assert response.data['results'][0]['participants'][0]['role'] == 'Organizer'
-    assert response.data['results'][0]['participants'][0]['user']['email'] == 'three@wherever.com'
+    assert response.data['results'][0]['participants'][0]['user']['id'] == most_recent_chat.get_organizer().id
     assert chats[0]['title'] == most_recent_chat.title
+
+
+@pytest.mark.django_db
+def test_penny_chat_participants_list(test_chats_1):
+    client = APIClient()
+    user_id = test_chats_1[0].participants.all()[0].user_id
+    response = client.get(f'/api/chats/?participants__user_id={user_id}')
+    assert response.status_code == 200
+    assert response.data['count'] == 2
+    chats = response.data['results']
+    for chat in chats:
+        assert int(user_id) in [participant['user']['id'] for participant in chat['participants']]
 
 
 @pytest.mark.django_db
@@ -33,7 +45,7 @@ def test_penny_chat_detail(test_chats_1):
     assert response.status_code == 200
     assert 'participants' in response.data
     assert response.data['participants'][0]['role'] == 'Organizer'
-    assert response.data['participants'][0]['user']['email'] == 'one@wherever.com'
+    assert response.data['participants'][0]['user']['id'] == penny_chat.get_organizer().id
     assert response.data['title'] == penny_chat.title
 
 

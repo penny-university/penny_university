@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -x
+
+# cd into the root directory
+PENNY_UNIVERSITY_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." > /dev/null && pwd)"
+pushd $PENNY_UNIVERSITY_ROOT
+
+if ! git remote | grep qa > /dev/null ; then
+  echo "It is assumed that a git remote named \"qa\" exists. No such remote found."
+  exit 1
+fi
+
+if [[ `git status --porcelain` ]]; then
+  echo "All changes must be committed before deploying to QA."
+  exit 1
+fi
+
+cd penny_university_frontend/
+npm install
+REACT_APP_API_ROOT="/api/" npm run build
+
+branch_name="temp_deploy_branch_$(date +%s)"
+git checkout -b "$branch_name"
+git add -f build
+git commit -am"adding build folder" --no-verify
+git push qa HEAD:master -f
+git checkout - # go back to previous branch
+git branch -D "$branch_name"
+popd  # cd into previous directory

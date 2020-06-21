@@ -5,7 +5,7 @@ from pennychat.models import (
     FollowUp,
     Participant,
 )
-from users.serializers import UserSerializer
+from users.serializers import UserDetailSerializer
 
 
 class ChoiceField(Field):
@@ -31,7 +31,7 @@ class ChoiceField(Field):
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = UserDetailSerializer(read_only=True)
     role = ChoiceField(choices=Participant.ROLE_CHOICES)
 
     class Meta:
@@ -66,7 +66,7 @@ class FollowUpSerializer(serializers.HyperlinkedModelSerializer):
         queryset=PennyChat.objects.all(),
         view_name='pennychat-detail'
     )
-    user = UserSerializer(read_only=True)
+    user = UserDetailSerializer(read_only=True)
 
     class Meta:
         model = FollowUp

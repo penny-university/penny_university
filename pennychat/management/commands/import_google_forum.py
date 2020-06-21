@@ -10,6 +10,7 @@ from django.core.management.base import (
     CommandError,
 )
 from django.db import transaction
+from sentry_sdk import capture_exception
 
 from pennychat.models import (
     PennyChat,
@@ -158,6 +159,10 @@ def special_case(messages):
             message['in_reply_to'] = '<a08af11e-1a99-4023-a88d-8f6c2b833298@googlegroups.com>'
         if message['message_id'] == '<CAEid7Y_tpXdw4y+_LJMAmsMpnX7rKDLcoy69pC59o+6_JS7TSw@mail.gmail.com>':
             message['in_reply_to'] = '<a3c6d780-e1ed-4409-bfec-d925813df50c@googlegroups.com>'
+        if message['message_id'] == '<CAGrY25dXoTByOYkuxH-fFSYBb_SHV4esw2mu+SA9DVxGuUtVQQ@mail.gmail.com>':
+            message['in_reply_to'] = '<c96abed6-2e7a-4ef5-b2ee-365855a5f47c@googlegroups.com>'
+        if message['message_id'] == '<CAC==nPQk=5fXu248tJpy6BPc9eEjW=xhK1KWxQhgQUndyy51mg@mail.gmail.com>':
+            message['in_reply_to'] = '<5f8a30f4-986f-4edf-9e04-fcd5f569057b@googlegroups.com>'
 
         # misordered
         if message['message_id'] == '<138b584a-28ef-46da-ba35-a913cd620c16@googlegroups.com>':
@@ -188,7 +193,8 @@ def get_chats(messages):
         while message['in_reply_to'] is not None:
             try:
                 message = messages_by_id[message['in_reply_to']]
-            except KeyError:
+            except KeyError as e:
+                capture_exception(e)
                 homeless_messages.append(message)
                 break
         unsorted_chats.setdefault(message['message_id'], []).append(original_message)
@@ -330,6 +336,7 @@ def import_to_database(formatted_chats, live_run=False):
                 raise RuntimeError('not committing')
             print('COMMITTED')
     except Exception as e:
+        capture_exception(e)
         if str(e) == 'not committing':
             pass
         else:

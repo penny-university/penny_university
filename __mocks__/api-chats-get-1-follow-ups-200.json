@@ -9,8 +9,8 @@
       "id": 1,
       "url": "http://testserver/api/users/1/",
       "email": "one@wherever.com",
-      "first_name": "",
-      "last_name": "",
+      "first_name": "Firstone",
+      "last_name": "Lastone",
       "chats": "http://testserver/api/users/1/chats/"
     }
   },
@@ -24,8 +24,8 @@
       "id": 2,
       "url": "http://testserver/api/users/2/",
       "email": "two@wherever.com",
-      "first_name": "",
-      "last_name": "",
+      "first_name": "Firsttwo",
+      "last_name": "Lasttwo",
       "chats": "http://testserver/api/users/2/chats/"
     }
   }

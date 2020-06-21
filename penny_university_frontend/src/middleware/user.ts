@@ -1,10 +1,11 @@
 import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
 import { ThunkDispatch } from 'redux-thunk'
 import {
-  setToken, fetchUser, LOGOUT_USER, CHECK_AUTH, LOGIN_SUCCESS, SIGNUP_SUCCESS, USER_EXISTS_SUCCESS, USER_EXISTS_FAILURE, logoutRequest,
-} from '../actions/user'
+  setToken, fetchUser, Actions, logoutRequest } from '../actions/user'
+import { loadChatsList } from '../actions/chat'
 import CookieHelper from '../helpers/cookie'
 import modalDispatch from '../components/modal/dispatch'
+import ApiRoutes from "../constants"
 
 const logout = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
   CookieHelper.clearCookies()
@@ -21,24 +22,41 @@ const checkAuth = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
 
 const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyAction) => void) => (action: AnyAction) => {
   switch (action.type) {
-    case LOGOUT_USER:
+    case Actions.LOGOUT_USER:
       logout(store.dispatch)
       break
-    case CHECK_AUTH:
+    case Actions.BOOTSTRAP:
       checkAuth(store.dispatch)
+      store.dispatch(loadChatsList(ApiRoutes.chats))
       break
-    case LOGIN_SUCCESS:
-    case SIGNUP_SUCCESS:
+    case Actions.SIGNUP_SUCCESS:
+        modalDispatch.verifyEmail(action.payload.meta.email)
+      break    
+    case Actions.LOGIN_SUCCESS:
       CookieHelper.setToken(action.payload.result.key)
       store.dispatch(setToken(action.payload.result.key))
       store.dispatch(fetchUser())
       modalDispatch.close()
       break
-    case USER_EXISTS_SUCCESS:
+    case Actions.FETCH_USER_SUCCESS:
+      // Load data
+      const user = action.payload.result
+      const pk = user.pk.toString()
+      store.dispatch(loadChatsList(ApiRoutes.userChats(pk), pk))
+      break
+    case Actions.USER_EXISTS_SUCCESS:
       modalDispatch.authPassword(action.payload.meta.email)
       break
-    case USER_EXISTS_FAILURE:
-      modalDispatch.authSignup(action.payload.meta.email)
+      case Actions.USER_EXISTS_FAILURE:
+        const { status } = action.payload
+        if (status === 403) {
+          modalDispatch.verifyEmail(action.payload.meta.email)
+        } else {
+          modalDispatch.authSignup(action.payload.meta.email)
+        }
+      break
+      case Actions.VERIFY_EMAIL_SUCCESS:
+        modalDispatch.auth()
       break
     default:
   }

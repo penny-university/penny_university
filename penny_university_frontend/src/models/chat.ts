@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export interface ChatType {
   id: number,
   title: string,
@@ -28,12 +30,25 @@ class Chat implements ChatType {
   }
 
   getUserRole(id: number): 'Organizer' | 'Participant' | '' {
-    const { role } = this.participants.find((p: Participant) => p.user === id) || { role: ''}
+    const { role } = this.participants.find((p: Participant) => p.user.toString() === id.toString()) || { role: ''}
     return role 
+  }
+
+  isOrganizer(id: number): boolean {
+    return this.getUserRole(id) === 'Organizer'
+  }
+
+  get formattedDate(): string {
+    let dateFormat = moment(this.date) > moment() ? 'M/D/YYYY @ h:mm A' : 'M/D/YYYY'
+    return moment(this.date).format(dateFormat)
   }
 
   get valid() {
     return !Number.isNaN(this.id)
+  }
+
+  get upcoming(): boolean {
+    return moment(this.date) > moment()
   }
 }
 

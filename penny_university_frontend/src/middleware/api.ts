@@ -1,9 +1,8 @@
 import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
-import { Schema } from 'normalizr'
 import { camelizeKeys, decamelizeKeys } from 'humps'
 import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
-const API_ROOT = 'http://localhost:8000/api/'
+const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 
 
 export type APIPayload<P> = {
@@ -22,28 +21,19 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
   if (token) {
     headers.Authorization = `Token ${token}`
   }
-  switch (method) {
-    case 'POST':
-    case 'PUT':
-      return fetch(url, { method, body: jsonPayload, headers })
-        .then((response: Response) => response.json().then((json) => {
-          if (!response.ok) {
-            return Promise.reject(response)
-          }
-          const camelJson = camelizeKeys(json)
-          return camelJson
-        }))
-    default:
-      return fetch(url, { headers })
-        .then((response: Response) => response.json().then((json) => {
-          if (!response.ok) {
-            return Promise.reject(response)
-          }
-
-          const camelJson = camelizeKeys(json)
-          return camelJson
-        }))
-  }
+  return fetch(url, { method, body: jsonPayload, headers })
+    .then(async (response: Response) => {
+      if (!response.ok) {
+        return Promise.reject(response)
+      }
+      let camelJson = {}
+      if (response.status !== 204) {
+        await response.json().then((json) => {
+          camelJson = camelizeKeys(json)
+        }).catch()
+      }
+      return camelJson
+    })
 }
 
 export const CALL_API = 'CALL_API'
@@ -76,18 +66,19 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
     const token = selectors.user.getToken(store.getState())
     return callApi(endpoint, method, payload, token).then(
       (response: any) => {
-        const metaWithPagination = response.results ? {...meta, count: response.count, next: response.next, previous: response.previous} : meta
+        const metaWithPagination = response.results ? { ...meta, count: response.count, next: response.next, previous: response.previous } : meta
         return next({
-        payload: { result: response.results || response, responseSchema, meta: metaWithPagination },
-        type: successType,
-      })},
+          payload: { result: response.results || response, responseSchema, meta: metaWithPagination },
+          type: successType,
+        })
+      },
       (error: { message: string, status: number }) => next({
         type: failureType,
         payload: { message: error.message || 'An error occurred.', status: error.status, meta },
       }),
-      )
-    }
-    return next(action)
+    )
+  }
+  return next(action)
 }
 
 export default api

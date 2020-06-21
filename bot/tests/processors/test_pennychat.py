@@ -4,6 +4,7 @@ import time
 
 import pytest
 from pytz import timezone, utc
+from sentry_sdk import capture_exception
 
 from bot.processors.pennychat import PennyChatBotModule
 import bot.processors.pennychat as penny_chat_constants
@@ -143,7 +144,7 @@ def test_PennyChatBotModule_share(mocker):
         },
         'actions': [{'action_id': penny_chat_constants.PENNY_CHAT_SHARE}],
         'response_url': 'http://some_website.com',
-        'type': penny_chat_constants.VIEW_SUBMISSION,
+        'type': penny_chat_constants.VIEW_CLOSED,
         'callback_id': penny_chat_constants.PENNY_CHAT_DETAILS,
     }
 
@@ -152,8 +153,16 @@ def test_PennyChatBotModule_share(mocker):
         'bot.processors.pennychat.post_organizer_edit_after_share_blocks'
     )
 
-    # The Actual Test
+    # The Actual Test (premature close)
     with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock),\
+            post_organizer_edit_after_share_blocks:
+        PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
+
+    assert share_penny_chat_invitation.call_count == 0
+
+    # The Actual Test (actual submission)
+    event['type'] = penny_chat_constants.VIEW_SUBMISSION
+    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), \
             post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
@@ -287,7 +296,8 @@ def test_PennyChatBotModule_attendance_selection(
     actual_final_role = None
     try:
         actual_final_role = Participant.objects.get(penny_chat=penny_chat, user=profile.user).role
-    except Participant.DoesNotExist:
+    except Participant.DoesNotExist as e:
+        capture_exception(e)
         # presumably we weren't supposed to make a participant. this will be tested below
         pass
 

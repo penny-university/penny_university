@@ -1,3 +1,7 @@
+import os
+
+from django.core.exceptions import ImproperlyConfigured
+
 from penny_university.settings.base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -11,3 +15,8 @@ SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+FRONT_END_HOST = os.getenv('FRONT_END_HOST')
+
+if os.environ.get('SENTRY_DSN') is None:
+    raise(ImproperlyConfigured('SENTRY_DSN must be set in production.'))

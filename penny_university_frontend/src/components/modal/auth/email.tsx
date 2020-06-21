@@ -9,10 +9,10 @@ import {
 } from 'reactstrap'
 import { Input } from '../../fields'
 import modalDispatch from '../dispatch'
-import { dispatchUserExists } from '../../../actions/user'
+import { userExists } from '../../../actions/user'
 
 type AuthEmailModalProps = {
-  userExists: (email: string) => Promise<AnyAction>
+  userExists: (email: string) => AnyAction
 }
 
 const AuthEmailModal = ({ userExists }: AuthEmailModalProps) => {
@@ -44,6 +44,6 @@ const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  userExists: (email: string) => dispatch(dispatchUserExists(email)),
+  userExists: (email: string) => dispatch(userExists(email)),
 })
 export default connect(mapStateToProps, mapDispatchToProps)(AuthEmailModal)

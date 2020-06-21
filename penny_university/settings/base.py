@@ -14,6 +14,8 @@ import os
 import sys
 
 import dj_database_url
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
+    'django_filters',
     'bot',
     'api',
     'home',
@@ -119,8 +122,11 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
+REACT_APP_DIR = os.path.join(BASE_DIR, 'penny_university_frontend')
+
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "penny_university/static")
+    os.path.join(REACT_APP_DIR, 'build', 'static'),
+    os.path.join(BASE_DIR, 'penny_university/static')
 ]
 
 LOGGING = {
@@ -144,10 +150,22 @@ LOGGING = {
 
 AUTH_USER_MODEL = 'users.User'
 
+############################################
+# Put typical django stuff above
+#
+# Put infrastructural stuff specific to Penny U below this.
+############################################
+
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    integrations=[DjangoIntegration()],
+    send_default_pii=True,  # TODO consider NOT sending PII (e.g. user ids) once we mature the code base
+)
 
 ############################################
-# Put basic django stove above
-# Put stuff more specific to our app below
+# Put infrastructural stuff specific to Penny U above this.
+#
+# Put product specific configuration below this.
 ############################################
 
 # Slack
@@ -169,6 +187,19 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.TokenAuthentication'],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
+}
+
+# Twilio SendGrid
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
+
+
+# Override Auth Serializers
+REST_AUTH_SERIALIZERS = {
+    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer'
 }
 
 # Background Tasks

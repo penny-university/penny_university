@@ -1,0 +1,9 @@
+.chat-detail-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  h3 {
+    text-transform: none;
+  }
+}

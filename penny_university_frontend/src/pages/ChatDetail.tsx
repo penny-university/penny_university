@@ -1,16 +1,19 @@
 import React, { useEffect } from 'react'
+import { AnyAction } from 'redux'
+import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import {
   createFollowUp, loadChatDetail, loadFollowUps, updateFollowUp,
-} from '../actions'
+} from '../actions/chat'
 import { ChatDetail } from '../components/chats'
 import * as selectors from '../selectors'
 import { RootState } from '../reducers'
-import { Chat, User } from '../models'
+import { Chat, FollowUp, User } from '../models'
+import { FollowUpType } from '../models/followUp';
 
 type StateProps = {
-  id: string,
+  id: number,
   chat: Chat,
   followUpsList: Array<FollowUp>,
   user: User,
@@ -18,10 +21,10 @@ type StateProps = {
 }
 
 type DispatchProps = {
-  loadChatDetail: (id: string) => void,
-  loadFollowUps: (id: string) => void,
-  createFollowUp: () => void,
-  updateFollowUp: (followup: FollowUp) => void,
+  loadChatDetail: (id: number) => void,
+  loadFollowUps: (id: number, nextPageUrl?: string) => void,
+  createFollowUp: (chatID: number, content: { content: string }) => void,
+  updateFollowUp: (followup: FollowUpType) => void,
 }
 
 type ChatDetailPageProps = {
@@ -59,11 +62,11 @@ const mapStateToProps = (state: RootState, ownProps: ChatDetailPageProps) => {
   }
 }
 
-const mapDispatchToProps = {
-  loadChatDetail,
-  loadFollowUps,
-  createFollowUp,
-  updateFollowUp,
-}
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+  loadChatDetail: (id: number) => dispatch(loadChatDetail(id)),
+  loadFollowUps: (chatID: number, nextPageUrl?: string) => dispatch(loadFollowUps(chatID, nextPageUrl)),
+  createFollowUp: (chatID: number, content: { content: string }) => dispatch(createFollowUp(chatID, content)),
+  updateFollowUp: (followUp: FollowUp) => dispatch(updateFollowUp(followUp)),
+})
 // @ts-ignore
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChatDetailPage))
