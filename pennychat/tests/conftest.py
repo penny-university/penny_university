@@ -14,7 +14,8 @@ from users.models import User, SocialProfile
 def generate_users(name):
     email = name + '@wherever.com'
     user = User.objects.create_user(
-        username=email, password='password', email=email, first_name=f'First{name}', last_name=f'Last{name}', is_verified=True)
+        username=email, password='password', email=email,
+        first_name=f'First{name}', last_name=f'Last{name}', is_verified=True)
     social_profile, created = SocialProfile.objects.get_or_create(
         slack_id=name,  # SocialProfiles are required to have unique slack_id
         real_name=name,

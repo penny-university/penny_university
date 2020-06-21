@@ -209,6 +209,7 @@ def test_user_log_in__not_verified_with_follow_up(test_user):
     follow_up = FollowUp.objects.filter(content=content)
     assert follow_up.count() == 1
 
+
 @pytest.mark.django_db
 def test_user_log_in__verified_with_follow_up(test_user):
     client = APIClient()
