@@ -29,7 +29,6 @@ const failureTypes = [
   UserActions.LOGIN_FAILURE,
   UserActions.SIGNUP_FAILURE,
   UserActions.LOGOUT_FAILURE,
-  UserActions.USER_EXISTS_FAILURE,
   UserActions.RESEND_VERIFY_EMAIL_FAILURE,
   UserActions.VERIFY_EMAIL_FAILURE,
 ]
