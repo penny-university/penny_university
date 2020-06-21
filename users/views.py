@@ -15,7 +15,7 @@ from common.permissions import (
     method_user_is_self,
     method_is_authenticated,
 )
-from pennychat.serializers import UserChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
+from pennychat.serializers import UserChatSerializer, FollowUpWriteSerializer
 from pennychat.models import Participant, FollowUp
 from .models import User
 from .tokens import verification_token_generator
@@ -26,37 +26,6 @@ from .serializers import (
     GenericEmailSerializer,
     AuthUserSerializer,
 )
-
-
-class LoginView(RestLoginView):
-    def post(self, request, *args, **kwargs):
-        response = None
-        e = None
-        save = False
-        try:
-            response = super(LoginView, self).post(request, *args, **kwargs)
-            save = True
-            user_id = request.user.id
-        except Exception as exception:
-            # Check if the login failed because the user was unverified
-            e = exception
-            codes = e.get_codes()
-            code = codes['non_field_errors'][0]
-            if code == 403:
-                save = True
-                user_id = User.objects.filter(email=request.data.get('email', None)).first().id
-        follow_up = request.data.get('follow_up', None)
-        if follow_up and save and user_id:
-            follow_up_serializer = FollowUpWriteSerializer(data={
-                'penny_chat': follow_up.get('chat_id', None),
-                'content': follow_up.get('content', None),
-                'user': user_id
-            })
-            if follow_up_serializer.is_valid():
-                follow_up_serializer.save()
-        if e:
-            raise e
-        return response
 
 
 class RegisterUser(generics.CreateAPIView):
