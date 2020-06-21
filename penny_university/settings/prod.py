@@ -1,3 +1,5 @@
+import os
+
 from django.core.exceptions import ImproperlyConfigured
 
 from penny_university.settings.base import *
