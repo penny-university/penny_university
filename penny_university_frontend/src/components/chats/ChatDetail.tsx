@@ -32,13 +32,13 @@ const ChatDetail = ({
       createFollowUp(chat.id, { content: followUpContent })
       toggleAddFollowUpMode(false)
     } else {
-      modalDispatch.auth(followUpContent)
+      modalDispatch.auth({ chatId: chat.id, content: followUpContent })
     }
   }
 
   const createOnPress = () => {
-      Promise.resolve(toggleAddFollowUpMode(true))
-        .then(() => window.scrollTo(0, document.body.scrollHeight))
+    Promise.resolve(toggleAddFollowUpMode(true))
+      .then(() => window.scrollTo(0, document.body.scrollHeight))
   }
 
   /*

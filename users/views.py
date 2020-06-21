@@ -2,6 +2,7 @@ from rest_framework import (
     generics,
     views,
 )
+from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
@@ -9,13 +10,13 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
-
+from dj_rest_auth.views import LoginView as RestLoginView
 from common.permissions import (
     method_user_is_self,
     method_is_authenticated,
 )
-from pennychat.serializers import UserChatSerializer
-from pennychat.models import Participant
+from pennychat.serializers import UserChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
+from pennychat.models import Participant, FollowUp
 from .models import User
 from .tokens import verification_token_generator
 from .serializers import (
@@ -25,6 +26,37 @@ from .serializers import (
     GenericEmailSerializer,
     AuthUserSerializer,
 )
+
+
+class LoginView(RestLoginView):
+    def post(self, request, *args, **kwargs):
+        response = None
+        e = None
+        save = False
+        try:
+            response = super(LoginView, self).post(request, *args, **kwargs)
+            save = True
+            user_id = request.user.id
+        except Exception as exception:
+            # Check if the login failed because the user was unverified
+            e = exception
+            codes = e.get_codes()
+            code = codes['non_field_errors'][0]
+            if code == 403:
+                save = True
+                user_id = User.objects.filter(email=request.data.get('email', None)).first().id
+        follow_up = request.data.get('follow_up', None)
+        if follow_up and save and user_id:
+            follow_up_serializer = FollowUpWriteSerializer(data={
+                'penny_chat': follow_up.get('chat_id', None),
+                'content': follow_up.get('content', None),
+                'user': user_id
+            })
+            if follow_up_serializer.is_valid():
+                follow_up_serializer.save()
+        if e:
+            raise e
+        return response
 
 
 class RegisterUser(generics.CreateAPIView):
@@ -48,6 +80,15 @@ class RegisterUser(generics.CreateAPIView):
                 user = serializer.save()
             token = verification_token_generator.make_token(user)
             user.send_verification_email(token=token)
+            follow_up = request.data.get('follow_up', None)
+            if follow_up:
+                follow_up_serializer = FollowUpWriteSerializer(data={
+                    'penny_chat': follow_up.get('chat_id', None),
+                    'content': follow_up.get('content', None),
+                    'user': user.id
+                })
+                if follow_up_serializer.is_valid():
+                    follow_up_serializer.save()
             return Response(status=HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -76,6 +117,15 @@ class SendVerificationEmail(views.APIView):
                 user = User.objects.get(email=serializer.validated_data['email'])
                 token = verification_token_generator.make_token(user)
                 user.send_verification_email(token=token)
+                follow_up = request.data.get('follow_up', None)
+                if follow_up:
+                    follow_up_serializer = FollowUpWriteSerializer(data={
+                        'penny_chat': follow_up.get('chat_id', None),
+                        'content': follow_up.get('content', None),
+                        'user': user.id
+                    })
+                    if follow_up_serializer.is_valid():
+                        follow_up_serializer.save()
                 return Response(status=HTTP_204_NO_CONTENT)
             except User.DoesNotExist:
                 return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .models import PennyChat, FollowUp, Participant
-from .serializers import PennyChatSerializer, FollowUpSerializer
+from .serializers import PennyChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
 from common.permissions import IsOwner, method_is_authenticated, perform_is_authenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -74,9 +74,8 @@ class ListCreateFollowUps(generics.GenericAPIView):
     @method_is_authenticated
     def post(self, request, pk, format=None):
         follow_up_data = dict(request.data)
-        penny_chat_url = reverse('pennychat-detail', args=[pk], request=request)
-        follow_up_data['penny_chat'] = penny_chat_url
-        serializer = FollowUpSerializer(data=follow_up_data, context={'request': request})
+        follow_up_data['penny_chat'] = pk
+        serializer = FollowUpWriteSerializer(data=follow_up_data, context={'request': request})
         if serializer.is_valid():
             serializer.save(user=request.user)
             serializer.save()

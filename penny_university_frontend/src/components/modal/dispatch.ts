@@ -29,9 +29,9 @@ const modalDispatch = () => {
     payload: null,
   }))
 
-  const auth = (followUpText?: string | undefined) => open({
+  const auth = (followUp?: { chatId: number, content: string } | undefined) => open({
     name: ModalNames.AUTH_EMAIL,
-    props: { followUpText },
+    props: { followUp },
   })
 
   const settings = (user: User) => open({
@@ -39,19 +39,19 @@ const modalDispatch = () => {
     props: { user },
   })
 
-  const authPassword = (email: string, followUpText: string | undefined) => open({
+  const authPassword = (email: string, followUp: { chatId: number, content: string } | undefined) => open({
     name: ModalNames.AUTH_PASSWORD,
-    props: { email, followUpText },
+    props: { email, followUp },
   })
 
-  const authSignup = (email: string, followUpText: string | undefined) => open({
+  const authSignup = (email: string, followUp: { chatId: number, content: string } | undefined) => open({
     name: ModalNames.AUTH_SIGNUP,
-    props: { email, followUpText },
+    props: { email, followUp },
   })
 
-  const verifyEmail = (email: string, followUpText?: string | undefined | boolean) => open({
+  const verifyEmail = (email: string, followUp?: { chatId: number, content: string } | undefined | boolean) => open({
     name: ModalNames.VERIFY_EMAIL,
-    props: { email, followUpText },
+    props: { email, followUp },
   })
 
   return {

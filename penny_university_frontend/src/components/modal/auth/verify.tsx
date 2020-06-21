@@ -12,17 +12,17 @@ import { resendVerifyEmail } from '../../../actions/user'
 
 type VerifyModalProps = {
   email: string,
-  resendVerifyEmail: (email: string, followUpText: string | undefined) => AnyAction,
-  followUpText: string | undefined | boolean
+  resendVerifyEmail: (email: string, followUp: { chatId: number, content: string } | undefined) => AnyAction,
+  followUp: { chatId: number, content: string } | undefined | boolean
 }
 
-const VerifyModal = ({ email, resendVerifyEmail, followUpText }: VerifyModalProps) => {
+const VerifyModal = ({ email, resendVerifyEmail, followUp }: VerifyModalProps) => {
   let savedFollowUpNotice = null
-  let toSaveFollowUp: string | undefined = undefined
-  if (typeof followUpText === 'string') {
+  let toSaveFollowUp: { chatId: number, content: string }  | undefined = undefined
+  if (typeof followUp === 'object') {
     savedFollowUpNotice = <p>Resend the verification email and we'll save the follow up for when you verify!</p>
-    toSaveFollowUp = followUpText
-  } else if (followUpText) {
+    toSaveFollowUp = followUp
+  } else if (followUp) {
     savedFollowUpNotice = <p>We saved your follow up! Verify your email to view it!</p>
   }
   return (
@@ -47,6 +47,6 @@ const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  resendVerifyEmail: (email: string, followUpText: string | undefined) => dispatch(resendVerifyEmail(email, followUpText)),
+  resendVerifyEmail: (email: string, followUp: { chatId: number, content: string } | undefined) => dispatch(resendVerifyEmail(email, followUp)),
 })
 export default connect(mapStateToProps, mapDispatchToProps)(VerifyModal)

@@ -17,13 +17,13 @@ type AuthSignupModalProps = {
     lastName: string,
     email: string,
     password: string,
-    followUpText: string | undefined,
+    followUp: { chatId: number, content: string } | undefined,
   }) => void,
   email: string,
-  followUpText: string | undefined,
+  followUp: { chatId: number, content: string } | undefined,
 }
 
-const AuthSignupModal = ({ signup, email: orignalEmail, followUpText }: AuthSignupModalProps) => {
+const AuthSignupModal = ({ signup, email: orignalEmail, followUp }: AuthSignupModalProps) => {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [password, setPassword] = useState('')
@@ -35,7 +35,7 @@ const AuthSignupModal = ({ signup, email: orignalEmail, followUpText }: AuthSign
         <Form onSubmit={(e) => {
           e.preventDefault()
           signup({
-            password, firstName, lastName, email, followUpText,
+            password, firstName, lastName, email, followUp,
           })
         }}
         >
@@ -64,7 +64,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
     lastName: string,
     email: string,
     password: string,
-    followUpText: string | undefined,
+    followUp: { chatId: number, content: string } | undefined,
   }) => dispatch(signup(payload)),
 })
 
