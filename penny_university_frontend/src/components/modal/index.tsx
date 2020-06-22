@@ -23,8 +23,8 @@ function reducer(state: State, action: Action): State {
   switch (type) {
     case Actions.CLOSE_MODAL:
       return { open: false, name: null, props: {} }
-      case Actions.OPEN_MODAL:
-        return { open: true, name: payload.name, props: payload.props || {} }
+    case Actions.OPEN_MODAL:
+      return { open: true, name: payload.name, props: payload.props || {} }
     default:
       return state
   }
