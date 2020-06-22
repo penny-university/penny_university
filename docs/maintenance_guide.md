@@ -9,4 +9,21 @@ The intent of this file is to provide instructions for maintaining the productio
 ## Deploy React app to QA
 Our React app is a single-page application but we don't commit the contents of the generated build to git. During production deployment we "cheat" by [building the app, and committing it](https://github.com/penny-university/penny_university/blob/d0578ecd0b90499c77c8743d8926dba3de9607c6/.github/workflows/ci.yml#L95-L1100), before deploying it to production. This allows us to avoid hosting the static files elsewhere for now.
 
-To deploy the full app to QA, you must do the same process. This is taken care of with script/deploy_to_qa.
+To deploy the full app to QA, you must do the same process. This is taken care of with `script/deploy_to_qa`.
+
+## Logging Errors to Sentry
+By default, the Django-Sentry plugin logs all errors that bubble up to `Internal Server Error`, so you don't have to worry about wrapping views and logging manually. However if you have a `try/except` block in your code, you should capture the exception with `capture_exception` like so:
+
+```python
+from sentry_sdk import capture_exception
+
+try:
+    a_potentially_failing_function()
+except Exception as e:
+    # Alternatively the argument can be omitted
+    capture_exception(e)
+```
+
+View errors in sentry by running this command in your terminal `heroku addons:open sentry -a penny-university`.
+
+

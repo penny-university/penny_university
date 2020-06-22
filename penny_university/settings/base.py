@@ -14,6 +14,8 @@ import os
 import sys
 
 import dj_database_url
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -148,10 +150,22 @@ LOGGING = {
 
 AUTH_USER_MODEL = 'users.User'
 
+############################################
+# Put typical django stuff above
+#
+# Put infrastructural stuff specific to Penny U below this.
+############################################
+
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    integrations=[DjangoIntegration()],
+    send_default_pii=True,  # TODO consider NOT sending PII (e.g. user ids) once we mature the code base
+)
 
 ############################################
-# Put basic django stove above
-# Put stuff more specific to our app below
+# Put infrastructural stuff specific to Penny U above this.
+#
+# Put product specific configuration below this.
 ############################################
 
 # Slack
@@ -188,7 +202,6 @@ EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
 REST_AUTH_SERIALIZERS = {
     'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer'
 }
-
 
 # Background Tasks
 REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # to make sure we remind them MORE than an hour in advance

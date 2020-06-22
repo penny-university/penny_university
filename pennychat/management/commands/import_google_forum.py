@@ -10,6 +10,7 @@ from django.core.management.base import (
     CommandError,
 )
 from django.db import transaction
+from sentry_sdk import capture_exception
 
 from pennychat.models import (
     PennyChat,
@@ -192,7 +193,8 @@ def get_chats(messages):
         while message['in_reply_to'] is not None:
             try:
                 message = messages_by_id[message['in_reply_to']]
-            except KeyError:
+            except KeyError as e:
+                capture_exception(e)
                 homeless_messages.append(message)
                 break
         unsorted_chats.setdefault(message['message_id'], []).append(original_message)
@@ -334,6 +336,7 @@ def import_to_database(formatted_chats, live_run=False):
                 raise RuntimeError('not committing')
             print('COMMITTED')
     except Exception as e:
+        capture_exception(e)
         if str(e) == 'not committing':
             pass
         else:

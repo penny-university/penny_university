@@ -7,6 +7,7 @@ from django.db import models, IntegrityError
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
+from sentry_sdk import capture_exception
 from slack.errors import SlackApiError
 
 from common.utils import pprint_obj, get_slack_client
@@ -155,6 +156,7 @@ def get_or_create_social_profile_from_slack_ids(slack_user_ids, slack_client=Non
             # TODO get the profile out of the db and only check slack if the update_at is older than some cutoff
             slack_user = slack_client.users_info(user=slack_user_id).data['user']
         except SlackApiError as e:
+            capture_exception(e)
             if ignore_user_not_found and "'error': 'user_not_found'" in str(e):
                 continue
             raise
