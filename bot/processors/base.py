@@ -1,3 +1,5 @@
+from sentry_sdk import capture_exception
+
 from functools import (
     partial,
     wraps,
@@ -121,6 +123,7 @@ def event_processor_decorator(transform_filter_func):
                     else:
                         return None
                 except TypeError as e:
+                    capture_exception(e)
                     if e.args and "got an unexpected keyword argument 'event'" in e.args[0]:
                         raise TypeError(
                             'event_processors or transform_filter_func must have an "event" argument '
@@ -204,6 +207,7 @@ class BotModule:
                 if resp:
                     responses.append(resp)
             except TypeError as e:
+                capture_exception(e)
                 if e.args and "missing 1 required positional argument: 'event'" in e.args[0]:
                     raise TypeError(
                         'Processors require a single argument named "event". '
