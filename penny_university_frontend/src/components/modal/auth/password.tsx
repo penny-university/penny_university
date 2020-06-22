@@ -18,7 +18,7 @@ type AuthPasswordModalProps = {
   requestPasswordReset: (payload: {email: string}) => void,
 }
 
-const AuthPasswordModal = ({ email, login, followUp }: AuthPasswordModalProps) => {
+const AuthPasswordModal = ({ email, login, followUp, requestPasswordReset }: AuthPasswordModalProps) => {
   const [password, setPassword] = useState('')
   return (
     <>
