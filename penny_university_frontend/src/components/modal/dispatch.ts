@@ -43,6 +43,11 @@ const modalDispatch = () => {
     props: { email },
   })
 
+  const authPasswordReset = (email: string) => open({
+    name: ModalNames.AUTH_PASSWORD_RESET,
+    props: { email },
+  })
+
   const authSignup = (email: string) => open({
     name: ModalNames.AUTH_SIGNUP,
     props: { email },
@@ -59,6 +64,7 @@ const modalDispatch = () => {
     auth: authUsername,
     authSignup,
     authPassword,
+    authPasswordReset,
     settings,
     verifyEmail,
     close,

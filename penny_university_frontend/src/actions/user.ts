@@ -32,6 +32,12 @@ export const Actions = {
   VERIFY_EMAIL_REQUEST: 'VERIFY_EMAIL_REQUEST',
   VERIFY_EMAIL_SUCCESS: 'VERIFY_EMAIL_SUCCESS',
   VERIFY_EMAIL_FAILURE: 'VERIFY_EMAIL_FAILURE',
+  REQUEST_PASSWORD_RESET_REQUEST: 'REQUEST_PASSWORD_RESET_REQUEST',
+  REQUEST_PASSWORD_RESET_SUCCESS: 'REQUEST_PASSWORD_RESET_SUCCESS',
+  REQUEST_PASSWORD_RESET_FAILURE: 'REQUEST_PASSWORD_RESET_FAILURE',
+  RESET_PASSWORD_REQUEST: 'RESET_PASSWORD_REQUEST',
+  RESET_PASSWORD_SUCCESS: 'RESET_PASSWORD_SUCCESS',
+  RESET_PASSWORD_FAILURE: 'RESET_PASSWORD_FAILURE',
 }
 
 
@@ -120,7 +126,6 @@ export const verifyEmail = (payload: {token: string, email: string }) => ({
 })
 
 
-
 export const dispatchLogin = (payload: { email: string, password: string }) => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(login(payload))
 
 export const dispatchLogout = () => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
@@ -133,4 +138,26 @@ export const updateUser = (payload: {firstName: string, lastName: string}, id: s
     method: 'PATCH',
     payload,
   },
+})
+
+
+export const requestPasswordReset = (payload: {email: string}): AnyAction => ({
+  type: CALL_API,
+  payload: {
+    types: [Actions.REQUEST_PASSWORD_RESET_REQUEST, Actions.REQUEST_PASSWORD_RESET_SUCCESS, Actions.REQUEST_PASSWORD_RESET_FAILURE],
+    endpoint: ApiRoutes.requestPasswordReset,
+    method: 'POST',
+    payload,
+    meta: { email: payload.email },
+  }
+})
+
+export const resetPassword = (payload: {uid: string, token: string, newPassword1: string, newPassword2: string}): AnyAction => ({
+  type: CALL_API,
+  payload: {
+    types: [Actions.RESET_PASSWORD_REQUEST, Actions.RESET_PASSWORD_SUCCESS, Actions.RESET_PASSWORD_FAILURE],
+    endpoint: ApiRoutes.resetPassword,
+    method: 'POST',
+    payload,
+  }
 })
