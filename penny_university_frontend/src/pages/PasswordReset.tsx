@@ -5,7 +5,7 @@ import { AnyAction } from 'redux'
 import { RouteComponentProps } from 'react-router-dom'
 import { Redirect } from 'react-router'
 import queryString from 'query-string'
-import { Button } from 'reactstrap';
+import { Button, Card, CardBody } from 'reactstrap';
 import { RootState } from '../reducers'
 import { resetPassword } from '../actions/user'
 import { PasswordResetForm } from '../components/forms'
@@ -29,19 +29,23 @@ const PasswordResetPage = ({ user, resetPassword, location, error }: PasswordRes
 
   if (typeof parsed?.uid === 'string' && typeof parsed?.token === 'string') {
     return (
-      <div>
-        <h1 className="text-center">Reset Your Password</h1>
-        <PasswordResetForm uid={parsed?.uid} token={parsed?.token} resetPassword={resetPassword}/>
-      </div>
+      <Card>
+        <CardBody>
+          <h1 className="text-center">Reset Your Password</h1>
+          <PasswordResetForm uid={parsed?.uid} token={parsed?.token} resetPassword={resetPassword}/>
+        </CardBody>
+      </Card>
     )
   } else if (parsed?.status === 'success') {
     return user.id ? (<Redirect to='/chats'/>) : (
-      <div>
-        <h1 className="text-center">Your password was reset successfully!</h1>
-        <div className="text-center">
-          <Button onClick={modalDispatch.auth}>Log In</Button>
-        </div>
-      </div>
+      <Card>
+        <CardBody>
+          <h1 className="text-center">Your password was reset successfully!</h1>
+          <div className="text-center">
+            <Button onClick={modalDispatch.auth}>Log In</Button>
+          </div>
+        </CardBody>
+      </Card>
     )
   }
 }
