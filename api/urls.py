@@ -1,5 +1,4 @@
 from django.urls import include, path
-from django.conf.urls import url
 from pennychat.views import UpdateDeleteFollowUp
 from users.views import (
     RegisterUser,
