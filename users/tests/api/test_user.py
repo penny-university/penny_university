@@ -94,7 +94,7 @@ def test_verify_email__invalid_token(test_user):
 
 
 @pytest.mark.django_db
-def test_send_verification_email(test_user):
+def test_send_verification_email(test_user, test_chats_1):
     client = APIClient()
     content = 'send verification follow up text'
     data = {
@@ -194,7 +194,7 @@ def test_user_log_in__not_verified(test_user):
 
 
 @pytest.mark.django_db
-def test_user_log_in__not_verified_with_follow_up(test_user):
+def test_user_log_in__not_verified_with_follow_up(test_user, test_chats_1):
     client = APIClient()
     content = 'login follow up text'
     data = {
@@ -212,7 +212,7 @@ def test_user_log_in__not_verified_with_follow_up(test_user):
 
 
 @pytest.mark.django_db
-def test_user_log_in__verified_with_follow_up(test_user):
+def test_user_log_in__verified_with_follow_up(test_user, test_chats_1):
     client = APIClient()
     test_user.is_verified = True
     test_user.save()
