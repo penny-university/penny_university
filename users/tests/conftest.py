@@ -27,7 +27,7 @@ def test_user():
 
 
 @pytest.fixture()
-def test_chats_1():
+def test_chat_2():
     chat_1 = PennyChat.objects.create(
         title='Chat 1',
         description='The very first test chat',
