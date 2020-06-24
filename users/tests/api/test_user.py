@@ -36,7 +36,7 @@ def test_register_user_with_follow_up(mocker, test_chat_2):
         'first_name': 'test',
         'last_name': 'profile',
         'follow_up': {
-            'chat_id': 1,
+            'chat_id': test_chat_2.id,
             'content': content
         }
     }
@@ -100,7 +100,7 @@ def test_send_verification_email(test_user, test_chat_2):
     data = {
         'email': test_user.email,
         'follow_up': {
-            'chat_id': 1,
+            'chat_id': test_chat_2.id,
             'content': content
         }
     }
@@ -201,7 +201,7 @@ def test_user_log_in__not_verified_with_follow_up(test_user, test_chat_2):
         'email': 'test@profile.com',
         'password': 'password',
         'follow_up': {
-            'chat_id': 1,
+            'chat_id': test_chat_2.id,
             'content': content
         }
     }
@@ -221,7 +221,7 @@ def test_user_log_in__verified_with_follow_up(test_user, test_chat_2):
         'email': 'test@profile.com',
         'password': 'password',
         'follow_up': {
-            'chat_id': 1,
+            'chat_id': test_chat_2.id,
             'content': content
         }
     }
