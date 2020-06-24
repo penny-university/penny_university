@@ -26,11 +26,11 @@ def test_user():
     )
 
 
-@pytest.fixture(autouse=True)
-def test_chats_1():
+@pytest.fixture()
+def test_chat_2():
     chat_1 = PennyChat.objects.create(
         title='Chat 1',
-        description='The first test chat',
+        description='The very first test chat',
         date=timezone.now() - timedelta(weeks=4),
     )
     return chat_1

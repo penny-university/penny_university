@@ -55,7 +55,6 @@ class ListCreateFollowUps(generics.GenericAPIView):
     """
     API endpoint that allows follow ups to be viewed or edited based on the foreign key of their associated chat.
     """
-    queryset = FollowUp.objects.all().order_by('-date')
     serializer_class = FollowUpSerializer
 
     def get_queryset(self):
@@ -63,7 +62,7 @@ class ListCreateFollowUps(generics.GenericAPIView):
         Queryset all followups by verified users for the chat id in the url
         """
         pk = self.kwargs['pk']
-        return FollowUp.objects.filter(penny_chat_id=pk, user__is_verified=True)
+        return FollowUp.objects.filter(penny_chat_id=pk, user__is_verified=True).order_by('date')
 
     def get(self, request, pk, format=None):
         follow_ups = self.get_queryset()
@@ -78,7 +77,6 @@ class ListCreateFollowUps(generics.GenericAPIView):
         serializer = FollowUpWriteSerializer(data=follow_up_data, context={'request': request})
         if serializer.is_valid():
             serializer.save(user=request.user)
-            serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
