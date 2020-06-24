@@ -21,7 +21,6 @@ def test_follow_up_list(test_chats_1):
     assert follow_ups[0]['content'] == 'The first follow up'
     assert FollowUp.objects.get(pk=follow_ups[0]['id']).content == 'The first follow up'
 
-import sys
 @pytest.mark.django_db
 def test_create_follow_up(test_chats_1):
     penny_chat = test_chats_1[0]
