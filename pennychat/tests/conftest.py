@@ -75,3 +75,36 @@ def test_chats_1(users):
     for chat in chats:
         generate_follow_ups(chat, [users[0], users[1]])
     return chats
+
+
+@pytest.fixture
+def test_chats_2(users):
+    chat_1 = PennyChat.objects.create(
+        title='Chat 1',
+        description='The first test chat',
+        date=timezone.now() - timedelta(weeks=4),
+    )
+    chat_2 = PennyChat.objects.create(
+        title='Chat 2',
+        description='The second test chat',
+        date=timezone.now() - timedelta(days=1),
+    )
+    chat_3 = PennyChat.objects.create(
+        title='Chat 3',
+        description='The third test chat',
+        date=timezone.now(),
+    )
+    chats = [chat_1, chat_2, chat_3]
+
+    Participant.objects.create(user=users[0], penny_chat=chat_1, role=Participant.ORGANIZER)
+    Participant.objects.create(user=users[1], penny_chat=chat_1, role=Participant.ATTENDEE)
+
+    Participant.objects.create(user=users[1], penny_chat=chat_2, role=Participant.ORGANIZER)
+    Participant.objects.create(user=users[2], penny_chat=chat_2, role=Participant.ATTENDEE)
+
+    Participant.objects.create(user=users[2], penny_chat=chat_3, role=Participant.ORGANIZER)
+    Participant.objects.create(user=users[0], penny_chat=chat_3, role=Participant.ATTENDEE)
+
+    for chat in chats:
+        generate_follow_ups(chat, [users[0], users[1]])
+    return chats

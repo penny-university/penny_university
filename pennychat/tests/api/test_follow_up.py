@@ -21,8 +21,8 @@ def test_follow_up_list(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_create_follow_up(test_chats_1):
-    penny_chat = test_chats_1[0]
+def test_create_follow_up(test_chats_2):
+    penny_chat = test_chats_2[0]
     user = penny_chat.get_organizer()
     token = Token.objects.create(user=user)
     client = APIClient()
