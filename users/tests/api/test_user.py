@@ -27,7 +27,7 @@ def test_register_user(mocker):
 
 
 @pytest.mark.django_db
-def test_register_user_with_follow_up(mocker):
+def test_register_user_with_follow_up(mocker, test_chats_1):
     client = APIClient()
     content = 'follow up text'
     data = {
