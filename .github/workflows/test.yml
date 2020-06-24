@@ -49,29 +49,7 @@ jobs:
         DJANGO_SETTINGS_MODULE: "penny_university.settings.ci"
         SECRET_KEY: "6db7242adc5570c3bb2d12b2e161b1930650f9669a457fb3"
       run: |
-        pytest
+        pytest pennychat/tests/api/test_follow_up.py users/tests/api/test_user.py
     - name: Flake8
       run: |
         flake8
-
-  test-frontend:
-
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ '12' ]
-    steps:
-    - uses: actions/checkout@v1
-    - name: Set Up Node ${{ matrix.node }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node }}
-    # TODO add dependency caching here
-    - name: Install Dependencies
-      working-directory: ./penny_university_frontend
-      run: |
-          npm install
-    - name: Run Tests
-      working-directory: ./penny_university_frontend
-      run: |
-        CI=true npm test
