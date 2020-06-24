@@ -63,6 +63,8 @@ class RegisterUser(generics.CreateAPIView):
                 if follow_up_serializer.is_valid():
                     print("\n\nFFFF\n\n", follow_up_serializer)
                     follow_up_serializer.save()
+                else:
+                    print("\n\nJJJJ\n\n", follow_up_serializer.errors)
             return Response(status=HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
