@@ -53,6 +53,7 @@ class RegisterUser(generics.CreateAPIView):
             token = verification_token_generator.make_token(user)
             user.send_verification_email(token=token)
             follow_up = request.data.get('follow_up', None)
+            print("\n\nAAAA\n\n", follow_up)
             if follow_up:
                 follow_up_serializer = FollowUpWriteSerializer(data={
                     'penny_chat': follow_up.get('chat_id', None),
@@ -60,6 +61,7 @@ class RegisterUser(generics.CreateAPIView):
                     'user': user.id
                 })
                 if follow_up_serializer.is_valid():
+                    print("\n\nFFFF\n\n", follow_up_serializer)
                     follow_up_serializer.save()
             return Response(status=HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)

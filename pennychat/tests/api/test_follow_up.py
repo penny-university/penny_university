@@ -24,7 +24,6 @@ def test_follow_up_list(test_chats_1):
 @pytest.mark.django_db
 def test_create_follow_up(test_chats_1):
     penny_chat = test_chats_1[0]
-    print(f"\nALL FOLLOWUPS:\n{penny_chat.follow_ups.all()}\n")
     user = penny_chat.get_organizer()
     token = Token.objects.create(user=user)
     client = APIClient()
@@ -37,7 +36,6 @@ def test_create_follow_up(test_chats_1):
     assert response.status_code == 201
     response = client.get(f'/api/chats/{penny_chat.id}/follow-ups/')
     follow_ups = response.data
-    print(f"\nFOLLOW_UPS:\n{follow_ups}\n")
     assert len(follow_ups) == 3
     assert follow_ups[2]['content'] == content
     assert FollowUp.objects.get(pk=follow_ups[2]['id']).content == content

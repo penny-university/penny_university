@@ -43,6 +43,7 @@ def test_register_user_with_follow_up(mocker):
     with mocker.patch.object(User, 'send_verification_email'):
         response = client.post('/api/auth/register/', data=data, format='json')
     assert response.status_code == 204
+    print("ALL FOLLOWUPS", FollowUp.objects.all())
     follow_up = FollowUp.objects.filter(content=content)
     assert follow_up.count() == 1
 
