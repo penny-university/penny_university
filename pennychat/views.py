@@ -1,8 +1,8 @@
 import logging
+from django.db.models import Q
 from rest_framework import viewsets, mixins, generics
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
@@ -62,7 +62,9 @@ class ListCreateFollowUps(generics.GenericAPIView):
         Queryset all followups by verified users for the chat id in the url
         """
         pk = self.kwargs['pk']
-        return FollowUp.objects.filter(penny_chat_id=pk, user__is_verified=True).order_by('date')
+        return FollowUp.objects.filter(
+            Q(penny_chat_id=pk),
+            Q(user__is_verified=True) | Q(historical=True)).order_by('date')
 
     def get(self, request, pk, format=None):
         follow_ups = self.get_queryset()
