@@ -71,3 +71,9 @@ class FollowUpSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = FollowUp
         fields = ['id', 'url', 'penny_chat', 'content', 'date', 'user']
+
+
+class FollowUpWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FollowUp
+        fields = ['id', 'url', 'penny_chat', 'content', 'date', 'user']

@@ -232,3 +232,20 @@ def test_follow_up_url(test_chats_1):
     response = client.get(follow_up_url)
     assert response.status_code == 200
     assert len(response.data) == 2
+
+
+@pytest.mark.django_db
+def test_un_verified_follow_ups_omitted(test_chats_1, users):
+    for user in users:
+        user.is_verified = False
+        user.save()
+    client = APIClient()
+    penny_chat = test_chats_1[0]
+    response = client.get(f'/api/chats/{penny_chat.id}/')
+    follow_up_url = response.data['follow_ups']
+    response = client.get(follow_up_url)
+    assert response.status_code == 200
+    assert len(response.data) == 0
+    for user in users:
+        user.is_verified = True
+        user.save()

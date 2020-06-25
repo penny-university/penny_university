@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from .models import PennyChat, FollowUp, Participant
-from .serializers import PennyChatSerializer, FollowUpSerializer
+from .serializers import PennyChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
 from common.permissions import IsOwner, method_is_authenticated, perform_is_authenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -55,11 +55,17 @@ class ListCreateFollowUps(generics.GenericAPIView):
     """
     API endpoint that allows follow ups to be viewed or edited based on the foreign key of their associated chat.
     """
-    queryset = FollowUp.objects.all().order_by('-date')
     serializer_class = FollowUpSerializer
 
+    def get_queryset(self):
+        """
+        Queryset all followups by verified users for the chat id in the url
+        """
+        pk = self.kwargs['pk']
+        return FollowUp.objects.filter(penny_chat_id=pk, user__is_verified=True).order_by('date')
+
     def get(self, request, pk, format=None):
-        follow_ups = FollowUp.objects.filter(penny_chat_id=pk)
+        follow_ups = self.get_queryset()
         queryset = self.filter_queryset(follow_ups)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -67,12 +73,10 @@ class ListCreateFollowUps(generics.GenericAPIView):
     @method_is_authenticated
     def post(self, request, pk, format=None):
         follow_up_data = dict(request.data)
-        penny_chat_url = reverse('pennychat-detail', args=[pk], request=request)
-        follow_up_data['penny_chat'] = penny_chat_url
-        serializer = FollowUpSerializer(data=follow_up_data, context={'request': request})
+        follow_up_data['penny_chat'] = pk
+        serializer = FollowUpWriteSerializer(data=follow_up_data, context={'request': request})
         if serializer.is_valid():
             serializer.save(user=request.user)
-            serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
