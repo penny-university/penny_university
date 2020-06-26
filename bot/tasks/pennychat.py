@@ -1,5 +1,6 @@
 import json
-import urllib, hashlib
+import urllib
+import hashlib
 from datetime import datetime, timedelta
 
 from background_task import background as original_background
@@ -234,7 +235,6 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
         )
 
     if include_participant_pictures:
-        slack_client = get_slack_client()
         participants = penny_chat_invitation.get_participants()
 
         default = "https://www.example.com/default.jpg"
@@ -246,7 +246,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
             # https://en.gravatar.com/site/implement/images/python/
             gravatar_url = "https://www.gravatar.com/avatar/" +\
                 hashlib.md5(email.lower().encode('utf-8')).hexdigest() + "?" +\
-                urllib.parse.urlencode({'d':default, 's':str(size)})
+                urllib.parse.urlencode({'d': default, 's': str(size)})
 
             if participant.first_name != "" and participant.last_name != "":
                 name = participant.first_name + " " + participant.last_name
@@ -270,8 +270,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
                         'alt_text': profile['name']
                     }
                     for profile in profiles
-                ] +
-                [
+                ] + [  # concatenates above list with below list
                     {
                         'type': 'plain_text',
                         'emoji': True,
