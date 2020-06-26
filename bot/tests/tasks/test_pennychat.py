@@ -489,6 +489,7 @@ def test_penny_chat_details_blocks(mocker):
     assert 'Count me in' not in remind_blocks, 'should not be there when include_rsvp is False'
     assert 'I can\'t make it' not in remind_blocks, 'should not be there when include_rsvp is False'
     assert 'calendar.google.com'not in remind_blocks, 'should not have calendar link when include_calendar_link is False'
+    assert 'image' not in remind_blocks, 'if there are no participants, there should not be an image showing the profile picture of the participants'
     assert 'None attending (yet!)' in remind_blocks, 'should have a participant list in a remind message'
 
 
