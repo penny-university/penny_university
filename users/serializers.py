@@ -2,7 +2,6 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import PasswordResetForm
 from rest_framework import exceptions, serializers, status
-
 from .models import User, SocialProfile
 
 
@@ -57,13 +56,24 @@ class UserDetailSerializer(serializers.HyperlinkedModelSerializer):
 class CustomLoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
+    follow_up = serializers.DictField(required=False)
 
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
+        follow_up = attrs.get('follow_up')
 
         user = authenticate(self.context['request'], username=email, password=password)
         if user:
+            if follow_up:
+                from pennychat.serializers import FollowUpWriteSerializer
+                follow_up_serializer = FollowUpWriteSerializer(data={
+                    'penny_chat': follow_up.get('chat_id', None),
+                    'content': follow_up.get('content', None),
+                    'user': user.id
+                })
+                if follow_up_serializer.is_valid():
+                    follow_up_serializer.save()
             if not user.is_verified:
                 raise exceptions.ValidationError('User email has not been verified.', code=status.HTTP_403_FORBIDDEN)
         else:

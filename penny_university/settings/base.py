@@ -190,7 +190,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-
 # Twilio SendGrid
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
@@ -206,4 +205,5 @@ REST_AUTH_SERIALIZERS = {
 }
 
 # Background Tasks
-REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # to make sure we remind them MORE than an hour in advance
+CHAT_REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # extra 15 minutes to make sure we remind them MORE than an hour in advance
+FOLLOWUP_REMINDER_AFTER_PENNY_CHAT_MINUTES = 30
