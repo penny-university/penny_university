@@ -2,149 +2,160 @@
 {% load static %}
 
 {% block style %}
-    <style>
-        .bg-image {
-            background: url("{% static 'home/images/background.jpg' %}") no-repeat center;
-            background-size: cover;
-            min-height: 600px;
-        }
-    </style>
+<style>
+    .bg-image {
+        background: url("{% static 'home/images/background.jpg' %}") no-repeat center;
+        background-size: cover;
+        min-height: 600px;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 
 
-    <nav class="navbar navbar-light row">
-        <div class="container">
-            <div class="col-md-6 d-flex justify-content-center justify-content-md-start">
-                <span class="navbar-brand mb-0 mr-0 h1">Penny University</span>
-            </div>
-            <div class="col-md-6 d-flex align-items-center justify-content-center justify-content-md-end">
+<nav class="navbar navbar-expand-md navbar-light row">
+    <div class="container">
+        <span class="navbar-brand mb-0 mr-0 h1">Penny University</span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
+            <div class="d-flex flex-column flex-md-row align-items-center">
+                <a href="/chats" class="mr-2 mb-2 mb-md-0 btn btn-outline-dark" role="button" aria-pressed="true">
+                    Chats <i class="fa fa-comments"></i>
+                </a>
+                <button type="button" class="mr-2 mb-2 mb-md-0 btn btn-outline-dark" data-toggle="modal"
+                        data-target="#formModal">
+                    Join Us! <i class="fa fa-slack"></i>
+                </button>
                 <div class="social-icons">
                     <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
                     <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
                     <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
                 </div>
-                <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="position-relative">
+    <div class="overlay"></div>
+    <div class="bg-image text-white text-center d-flex align-items-center">
+        <div class="overlay-text container">
+            <h1 class="display-4">Penny University</h1>
+            <h3 class="mt-4">A peer to peer learning community</h3>
+            <div class="mt-4">
+                <button type="button" class="btn btn-lg btn-primary mr-md-2" data-toggle="modal"
                         data-target="#formModal">
-                    Join Us! <i class="fa fa-slack"></i>
+                    Join Us On Slack! <i class="fa fa-slack"></i>
                 </button>
+                <a href="/chats" class="btn btn-lg btn-secondary" role="button" aria-pressed="true">
+                    See Recent Chats <i class="fa fa-comments"></i>
+                </a>
             </div>
         </div>
-    </nav>
+    </div>
+</div>
 
-    <div class="position-relative">
-        <div class="overlay"></div>
-        <div class="bg-image text-white text-center d-flex align-items-center">
-            <div class="overlay-text container">
-                <h1 class="display-4">Penny University</h1>
-                <h3 class="mt-4">A peer to peer learning community</h3>
-                <div class="mt-4">
-                    <button type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#formModal">
-                        Join Us On Slack! <i class="fa fa-slack"></i>
-                    </button>
+<div class="jumbotron jumbotron-fluid bg-dark mb-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <h2>Our Goal</h2>
+                <p><strong>Bring people together to learn and grow.</strong></p>
+                <p>
+                    We believe there is a better way for knowledge to be shared and distributed.
+                    People should be at the center of the learning process, and engaging with others
+                    is the most effective way for people to expand their minds and skillsets.
+                    Communities and businesses grow stronger when people build relationships through
+                    mentorship and co-learning, and that is exactly what Penny University is made
+                    to accomplish.
+                </p>
+            </div>
+            <div class="col-md-2">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="jumbotron jumbotron-fluid mb-0 bg-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h2>Our Tradition</h2>
+                <p><strong>350 years of history.</strong></p>
+                <p>
+                    The name "Penny University" is a reference to the early coffeehouses in Oxford, England.
+                    These coffeehouses held an important association with the European Age of Enlightenment.
+                    For the price of a penny, scholars and laypeople alike would be given admittance to the
+                    coffeehouse, enjoy an endless supply of coffee, and more importantly enjoy learning through
+                    conversations with their peers. Thus these coffeehouses came to be called "Penny Universities".
+                </p>
+                <p>
+                    Our new group, Penny University, serves as a modern take on this old tradition by connecting
+                    those who desire to learn with those who are willing to share what they know.
+                    This can certainly be at a coffeehouse, but anywhere else as well, including
+                    just a quick Google Hangout. There are no mentors or mentees, leaders or followers.
+                </p>
+                <p>
+                    <strong>We are all peers and we are here to both learn and to teach.</strong>
+                </p>
+            </div>
+            <div class="col-md-4 d-flex justify-content-center align-items-center">
+                <img src="{% static 'home/images/PennyUniversityLogoCircle.png' %}" class="img-fluid" alt="Penny">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="jumbotron jumbotron-fluid bg-dark mb-0">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 d-flex justify-content-center align-items-center">
+                <div class="bg-white p-4" style="border-radius: 50%">
+                    <img src="{% static 'home/images/SlackLogo.png' %}" class="img-fluid" alt="Penny"
+                         style="max-height: 200px;">
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h2>Join Us</h2>
+                <p><strong>Become part of a new learning community.</strong></p>
+                <p>
+                    Our members meet through Slack, where they discover each others interests in what they
+                    can teach and what they would like to learn. With the help of our bot, they set up
+                    Penny Chats with one another to in order to share knowledge, and then write up what
+                    they've learned and share it with the community.
+                </p>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#formModal">
+                    Join Us On Slack! <i class="fa fa-slack"></i>
+                </button>
+                <div class="mt-3">
+                    <p>Not sure yet?
+                        <a href="/chats">
+                            Check out what we've been up to on our forum.
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="jumbotron jumbotron-fluid bg-dark mb-0">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-2"></div>
-                <div class="col-md-8">
-                    <h2>Our Goal</h2>
-                    <p><strong>Bring people together to learn and grow.</strong></p>
-                    <p>
-                        We believe there is a better way for knowledge to be shared and distributed.
-                        People should be at the center of the learning process, and engaging with others
-                        is the most effective way for people to expand their minds and skillsets.
-                        Communities and businesses grow stronger when people build relationships through
-                        mentorship and co-learning, and that is exactly what Penny University is made
-                        to accomplish.
-                    </p>
-                </div>
-                <div class="col-md-2">
-                </div>
-            </div>
-        </div>
+<footer class="bg-light d-flex justify-content-center align-items-center p-2">
+    <div class="social-icons">
+        <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
+        <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
+        <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
     </div>
+    <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
+            data-target="#formModal">
+        Join Us! <i class="fa fa-slack"></i>
+    </button>
+</footer>
 
-    <div class="jumbotron jumbotron-fluid mb-0 bg-white">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8">
-                    <h2>Our Tradition</h2>
-                    <p><strong>350 years of history.</strong></p>
-                    <p>
-                        The name "Penny University" is a reference to the early coffeehouses in Oxford, England.
-                        These coffeehouses held an important association with the European Age of Enlightenment.
-                        For the price of a penny, scholars and laypeople alike would be given admittance to the
-                        coffeehouse, enjoy an endless supply of coffee, and more importantly enjoy learning through
-                        conversations with their peers. Thus these coffeehouses came to be called "Penny Universities".
-                    </p>
-                    <p>
-                        Our new group, Penny University, serves as a modern take on this old tradition by connecting
-                        those who desire to learn with those who are willing to share what they know.
-                        This can certainly be at a coffeehouse, but anywhere else as well, including
-                        just a quick Google Hangout. There are no mentors or mentees, leaders or followers.
-                    </p>
-                    <p>
-                        <strong>We are all peers and we are here to both learn and to teach.</strong>
-                    </p>
-                </div>
-                <div class="col-md-4 d-flex justify-content-center align-items-center">
-                    <img src="{% static 'home/images/PennyUniversityLogoCircle.png' %}" class="img-fluid" alt="Penny">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="jumbotron jumbotron-fluid bg-dark mb-0">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 d-flex justify-content-center align-items-center">
-                    <div class="bg-white p-4" style="border-radius: 50%">
-                        <img src="{% static 'home/images/SlackLogo.png' %}" class="img-fluid" alt="Penny"
-                             style="max-height: 200px;">
-                    </div>
-                </div>
-                <div class="col-md-8">
-                    <h2>Join Us</h2>
-                    <p><strong>Become part of a new learning community.</strong></p>
-                    <p>
-                        Our members meet through Slack, where they discover each others interests in what they
-                        can teach and what they would like to learn. With the help of our bot, they set up
-                        Penny Chats with one another to in order to share knowledge, and then write up what
-                        they've learned and share it with the community.
-                    </p>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#formModal">
-                        Join Us On Slack! <i class="fa fa-slack"></i>
-                    </button>
-                    <div class="mt-3">
-                        <p>Not sure yet?
-                            <a href="https://groups.google.com/forum/#!forum/penny-university">
-                                Check out what we've been up to on our forum.
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <footer class="bg-light d-flex justify-content-center align-items-center p-2">
-        <div class="social-icons">
-            <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
-            <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
-            <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
-        </div>
-        <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
-                data-target="#formModal">
-            Join Us! <i class="fa fa-slack"></i>
-        </button>
-    </footer>
-
-    {% include 'home/modal.html' %}
+{% include 'home/modal.html' %}
 
 {% endblock %}

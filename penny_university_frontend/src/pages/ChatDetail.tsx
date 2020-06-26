@@ -37,7 +37,7 @@ const ChatDetailPage = ({
   useEffect(() => {
     loadChatDetail(id)
     loadFollowUps(id)
-  }, [id, loadChatDetail, loadFollowUps])
+  }, [id, loadChatDetail, loadFollowUps, user?.id])
 
   return (
     <ChatDetail
