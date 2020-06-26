@@ -1,5 +1,5 @@
 import json
-import urllib.parse
+import urllib, hashlib
 from datetime import datetime, timedelta
 
 from background_task import background as original_background
@@ -133,6 +133,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
 
     include_calendar_link = mode in {PREVIEW, INVITE, UPDATE}
     include_rsvp = mode in {INVITE, UPDATE}
+    include_participant_pictures = mode in {REMIND}
 
     organizer = get_or_create_social_profile_from_slack_id(
         penny_chat_invitation.organizer_slack_id,
@@ -228,6 +229,54 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
                         'style': 'primary',
                     }
 
+                ]
+            }
+        )
+
+    if include_participant_pictures:
+        slack_client = get_slack_client()
+        participants = penny_chat_invitation.get_participants()
+
+        default = "https://www.example.com/default.jpg"
+        size = 40
+        profiles = []
+        for participant in participants:
+            # get the (gravatar) profile image of a participant
+            email = participant.email
+            # https://en.gravatar.com/site/implement/images/python/
+            gravatar_url = "https://www.gravatar.com/avatar/" +\
+                hashlib.md5(email.lower().encode('utf-8')).hexdigest() + "?" +\
+                urllib.parse.urlencode({'d':default, 's':str(size)})
+
+            if participant.first_name != "" and participant.last_name != "":
+                name = participant.first_name + " " + participant.last_name
+            else:
+                name = participant.username
+
+            profiles.append({
+                'name': name,
+                'image_url': gravatar_url
+            })
+
+        number_votes_text = f"{len(profiles)} attending" if len(profiles) > 0 else "None attending (yet!)"
+
+        body.append(
+            {
+                'type': 'context',
+                'elements': [
+                    {
+                        'type': 'image',
+                        'image_url': profile['image_url'],
+                        'alt_text': profile['name']
+                    }
+                    for profile in profiles
+                ] +
+                [
+                    {
+                        'type': 'plain_text',
+                        'emoji': True,
+                        'text': number_votes_text
+                    }
                 ]
             }
         )
