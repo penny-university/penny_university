@@ -519,3 +519,18 @@ def test_penny_chat_details_blocks_with_multiple_participants(mocker):
         remind_blocks = str(_penny_chat_details_blocks(penny_chat_invitation, mode=pennychat_constants.REMIND))
 
     assert '1 attending' in remind_blocks, 'should have a participant attending'
+
+    # test with more than one participant
+    slack_id_2 = 'slack_id_2'
+    profile2 = SocialProfile.objects.create(
+        slack_id=slack_id_2,
+        display_name='booger2',
+        user=User.objects.create_user('booger2')
+    )
+
+    penny_chat_invitation.save_participant(profile2.user, Participant.ATTENDEE)
+
+    with _make_get_or_create_social_profile_from_slack_id_mocks(mocker, 'bot.tasks.pennychat', [organizer]):
+        remind_blocks = str(_penny_chat_details_blocks(penny_chat_invitation, mode=pennychat_constants.REMIND))
+
+    assert '2 attending' in remind_blocks, 'should have 2 participants attending'
