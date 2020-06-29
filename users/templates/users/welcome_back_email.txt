@@ -1,0 +1,17 @@
+{% autoescape off %}
+{% if first_name %}
+Hey {{ first_name }},
+{% else %}
+Hey there!
+{% endif %}
+
+From it's inception, Penny University has been a community for social learning. But while the purpose has remained the same, the community, culture, and platform are constantly evolving. Today we are excited to reveal the biggest change in the platform to date. We are getting rid of the Google Groups forum, and moving to
+
+START HERE
+
+Outline
+* What's changed.
+* See for yourself.
+* What to expect coming in our future.
+
+{% endautoescape %}
