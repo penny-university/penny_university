@@ -1,5 +1,5 @@
 import json
-import urllib
+from urllib.parse import urlencode
 import hashlib
 from datetime import datetime, timedelta
 
@@ -167,7 +167,8 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
 
     include_calendar_link = mode in {PREVIEW, INVITE, UPDATE}
     include_rsvp = mode in {INVITE, UPDATE}
-    include_participant_pictures = mode in {REMIND}
+    include_participant_pictures = mode in {REMIND} and \
+        len(penny_chat_invitation.get_participants()) > 0
 
     organizer = get_or_create_social_profile_from_slack_id(
         penny_chat_invitation.organizer_slack_id,
@@ -270,7 +271,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     if include_participant_pictures:
         participants = penny_chat_invitation.get_participants()
 
-        default = "https://www.example.com/default.jpg"
+        default = "https://avatars.slack-edge.com/2020-05-25/1144415980914_c8a4ff7c783de54f72e5_512.png"
         size = 40
         profiles = []
         for participant in participants:
@@ -279,7 +280,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
             # https://en.gravatar.com/site/implement/images/python/
             gravatar_url = "https://www.gravatar.com/avatar/" +\
                 hashlib.md5(email.lower().encode('utf-8')).hexdigest() + "?" +\
-                urllib.parse.urlencode({'d': default, 's': str(size)})
+                urlencode({'d': default, 's': str(size)})
 
             if participant.first_name != "" and participant.last_name != "":
                 name = participant.first_name + " " + participant.last_name
@@ -291,25 +292,29 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
                 'image_url': gravatar_url
             })
 
-        number_votes_text = f"{len(profiles)} attending" if len(profiles) > 0 else "None attending (yet!)"
+        number_votes_text = f"{len(profiles)} attending"
 
-        body.append(
-            {
-                'type': 'context',
-                'elements': [
+        attendee_images = [
                     {
                         'type': 'image',
                         'image_url': profile['image_url'],
                         'alt_text': profile['name']
                     }
                     for profile in profiles
-                ] + [  # concatenates above list with below list
+                ]
+
+        elements = attendee_images + [
                     {
                         'type': 'plain_text',
                         'emoji': True,
                         'text': number_votes_text
                     }
                 ]
+
+        body.append(
+            {
+                'type': 'context',
+                'elements': elements
             }
         )
 
