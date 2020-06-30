@@ -295,21 +295,21 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
         number_votes_text = f"{len(profiles)} attending"
 
         attendee_images = [
-                    {
-                        'type': 'image',
-                        'image_url': profile['image_url'],
-                        'alt_text': profile['name']
-                    }
-                    for profile in profiles
-                ]
+            {
+                'type': 'image',
+                'image_url': profile['image_url'],
+                'alt_text': profile['name']
+            }
+            for profile in profiles
+        ]
 
         elements = attendee_images + [
-                    {
-                        'type': 'plain_text',
-                        'emoji': True,
-                        'text': number_votes_text
-                    }
-                ]
+            {
+                'type': 'plain_text',
+                'emoji': True,
+                'text': number_votes_text
+            }
+        ]
 
         body.append(
             {
