@@ -1,5 +1,5 @@
 import json
-from urllib.parse import urlencode
+import urllib
 import hashlib
 from datetime import datetime, timedelta
 
@@ -280,7 +280,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
             # https://en.gravatar.com/site/implement/images/python/
             gravatar_url = "https://www.gravatar.com/avatar/" +\
                 hashlib.md5(email.lower().encode('utf-8')).hexdigest() + "?" +\
-                urlencode({'d': default, 's': str(size)})
+                urllib.parse.urlencode({'d': default, 's': str(size)})
 
             if participant.first_name != "" and participant.last_name != "":
                 name = participant.first_name + " " + participant.last_name
