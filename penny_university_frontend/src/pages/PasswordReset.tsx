@@ -42,7 +42,7 @@ const PasswordResetPage = ({ user, resetPassword, location, error }: PasswordRes
         <CardBody>
           <h1 className="text-center">Your password was reset successfully!</h1>
           <div className="text-center">
-            <Button onClick={modalDispatch.auth}>Log In</Button>
+            <Button onClick={() => modalDispatch.auth()}>Log In</Button>
           </div>
         </CardBody>
       </Card>

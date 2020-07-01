@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from sentry_sdk import capture_exception
 from slack.errors import SlackApiError
 
-from common.utils import pprint_obj, get_slack_client
+from common.utils import pprint_obj, get_slack_client, build_url
 
 
 class User(AbstractUser):
@@ -16,11 +16,8 @@ class User(AbstractUser):
 
     def send_verification_email(self, token):
         context = {
-            'base': settings.FRONT_END_HOST,
-            'endpoint': 'verify',
-            'email': self.email,
-            'token': token,
-            'first_name': self.first_name
+            'verification_url': build_url(settings.FRONT_END_HOST, 'verify', email=self.email, token=token),
+            'first_name': self.first_name,
         }
         text_email = render_to_string('users/verify_email.txt', context)
         html_email = render_to_string('users/verify_email.html', context)
