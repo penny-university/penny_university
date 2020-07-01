@@ -1,11 +1,11 @@
-import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
+import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
-import {
-  setToken, fetchUser, Actions, logoutRequest } from '../actions/user'
+import { push } from 'connected-react-router'
+import { setToken, fetchUser, Actions, logoutRequest } from '../actions/user'
 import { loadChatsList } from '../actions/chat'
 import CookieHelper from '../helpers/cookie'
 import modalDispatch from '../components/modal/dispatch'
-import ApiRoutes from "../constants"
+import ApiRoutes, { Routes } from '../constants'
 
 const logout = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
   CookieHelper.clearCookies()
@@ -57,6 +57,12 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       break
       case Actions.VERIFY_EMAIL_SUCCESS:
         modalDispatch.auth()
+      break
+    case Actions.REQUEST_PASSWORD_RESET_SUCCESS:
+      modalDispatch.authPasswordReset(action.payload.meta.email)
+      break
+    case Actions.RESET_PASSWORD_SUCCESS:
+      store.dispatch(push(Routes.ResetPassword + '?status=success'))
       break
     default:
   }

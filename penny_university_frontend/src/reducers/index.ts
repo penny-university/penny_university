@@ -1,4 +1,6 @@
 import { combineReducers, applyMiddleware, createStore, compose } from 'redux'
+import { connectRouter, routerMiddleware } from 'connected-react-router'
+import { createBrowserHistory } from 'history'
 import { AnyAction } from 'redux'
 import { normalize } from 'normalizr'
 import { ChatActions, UserActions } from '../actions'
@@ -10,6 +12,7 @@ import api from '../middleware/api'
 import logging from '../middleware/logging'
 import userMiddleware from '../middleware/user'
 import { Schemas } from '../models/schemas'
+import React from "react";
 
 // Eventually we will want to move this into a DEV configuration
 const composeEnhancers = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
@@ -29,6 +32,7 @@ const failureTypes = [
   UserActions.LOGOUT_FAILURE,
   UserActions.RESEND_VERIFY_EMAIL_FAILURE,
   UserActions.VERIFY_EMAIL_FAILURE,
+  UserActions.RESET_PASSWORD_FAILURE,
 ]
 
 const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, }, action: AnyAction): EntityState => {
@@ -54,7 +58,6 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, },
     const newState = { ...state }
     newState.users[action.payload.result.id] = Object.assign({}, newState.users[action.payload.result.id], action.payload.result)
     return newState
-
   }
   return state
 }
@@ -101,7 +104,10 @@ export const initialState = {
   error: { status: NaN, message: '' },
 }
 
+export const history = createBrowserHistory()
+
 export const rootReducer = combineReducers({
+  router: connectRouter(history),
   entities,
   error: errorReducer,
   pagination,
@@ -110,7 +116,7 @@ export const rootReducer = combineReducers({
 
 // @ts-ignore
 const store = createStore(rootReducer, initialState, composeEnhancers(
-  applyMiddleware(thunk, api, userMiddleware, logging),
+  applyMiddleware(routerMiddleware(history), thunk, api, userMiddleware, logging),
 ))
 
 export type RootState = ReturnType<typeof rootReducer>
