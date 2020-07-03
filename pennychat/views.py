@@ -1,5 +1,5 @@
 import logging
-from django.db.models import Q
+from django.db.models import Q, Count
 from rest_framework import viewsets, mixins, generics
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -18,7 +18,7 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows penny chats to be viewed or edited.
     """
-    queryset = PennyChat.objects.all().order_by('-date')
+    queryset = PennyChat.objects.annotate(follow_ups_count=Count('follow_ups')).order_by('-date')
     serializer_class = PennyChatSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['participants__user_id']
