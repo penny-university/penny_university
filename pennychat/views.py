@@ -1,4 +1,6 @@
 import logging
+
+from django_filters import BooleanFilter
 from django.db.models import Q, Count
 from rest_framework import viewsets, mixins, generics
 from rest_framework.exceptions import PermissionDenied
@@ -9,9 +11,18 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
 from common.permissions import IsOwner, method_is_authenticated, perform_is_authenticated
+from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 logger = logging.getLogger(__name__)
+
+
+class PennyChatFilter(filters.FilterSet):
+    follow_ups__isnull = BooleanFilter(field_name='follow_ups', lookup_expr='isnull')
+
+    class Meta:
+        model = PennyChat
+        fields = ['participants__user_id', 'follow_ups__isnull']
 
 
 class PennyChatViewSet(viewsets.ModelViewSet):
@@ -21,7 +32,7 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     queryset = PennyChat.objects.annotate(follow_ups_count=Count('follow_ups')).order_by('-date')
     serializer_class = PennyChatSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['participants__user_id']
+    filterset_class = PennyChatFilter
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
