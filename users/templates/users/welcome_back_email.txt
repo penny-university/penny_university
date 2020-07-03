@@ -1,17 +1,24 @@
 {% autoescape off %}
-{% if first_name %}
-Hey {{ first_name }},
-{% else %}
-Hey there!
-{% endif %}
+{% if first_name %}Hey {{ first_name }},{% else %}Hey there!{% endif %}
 
-From it's inception, Penny University has been a community for social learning. But while the purpose has remained the same, the community, culture, and platform are constantly evolving. Today we are excited to reveal the biggest change in the platform to date. We are getting rid of the Google Groups forum, and moving to
+From it's inception, Penny University has been a community for people that love learning together. And while the purpose remains the same, the community, culture, and platform are constantly evolving. Today we are excited to reveal the newest evolution and the biggest change in the platform to date. We are getting rid of the Google Groups forum, and moving to a custom web application.
+
+{% if chats_url %}What to see it for yourself? You've been active in Penny University, so what better way to explore the app than to take a look through your chats! Check them out in your profile: {{ chats_url }}{% endif %}
+
+Here's what {% if chats_url %}else {% endif %}you can look forward to:
+
+* Whenever
+
+
 
 START HERE
 
 Outline
 * What's changed.
-* See for yourself.
+* See for yourself/What we need from you.
 * What to expect coming in our future.
+
+
+Make sure to thank Implementors
 
 {% endautoescape %}
