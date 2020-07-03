@@ -52,5 +52,5 @@ interface PaginationState {
 
 interface ErrorState {
   status: number,
-  message: string,
+  body: any,
 }

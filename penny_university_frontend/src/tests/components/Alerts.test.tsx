@@ -5,22 +5,25 @@ import { ErrorAlert } from '../../components/alerts'
 
 describe('error alert component', () => {
   it('renders correctly', () => {
-    const component = shallow(<ErrorAlert error="error" dismiss={jest.fn()} />)
+    const error = {error: "error"}
+    const component = shallow(<ErrorAlert error={error} dismiss={jest.fn()} />)
     expect(component).toMatchSnapshot()
   })
 
   it('should display with error message', () => {
-    const component = mount(<ErrorAlert error="error" dismiss={jest.fn()} />)
+    const error = {error: "error"}
+    const component = mount(<ErrorAlert error={error} dismiss={jest.fn()} />)
     expect(component.find(Alert).text()).toContain('error')
   })
 
   it('should not display without an error message', () => {
-    const component = shallow(<ErrorAlert error={null} dismiss={jest.fn()} />)
+    const component = shallow(<ErrorAlert error={undefined} dismiss={jest.fn()} />)
     expect(component.find(Alert)).toEqual({})
   })
 
   it('should be dismissed', () => {
-    const component = mount(<ErrorAlert error="error" dismiss={jest.fn()} />)
+    const error = {error: "error"}
+    const component = mount(<ErrorAlert error={error} dismiss={jest.fn()} />)
     component
       .find('button.close')
       .at(0)

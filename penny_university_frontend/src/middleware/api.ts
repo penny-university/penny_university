@@ -1,7 +1,8 @@
-import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
-import { camelizeKeys, decamelizeKeys } from 'humps'
+import {MiddlewareAPI, Dispatch, Middleware, AnyAction} from "redux"
+import {camelizeKeys, decamelizeKeys} from 'humps'
 import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
+
 const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 
 
@@ -17,11 +18,11 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
   const url = (endpoint.indexOf(API_ROOT) === -1) ? API_ROOT + endpoint : endpoint
 
   const jsonPayload = JSON.stringify(decamelizeKeys(payload))
-  const headers: { [header: string]: string } = { 'Content-Type': 'application/json' }
+  const headers: { [header: string]: string } = {'Content-Type': 'application/json'}
   if (token) {
     headers.Authorization = `Token ${token}`
   }
-  return fetch(url, { method, body: jsonPayload, headers })
+  return fetch(url, {method, body: jsonPayload, headers})
     .then(async (response: Response) => {
       if (!response.ok) {
         return Promise.reject(response)
@@ -42,7 +43,7 @@ export const CALL_API = 'CALL_API'
 // Performs the call and promises when such actions are dispatched.
 const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyAction) => void) => (action: AnyAction) => {
   if (action.type === CALL_API) {
-    let { endpoint } = action.payload
+    let {endpoint} = action.payload
     const {
       schema: responseSchema, types, method, payload, meta,
     } = action.payload
@@ -62,20 +63,42 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
     }
 
     const [requestType, successType, failureType] = types
-    next({ type: requestType, payload: { meta } })
+    next({type: requestType, payload: {meta}})
     const token = selectors.user.getToken(store.getState())
     return callApi(endpoint, method, payload, token).then(
       (response: any) => {
-        const metaWithPagination = response.results ? { ...meta, count: response.count, next: response.next, previous: response.previous } : meta
+        const metaWithPagination = response.results ? {
+          ...meta,
+          count: response.count,
+          next: response.next,
+          previous: response.previous
+        } : meta
         return next({
-          payload: { result: response.results || response, responseSchema, meta: metaWithPagination },
+          payload: {result: response.results || response, responseSchema, meta: metaWithPagination},
           type: successType,
         })
       },
-      (error: { message: string, status: number }) => next({
-        type: failureType,
-        payload: { message: error.message || 'An error occurred.', status: error.status, meta },
-      }),
+      async (error: any) => {
+        let errorBody = null;
+        try {
+          await error.json().then((json: any) => {
+            errorBody = camelizeKeys(json)
+          }).catch()
+          return next({
+            type: failureType,
+            payload: { body: errorBody || 'An error occurred.', status: error.status, meta },
+          })
+        } catch (e) {
+          if (e instanceof TypeError) {
+            return next({
+              type: failureType,
+              payload: { body: error.message || 'An error occurred.', status: error.status, meta },
+            })
+          } else {
+            throw e;
+          }
+        }
+      },
     )
   }
   return next(action)

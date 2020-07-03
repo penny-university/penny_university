@@ -53,7 +53,7 @@ const PasswordResetPage = ({ user, resetPassword, location, error }: PasswordRes
 const mapStateToProps = (state: RootState) => {
   const { error } = state
   return {
-    error: error?.message,
+    error: error?.body,
     user: selectors.user.getUser(state)
   }
 }
