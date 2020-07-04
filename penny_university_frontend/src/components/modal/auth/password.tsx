@@ -5,19 +5,20 @@ import { connect } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { AnyAction } from 'redux'
 import {
-  Form, ModalHeader, ModalBody, Button,
+  Form, ModalHeader, ModalBody, ModalFooter, Button,
 } from 'reactstrap'
 import modalDispatch from '../dispatch'
-import { dispatchLogin } from '../../../actions/user'
+import { dispatchLogin, requestPasswordReset } from '../../../actions/user'
 import { Input } from '../../fields'
 
 type AuthPasswordModalProps = {
   email: string,
   followUp?: { chatId: number, content: string }  | undefined,
   login: (payload: {email: string, password: string, followUp: { chatId: number, content: string } | undefined }) => void,
+  requestPasswordReset: (payload: {email: string}) => void,
 }
 
-const AuthPasswordModal = ({ email, login, followUp }: AuthPasswordModalProps) => {
+const AuthPasswordModal = ({ email, login, followUp, requestPasswordReset }: AuthPasswordModalProps) => {
   const [password, setPassword] = useState('')
   return (
     <>
@@ -34,6 +35,9 @@ const AuthPasswordModal = ({ email, login, followUp }: AuthPasswordModalProps) =
           </div>
         </Form>
       </ModalBody>
+      <ModalFooter>
+        <Button color="link" onClick={() => {requestPasswordReset({ email })}}>Forgot password?</Button>
+      </ModalFooter>
     </>
   )
 }
@@ -48,6 +52,7 @@ const mapStateToProps = () => ({
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
   login: (payload: {email: string, password: string, followUp: { chatId: number, content: string } | undefined }) => dispatch(dispatchLogin(payload)),
+  requestPasswordReset: (payload: {email: string}) => dispatch(requestPasswordReset(payload)),
 })
 
 

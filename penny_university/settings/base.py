@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
     'django_filters',
+    'common',
     'bot',
     'api',
     'home',
@@ -199,7 +200,8 @@ EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
 
 # Override Auth Serializers
 REST_AUTH_SERIALIZERS = {
-    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer'
+    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'users.serializers.CustomPasswordResetSerializer',
 }
 
 # Background Tasks

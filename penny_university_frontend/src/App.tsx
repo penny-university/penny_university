@@ -17,6 +17,7 @@ import * as selectors from './selectors'
 import { RootState } from './reducers'
 import { Routes } from './constants'
 import { User } from './models'
+import PasswordResetPage from "./pages/PasswordReset";
 
 type StateProps = {
   user: User,
@@ -43,6 +44,7 @@ const App = (props: Props) => {
           <Route path={Routes.Chats} component={ChatsPage} />
           <Route path={Routes.VerifyEmail} component={VerifyPage} />
           <Route path={Routes.Profile} component={ProfilePage} />
+          <Route path={Routes.ResetPassword} component={PasswordResetPage} />
           <Route path={Routes.Home}>
             <Redirect to={Routes.Chats} />
           </Route>
