@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password as django_password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.forms import PasswordResetForm
 from django.utils.encoding import force_bytes
@@ -24,6 +25,10 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'password', 'first_name', 'last_name']
+
+    def validate_password(self, value):
+        django_password_validation(value)
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(

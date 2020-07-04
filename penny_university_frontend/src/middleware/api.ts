@@ -2,6 +2,7 @@ import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
 import { camelizeKeys, decamelizeKeys } from 'humps'
 import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
+
 const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 
 
@@ -17,7 +18,7 @@ const callApi = (endpoint: string, method: 'POST' | 'PUT' | 'GET' | 'DELETE', pa
   const url = (endpoint.indexOf(API_ROOT) === -1) ? API_ROOT + endpoint : endpoint
 
   const jsonPayload = JSON.stringify(decamelizeKeys(payload))
-  const headers: { [header: string]: string } = { 'Content-Type': 'application/json' }
+  const headers: { [header: string]: string } = {'Content-Type': 'application/json'}
   if (token) {
     headers.Authorization = `Token ${token}`
   }
@@ -72,10 +73,27 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
           type: successType,
         })
       },
-      (error: { message: string, status: number }) => next({
-        type: failureType,
-        payload: { message: error.message || 'An error occurred.', status: error.status, meta },
-      }),
+      async (error: any) => {
+        let errorBody = null;
+        try {
+          await error.json().then((json: any) => {
+            errorBody = camelizeKeys(json)
+          })
+          return next({
+            type: failureType,
+            payload: { body: errorBody || 'An error occurred.', status: error.status, meta },
+          })
+        } catch (e) {
+          if (e instanceof TypeError) {
+            return next({
+              type: failureType,
+              payload: { body: error.message || 'An error occurred.', status: error.status, meta },
+            })
+          } else {
+            throw e;
+          }
+        }
+      },
     )
   }
   return next(action)
