@@ -12,7 +12,7 @@ describe('chat actions', () => {
   })
 
   it('should dispatch CHAT_LIST_REQUEST and CHAT_LIST_SUCCESS', () => {
-    fetchMock.getOnce(`${baseUrl}chats/?follow_ups__isnull=false`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular`, {
       body: { results: chats },
       headers: { 'content-type': 'application/json' },
     })
@@ -27,7 +27,7 @@ describe('chat actions', () => {
   })
 
   it('should dispatch CHAT_LIST_REQUEST and CHAT_LIST_FAILURE', () => {
-    fetchMock.getOnce(`${baseUrl}chats/?follow_ups__isnull=false`, () => {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular`, () => {
       throw new Error('It failed!')
     })
 
@@ -95,7 +95,7 @@ describe('chat reducers', () => {
   })
 
   it('should add chats to entities', () => {
-    fetchMock.getOnce(`${baseUrl}chats/?follow_ups__isnull=false`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular`, {
       body: { results: chats },
       headers: { 'content-type': 'application/json' },
     })
@@ -112,7 +112,7 @@ describe('chat reducers', () => {
   })
 
   it('should properly merge more chats in to entities', () => {
-    fetchMock.getOnce(`${baseUrl}chats/?follow_ups__isnull=false`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular`, {
       body: { results: chatsNext },
       headers: { 'content-type': 'application/json' },
     })
@@ -160,7 +160,7 @@ describe('chat reducers', () => {
   })
 
   it('should paginate chat ids', () => {
-    fetchMock.getOnce(`${baseUrl}chats/?follow_ups__isnull=false`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular`, {
       body: { results: chats },
       headers: { 'content-type': 'application/json' },
     })

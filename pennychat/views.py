@@ -1,12 +1,14 @@
+from datetime import datetime
 import logging
 
-from django_filters import BooleanFilter
+from django.conf import settings
 from django.db.models import Q, Count
 from rest_framework import viewsets, mixins, generics
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from pytz import timezone
 
 from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
@@ -18,11 +20,17 @@ logger = logging.getLogger(__name__)
 
 
 class PennyChatFilter(filters.FilterSet):
-    follow_ups__isnull = BooleanFilter(field_name='follow_ups', lookup_expr='isnull')
+    class UpcomingOrPopularFilter(filters.Filter):
+        def filter(self, qs, value):
+            return qs.filter(
+                Q(follow_ups__isnull=False) | Q(date__gt=datetime.now().astimezone(timezone(settings.TIME_ZONE)))
+            )
+
+    upcoming_or_popular = UpcomingOrPopularFilter()
 
     class Meta:
         model = PennyChat
-        fields = ['participants__user_id', 'follow_ups__isnull']
+        fields = ['participants__user_id', 'upcoming_or_popular']
 
 
 class PennyChatViewSet(viewsets.ModelViewSet):
