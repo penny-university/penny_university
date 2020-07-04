@@ -11,7 +11,7 @@ describe('error alert component', () => {
   })
 
   it('should display with error message', () => {
-    const error = {error: "error"}
+    const error = { error: "error" }
     const component = mount(<ErrorAlert error={error} dismiss={jest.fn()} />)
     expect(component.find(Alert).text()).toContain('error')
   })
@@ -22,7 +22,7 @@ describe('error alert component', () => {
   })
 
   it('should be dismissed', () => {
-    const error = {error: "error"}
+    const error = { error: "error" }
     const component = mount(<ErrorAlert error={error} dismiss={jest.fn()} />)
     component
       .find('button.close')
