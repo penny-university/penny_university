@@ -14,23 +14,23 @@ from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
 from common.permissions import IsOwner, method_is_authenticated, perform_is_authenticated
 from django_filters import rest_framework as filters
+import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 logger = logging.getLogger(__name__)
 
 
 class PennyChatFilter(filters.FilterSet):
-    class UpcomingOrPopularFilter(filters.Filter):
-        def filter(self, qs, value):
-            return qs.filter(
-                Q(follow_ups__isnull=False) | Q(date__gt=datetime.now().astimezone(timezone(settings.TIME_ZONE)))
-            )
+    upcoming_or_popular = filters.Filter('filter_upcoming_or_popular')
 
-    upcoming_or_popular = UpcomingOrPopularFilter()
+    def filter_upcoming_or_popular(self, qs, value):
+        return qs.filter(
+            Q(follow_ups__isnull=False) | Q(date__gt=datetime.now().astimezone(timezone(settings.TIME_ZONE)))
+        )
 
     class Meta:
         model = PennyChat
-        fields = ['participants__user_id', 'upcoming_or_popular']
+        fields = ['participants__user_id']
 
 
 class PennyChatViewSet(viewsets.ModelViewSet):
