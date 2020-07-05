@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button, Form } from 'reactstrap';
-import { Input } from '../fields/index.ts';
+import { Input } from '../fields';
 
 type PasswordResetFormProps = {
   uid: string,

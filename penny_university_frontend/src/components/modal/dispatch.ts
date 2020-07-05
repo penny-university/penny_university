@@ -1,7 +1,7 @@
 import { Dispatch } from 'react'
-import { Action } from './index.tsx'
-import Actions, { ModalNames } from './constants.ts'
-import { User } from '../../models/index.ts'
+import { Action } from '.'
+import Actions, { ModalNames } from './constants'
+import { User } from '../../models'
 
 const modalDispatch = () => {
   let _dispatch: Dispatch<Action> | null = null // eslint-disable-line no-underscore-dangle

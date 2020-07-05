@@ -5,11 +5,11 @@ import { ThunkDispatch } from 'redux-thunk'
 import { push } from 'connected-react-router'
 import {
   setToken, fetchUser, Actions, logoutRequest,
-} from '../actions/user.ts'
-import { loadChatsList } from '../actions/chat.ts'
-import CookieHelper from '../helpers/cookie.ts'
-import modalDispatch from '../components/modal/dispatch.ts'
-import ApiRoutes, { Routes } from '../constants/index.ts'
+} from '../actions/user'
+import { loadChatsList } from '../actions/chat'
+import CookieHelper from '../helpers/cookie'
+import modalDispatch from '../components/modal/dispatch'
+import ApiRoutes, { Routes } from '../constants'
 
 const logout = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
   CookieHelper.clearCookies()

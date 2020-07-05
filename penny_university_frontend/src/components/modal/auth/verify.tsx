@@ -7,8 +7,8 @@ import { AnyAction } from 'redux'
 import {
   ModalHeader, ModalBody, Button,
 } from 'reactstrap'
-import modalDispatch from '../dispatch.ts'
-import { resendVerifyEmail } from '../../../actions/user.ts'
+import modalDispatch from '../dispatch'
+import { resendVerifyEmail } from '../../../actions/user'
 
 type VerifyModalProps = {
   email: string,

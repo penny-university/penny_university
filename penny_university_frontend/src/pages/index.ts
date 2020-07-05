@@ -1,4 +1,4 @@
-import ProfilePage from './profile/index.tsx'
+import ProfilePage from './profile'
 
 export {
   ProfilePage,

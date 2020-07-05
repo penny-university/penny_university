@@ -3,10 +3,10 @@ import React from 'react'
 import { createMemoryHistory } from 'history'
 import { render, fireEvent, screen } from '@testing-library/react'
 import { Router } from 'react-router-dom'
-import ChatDetail from './ChatDetail.tsx'
-import { normalizedChat, normalizedFollowUps, users } from '../../tests/data.ts'
-import { User } from '../../models/index.ts'
-import { TestIDs } from '../follow-ups/FollowUpCard.tsx'
+import ChatDetail from './ChatDetail'
+import { normalizedChat, normalizedFollowUps, users } from '../../tests/data'
+import { User } from '../../models'
+import { TestIDs } from '../follow-ups/FollowUpCard'
 
 const history = createMemoryHistory()
 const followUps = Object.values(normalizedFollowUps)

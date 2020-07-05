@@ -1,4 +1,4 @@
-import { RootState } from '../reducers/index.ts'
+import { RootState } from '../reducers'
 
 const getPaginationStore = (state: RootState) => state.pagination
 

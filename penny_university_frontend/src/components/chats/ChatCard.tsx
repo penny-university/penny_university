@@ -5,10 +5,10 @@ import {
   Card,
   CardTitle,
 } from 'reactstrap'
-import Date from '../Date.tsx'
-import { Content } from '../content/index.ts'
-import ParticipantList from './ParticipantList.tsx'
-import { Chat } from '../../models/index.ts'
+import Date from '../Date'
+import { Content } from '../content'
+import ParticipantList from './ParticipantList'
+import { Chat } from '../../models'
 
 export const TestIDs = {
   chatCard: 'chart-card',

@@ -4,8 +4,8 @@ import chatDetail from '../../../__mocks__/api-chats-get-1-200.json'
 import chatList from '../../../__mocks__/api-chats-get-200.json'
 import followUpsList from '../../../__mocks__/api-chats-get-1-follow-ups-200.json'
 
-import { Schemas } from '../models/schemas.ts'
-import { User } from '../models/index.ts'
+import { Schemas } from '../models/schemas'
+import { User } from '../models'
 
 const allChats = camelizeKeys(chatList)
 // @ts-ignore

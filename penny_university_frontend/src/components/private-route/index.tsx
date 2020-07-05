@@ -3,11 +3,11 @@
 import React, { FunctionComponent } from 'react'
 import { connect } from 'react-redux'
 import { Route, Redirect } from 'react-router-dom'
-import * as selectors from '../../selectors/index.ts'
-import { User } from '../../models/index.ts'
-import { Routes } from '../../constants/index.ts'
-import { RootState } from '../../reducers/index.ts'
-import { CookieHelper } from '../../helpers/index.ts'
+import * as selectors from '../../selectors'
+import { User } from '../../models'
+import { Routes } from '../../constants'
+import { RootState } from '../../reducers'
+import { CookieHelper } from '../../helpers'
 
 type StateToPropsType = {
   user: User,

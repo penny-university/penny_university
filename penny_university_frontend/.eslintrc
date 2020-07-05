@@ -3,7 +3,8 @@
     "react-app",
     "airbnb",
     "airbnb/hooks",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript"
   ],
   "env": {
     "jest": true,
@@ -17,6 +18,15 @@
   "rules": {
     "semi": 0,
     "import/prefer-default-export": 0,
+    "import/extensions": [
+      0,
+      "always",
+      {
+        "ts": "never",
+        "tsx": "never",
+      }
+    ],
+    "import/no-cycle": 0,
     "import/no-named-as-default": 0,
     "react/jsx-props-no-spreading": 0,
     "no-shadow": 1,

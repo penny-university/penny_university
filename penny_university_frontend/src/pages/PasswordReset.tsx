@@ -6,12 +6,12 @@ import { RouteComponentProps } from 'react-router-dom'
 import { Redirect } from 'react-router'
 import queryString from 'query-string'
 import { Button, Card, CardBody } from 'reactstrap';
-import { RootState } from '../reducers/index.ts'
-import { resetPassword } from '../actions/user.ts'
-import { PasswordResetForm } from '../components/forms/index.ts'
-import modalDispatch from '../components/modal/dispatch.ts'
-import * as selectors from '../selectors/index.ts';
-import { UserType } from '../models/user.ts';
+import { RootState } from '../reducers'
+import { resetPassword } from '../actions/user'
+import { PasswordResetForm } from '../components/forms'
+import modalDispatch from '../components/modal/dispatch'
+import * as selectors from '../selectors';
+import { UserType } from '../models/user';
 
 type StateProps = {
   user: UserType,

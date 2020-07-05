@@ -2,7 +2,7 @@ import React from 'react'
 import {
   ModalHeader, ModalBody,
 } from 'reactstrap'
-import modalDispatch from '../dispatch.ts'
+import modalDispatch from '../dispatch'
 
 type AuthPasswordResetModalProps = {
   email: string

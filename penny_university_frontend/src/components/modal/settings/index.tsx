@@ -7,10 +7,10 @@ import { AnyAction } from 'redux'
 import {
   Form, ModalHeader, ModalBody, Button,
 } from 'reactstrap'
-import modalDispatch from '../dispatch.ts'
-import { updateUser } from '../../../actions/user.ts'
-import { Input } from '../../fields/index.ts'
-import { User } from '../../../models/index.ts'
+import modalDispatch from '../dispatch'
+import { updateUser } from '../../../actions/user'
+import { Input } from '../../fields'
+import { User } from '../../../models'
 
 type SettingsModalProps = {
   update: (payload: {

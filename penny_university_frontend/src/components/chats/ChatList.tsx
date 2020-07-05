@@ -4,11 +4,11 @@ import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import InfiniteScroll from 'react-infinite-scroller'
-import { loadChatsList } from '../../actions/chat.ts'
-import { RootState } from '../../reducers/index.ts'
-import * as selectors from '../../selectors/index.ts'
-import ChatCard from './ChatCard.tsx'
-import { Chat } from '../../models/index.ts'
+import { loadChatsList } from '../../actions/chat'
+import { RootState } from '../../reducers'
+import * as selectors from '../../selectors'
+import ChatCard from './ChatCard'
+import { Chat } from '../../models'
 
 type StateProps = {
   nextPageUrl: string,

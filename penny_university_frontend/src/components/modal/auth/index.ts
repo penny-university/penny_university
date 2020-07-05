@@ -1,9 +1,9 @@
 // @flow
-import AuthEmail from './email.tsx'
-import AuthPassword from './password.tsx'
-import AuthPasswordReset from './reset.tsx';
-import AuthSignup from './signup.tsx'
-import VerifyEmail from './verify.tsx'
+import AuthEmail from './email'
+import AuthPassword from './password'
+import AuthPasswordReset from './reset';
+import AuthSignup from './signup'
+import VerifyEmail from './verify'
 
 export {
   AuthEmail,

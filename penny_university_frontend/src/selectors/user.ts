@@ -1,5 +1,5 @@
-import { RootState } from '../reducers/index.ts'
-import User from '../models/user.ts'
+import { RootState } from '../reducers'
+import User from '../models/user'
 
 const getUserStore = (store: RootState) => store.user
 

@@ -1,3 +1,3 @@
-import FollowUpCard from './FollowUpCard.tsx'
+import FollowUpCard from './FollowUpCard'
 
 export { FollowUpCard }

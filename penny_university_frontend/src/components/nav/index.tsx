@@ -3,9 +3,9 @@ import {
   Button, Navbar, NavbarBrand, Dropdown, DropdownToggle, DropdownMenu, Container,
 } from 'reactstrap'
 import { Link } from 'react-router-dom'
-import modalDispatch from '../modal/dispatch.ts'
-import { User } from '../../models/index.ts'
-import { Routes } from '../../constants/index.ts'
+import modalDispatch from '../modal/dispatch'
+import { User } from '../../models'
+import { Routes } from '../../constants'
 
 const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

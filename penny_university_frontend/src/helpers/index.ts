@@ -1,4 +1,4 @@
-import CookieHelper from './cookie.ts'
+import CookieHelper from './cookie'
 
 export {
   CookieHelper,

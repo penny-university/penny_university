@@ -7,9 +7,9 @@ import { AnyAction } from 'redux'
 import {
   Form, ModalHeader, ModalBody, Button,
 } from 'reactstrap'
-import { Input } from '../../fields/index.ts'
-import modalDispatch from '../dispatch.ts'
-import { userExists } from '../../../actions/user.ts'
+import { Input } from '../../fields'
+import modalDispatch from '../dispatch'
+import { userExists } from '../../../actions/user'
 
 type AuthEmailModalProps = {
   userExists: (email: string, followUp: { chatId: number, content: string } | undefined) => AnyAction

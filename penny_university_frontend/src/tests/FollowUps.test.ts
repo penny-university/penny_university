@@ -1,8 +1,8 @@
 import fetchMock from 'fetch-mock'
-import { loadFollowUps } from '../actions/chat.ts'
-import { rootReducer as reducer } from '../reducers/index.ts'
-import { makeMockStore, initialState, baseUrl } from './config.tsx'
-import { followUps, normalizedFollowUps, users } from './data.ts'
+import { loadFollowUps } from '../actions/chat'
+import { rootReducer as reducer } from '../reducers'
+import { makeMockStore, initialState, baseUrl } from './config'
+import { followUps, normalizedFollowUps, users } from './data'
 
 describe('follow up actions', () => {
   afterEach(() => {

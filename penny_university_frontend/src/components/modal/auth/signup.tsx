@@ -7,9 +7,9 @@ import { AnyAction } from 'redux'
 import {
   Form, ModalHeader, ModalBody, Button,
 } from 'reactstrap'
-import modalDispatch from '../dispatch.ts'
-import { signup } from '../../../actions/user.ts'
-import { Input } from '../../fields/index.ts'
+import modalDispatch from '../dispatch'
+import { signup } from '../../../actions/user'
+import { Input } from '../../fields'
 
 type AuthSignupModalProps = {
   signup: (payload: {

@@ -1,6 +1,6 @@
 import { AnyAction } from 'redux'
-import { Actions } from '../actions/user.ts'
-import { User } from '../models/index.ts'
+import { Actions } from '../actions/user'
+import { User } from '../models'
 
 export const initialState: UserState = {
   token: null,

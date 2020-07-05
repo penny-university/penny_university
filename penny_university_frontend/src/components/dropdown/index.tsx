@@ -1,6 +1,6 @@
 import React from 'react'
 import { UncontrolledPopover, PopoverHeader } from 'reactstrap'
-import { MoreOptions } from '../buttons/index.tsx'
+import { MoreOptions } from '../buttons'
 
 interface DropdownProps {
   header: string,

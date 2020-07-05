@@ -1,7 +1,7 @@
-import { CALL_API } from '../middleware/api.ts'
-import { Schemas } from '../models/schemas.ts'
-import ApiRoutes from '../constants/index.ts'
-import { FollowUpType } from '../models/followUp.ts';
+import { CALL_API } from '../middleware/api'
+import { Schemas } from '../models/schemas'
+import ApiRoutes from '../constants'
+import { FollowUpType } from '../models/followUp';
 
 export const Actions = {
   CHATS_LIST_REQUEST: 'CHATS_LIST_REQUEST',

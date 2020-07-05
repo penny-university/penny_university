@@ -6,18 +6,18 @@ import { AnyAction } from 'redux'
 import { connect } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { Container } from 'reactstrap'
-import { Modal, Navigation, Alert } from './components/index.ts'
+import { Modal, Navigation, Alert } from './components'
 
-import ChatsPage from './pages/Chats.tsx'
-import ChatDetailPage from './pages/ChatDetail.tsx'
-import { ProfilePage } from './pages/index.ts'
-import VerifyPage from './pages/Verify.tsx'
-import { bootstrap, logout } from './actions/user.ts'
-import * as selectors from './selectors/index.ts'
-import { RootState } from './reducers/index.ts'
-import { Routes } from './constants/index.ts'
-import { User } from './models/index.ts'
-import PasswordResetPage from './pages/PasswordReset.tsx';
+import ChatsPage from './pages/Chats'
+import ChatDetailPage from './pages/ChatDetail'
+import { ProfilePage } from './pages'
+import VerifyPage from './pages/Verify'
+import { bootstrap, logout } from './actions/user'
+import * as selectors from './selectors'
+import { RootState } from './reducers'
+import { Routes } from './constants'
+import { User } from './models'
+import PasswordResetPage from './pages/PasswordReset';
 
 type StateProps = {
   user: User,

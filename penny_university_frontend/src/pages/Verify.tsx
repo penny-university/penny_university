@@ -4,8 +4,8 @@ import { ThunkDispatch } from 'redux-thunk'
 import { AnyAction } from 'redux'
 import { RouteComponentProps } from 'react-router-dom'
 import queryString from 'query-string'
-import { RootState } from '../reducers/index.ts'
-import { verifyEmail } from '../actions/user.ts'
+import { RootState } from '../reducers'
+import { verifyEmail } from '../actions/user'
 
 type StateProps = {
   error: string | null,

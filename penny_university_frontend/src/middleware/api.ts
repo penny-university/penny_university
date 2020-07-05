@@ -2,8 +2,8 @@ import {
   MiddlewareAPI, Dispatch, Middleware, AnyAction,
 } from 'redux'
 import { camelizeKeys, decamelizeKeys } from 'humps'
-import * as selectors from '../selectors/index.ts'
-import ApiRoutes from '../constants/index.ts'
+import * as selectors from '../selectors'
+import ApiRoutes from '../constants'
 
 const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 

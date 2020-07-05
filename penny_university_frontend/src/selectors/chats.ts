@@ -1,6 +1,6 @@
-import { RootState } from '../reducers/index.ts'
-import * as selectEntities from './entities.ts'
-import Chat from '../models/chat.ts'
+import { RootState } from '../reducers'
+import * as selectEntities from './entities'
+import Chat from '../models/chat'
 
 const getChatByID = (state: RootState, id: number) => {
   const chats = selectEntities.getChats(state)

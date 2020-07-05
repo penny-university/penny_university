@@ -1,10 +1,10 @@
-import Modal from './modal/index.tsx'
-import { Input } from './fields/index.ts'
-import Dropdown from './dropdown/index.tsx'
-import Navigation from './nav/index.tsx'
-import Alert from './alerts/index.tsx'
-import { ChatList } from './chats/index.ts'
-import PrivateRoute from './private-route/index.tsx'
+import Modal from './modal'
+import { Input } from './fields'
+import Dropdown from './dropdown'
+import Navigation from './nav'
+import Alert from './alerts'
+import { ChatList } from './chats'
+import PrivateRoute from './private-route'
 
 export {
   Alert,

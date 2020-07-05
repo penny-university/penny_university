@@ -1,6 +1,6 @@
-import Chat from './chat.ts'
-import User from './user.ts'
-import FollowUp from './followUp.ts'
+import Chat from './chat'
+import User from './user'
+import FollowUp from './followUp'
 
 export {
   Chat,

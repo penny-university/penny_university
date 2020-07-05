@@ -1,4 +1,4 @@
-import PasswordResetForm from './PasswordResetForm.tsx';
+import PasswordResetForm from './PasswordResetForm';
 
 export {
   PasswordResetForm,

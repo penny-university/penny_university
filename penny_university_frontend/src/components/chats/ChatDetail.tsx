@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { Card } from 'reactstrap'
 import {
   CreateButton, SaveButton, CancelButton,
-} from '../buttons/index.tsx'
-import Date from '../Date.tsx'
-import { Content, EditContent } from '../content/index.ts'
-import { FollowUpCard } from '../follow-ups/index.ts'
-import modalDispatch from '../modal/dispatch.ts'
-import { Chat, FollowUp, User } from '../../models/index.ts'
-import { FollowUpType } from '../../models/followUp.ts'
+} from '../buttons'
+import Date from '../Date'
+import { Content, EditContent } from '../content'
+import { FollowUpCard } from '../follow-ups'
+import modalDispatch from '../modal/dispatch'
+import { Chat, FollowUp, User } from '../../models'
+import { FollowUpType } from '../../models/followUp'
 
 require('./styles.scss')
 

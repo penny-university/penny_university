@@ -7,9 +7,9 @@ import { AnyAction } from 'redux'
 import {
   Form, ModalHeader, ModalBody, ModalFooter, Button,
 } from 'reactstrap'
-import modalDispatch from '../dispatch.ts'
-import { dispatchLogin, requestPasswordReset } from '../../../actions/user.ts'
-import { Input } from '../../fields/index.ts'
+import modalDispatch from '../dispatch'
+import { dispatchLogin, requestPasswordReset } from '../../../actions/user'
+import { Input } from '../../fields'
 
 type AuthPasswordModalProps = {
   email: string,

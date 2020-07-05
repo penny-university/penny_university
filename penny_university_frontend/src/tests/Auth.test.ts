@@ -1,11 +1,11 @@
 import fetchMock from 'fetch-mock'
 import {
   bootstrap, dispatchLogout, Actions,
-} from '../actions/user.ts'
-import { ChatActions } from '../actions/index.ts'
-import ApiRoutes from '../constants/index.ts'
-import { makeMockStore, baseUrl } from './config.tsx'
-import { chats } from './data.ts'
+} from '../actions/user'
+import { ChatActions } from '../actions'
+import ApiRoutes from '../constants'
+import { makeMockStore, baseUrl } from './config'
+import { chats } from './data'
 
 describe('auth flow', () => {
   beforeEach(() => {

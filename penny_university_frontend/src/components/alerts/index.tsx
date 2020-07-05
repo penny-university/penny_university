@@ -3,8 +3,8 @@ import { Alert } from 'reactstrap'
 import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
-import { ChatActions } from '../../actions/index.ts'
-import { RootState } from '../../reducers/index.ts'
+import { ChatActions } from '../../actions'
+import { RootState } from '../../reducers'
 
 require('./style.scss')
 

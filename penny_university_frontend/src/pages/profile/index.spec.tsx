@@ -1,10 +1,10 @@
 import '@testing-library/jest-dom'
 import React from 'react'
 import { render, fireEvent, screen } from '@testing-library/react'
-import ProfilePage from './index.tsx'
-import { authenticatedState, unauthenticatedState, MockAppState } from '../../tests/config.tsx'
-import { Modal } from '../../components/index.ts'
-import { TestIDs } from '../../components/chats/ChatCard.tsx'
+import ProfilePage from '.'
+import { authenticatedState, unauthenticatedState, MockAppState } from '../../tests/config'
+import { Modal } from '../../components'
+import { TestIDs } from '../../components/chats/ChatCard'
 
 test('profile page shows list of users chats', () => {
   render(

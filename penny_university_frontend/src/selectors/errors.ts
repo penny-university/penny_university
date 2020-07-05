@@ -1,4 +1,4 @@
-import { RootState } from '../reducers/index.ts'
+import { RootState } from '../reducers'
 
 const getError = (store: RootState) => store.error
 

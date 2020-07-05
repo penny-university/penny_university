@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { connect } from 'react-redux'
 import { Popover, PopoverHeader, PopoverBody } from 'reactstrap'
 import { Link } from 'react-router-dom'
-import * as selectors from '../../selectors/index.ts'
-import { RootState } from '../../reducers/index.ts'
-import User from '../../models/user.ts'
+import * as selectors from '../../selectors'
+import { RootState } from '../../reducers'
+import User from '../../models/user'
 
 type ParticipantListProps = {
   className: string,

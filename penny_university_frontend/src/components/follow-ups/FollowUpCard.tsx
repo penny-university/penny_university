@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { FollowUp, User } from '../../models/index.ts'
-import { FollowUpType } from '../../models/followUp.ts'
-import { Dropdown } from '../index.ts'
-import { Content, EditContent } from '../content/index.ts'
-import { EditButton, SaveButton } from '../buttons/index.tsx'
-import FollowUpUserInfo from './FollowUpUserInfo.tsx'
+import { FollowUp, User } from '../../models'
+import { FollowUpType } from '../../models/followUp'
+import { Dropdown } from '..'
+import { Content, EditContent } from '../content'
+import { EditButton, SaveButton } from '../buttons'
+import FollowUpUserInfo from './FollowUpUserInfo'
 
 export const TestIDs = {
   subMenu: 'followup-submenu',

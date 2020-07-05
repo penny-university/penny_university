@@ -6,14 +6,14 @@ import { createBrowserHistory } from 'history'
 
 import { normalize } from 'normalizr'
 import thunk from 'redux-thunk'
-import { ChatActions, UserActions } from '../actions/index.ts'
-import paginate, { paginationInitialState } from './paginate.ts'
-import user, { initialState as userInitialState } from './user.ts'
-import { Actions as UserAction } from '../actions/user.ts'
-import api from '../middleware/api.ts'
-import logging from '../middleware/logging.ts'
-import userMiddleware from '../middleware/user.ts'
-import { Schemas } from '../models/schemas.ts'
+import { ChatActions, UserActions } from '../actions'
+import paginate, { paginationInitialState } from './paginate'
+import user, { initialState as userInitialState } from './user'
+import { Actions as UserAction } from '../actions/user'
+import api from '../middleware/api'
+import logging from '../middleware/logging'
+import userMiddleware from '../middleware/user'
+import { Schemas } from '../models/schemas'
 
 // Eventually we will want to move this into a DEV configuration
 const composeEnhancers = (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;

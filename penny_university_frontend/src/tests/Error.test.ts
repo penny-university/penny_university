@@ -1,7 +1,7 @@
 import fetchMock from 'fetch-mock'
-import { rootReducer as reducer } from '../reducers/index.ts'
-import { makeMockStore, initialState } from './config.tsx'
-import { loadChatsList } from '../actions/chat.ts'
+import { rootReducer as reducer } from '../reducers'
+import { makeMockStore, initialState } from './config'
+import { loadChatsList } from '../actions/chat'
 
 describe('error reducer', () => {
   fetchMock.get('*', () => {

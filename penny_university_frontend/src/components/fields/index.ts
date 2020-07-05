@@ -1,3 +1,3 @@
-import Input from './input.tsx'
+import Input from './input'
 
 export { Input }

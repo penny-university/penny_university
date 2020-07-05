@@ -1,11 +1,11 @@
 import fetchMock from 'fetch-mock'
-import { loadChatDetail, loadChatsList } from '../actions/chat.ts'
-import { rootReducer as reducer } from '../reducers/index.ts'
-import { makeMockStore, initialState, baseUrl } from './config.tsx'
+import { loadChatDetail, loadChatsList } from '../actions/chat'
+import { rootReducer as reducer } from '../reducers'
+import { makeMockStore, initialState, baseUrl } from './config'
 import {
   chats, chatsNext, normalizedChats, users,
-} from './data.ts'
-import ApiRoutes from '../constants/index.ts'
+} from './data'
+import ApiRoutes from '../constants'
 
 describe('chat actions', () => {
   afterEach(() => {

@@ -1,7 +1,7 @@
 import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
-import { CALL_API, APIPayload } from '../middleware/api.ts'
-import ApiRoutes from '../constants/index.ts'
+import { CALL_API, APIPayload } from '../middleware/api'
+import ApiRoutes from '../constants'
 
 export const Actions = {
   HYDRATE_USER: 'HYDRATE_USER',

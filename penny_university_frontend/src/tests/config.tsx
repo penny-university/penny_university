@@ -5,13 +5,13 @@ import { createMemoryHistory } from 'history'
 import { Provider } from 'react-redux'
 import { compose } from 'redux'
 import { Router } from 'react-router-dom'
-import api from '../middleware/api.ts'
-import user from '../middleware/user.ts'
-import { initialState, RootState } from '../reducers/index.ts'
+import api from '../middleware/api'
+import user from '../middleware/user'
+import { initialState, RootState } from '../reducers'
 import {
   allChatsNormalized, allChatIDs, allChats, allUsers, normalizedFollowUps,
-} from './data.ts'
-import { User } from '../models/index.ts'
+} from './data'
+import { User } from '../models'
 
 export const baseUrl = 'http://localhost:8000/api/'
 const history = createMemoryHistory()
