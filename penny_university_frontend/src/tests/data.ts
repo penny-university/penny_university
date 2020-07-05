@@ -8,8 +8,8 @@ import { Schemas } from '../models/schemas'
 import { User } from '../models'
 
 const allChats = camelizeKeys(chatList)
-// @ts-ignore
 const { entities: allEntities, result: allChatIDs } = normalize(
+  // @ts-ignore
   allChats.results, Schemas.CHAT_ARRAY,
 )
 const { chats: allChatsNormalized } = allEntities

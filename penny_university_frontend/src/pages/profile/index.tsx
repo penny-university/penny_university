@@ -57,8 +57,7 @@ const mapStateToProps = (state: RootState, ownProps: ProfilePageProps) => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  // @ts-ignore
-  loadChatsList: (nextPageUrl: string, userID) => dispatch(loadChatsList(nextPageUrl, userID)),
+  loadChatsList: (nextPageUrl: string, userID: string) => dispatch(loadChatsList(nextPageUrl, userID)),
 })
 
 // @ts-ignore
