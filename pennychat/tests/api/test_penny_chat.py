@@ -40,7 +40,7 @@ def test_penny_chat_participants_list(test_chats_1):
 @pytest.mark.django_db
 def test_penny_chat__upcoming_or_popular(test_chats_2):
     client = APIClient()
-    response = client.get(f'/api/chats/?upcoming_or_popular=true')
+    response = client.get('/api/chats/?upcoming_or_popular=true')
     assert response.status_code == 200
     titles = {result['title'] for result in response.data['results']}
     assert len(titles) == 2
