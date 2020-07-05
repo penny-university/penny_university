@@ -28,17 +28,17 @@ const ChatDetail = ({
   const [followUpContent, updateFollowUpContent] = useState('')
 
   const saveNewFollowUp = () => {
-    createFollowUp(chat.id, { content: followUpContent })
-    toggleAddFollowUpMode(false)
+    if (user.valid) {
+      createFollowUp(chat.id, { content: followUpContent })
+      toggleAddFollowUpMode(false)
+    } else {
+      modalDispatch.auth({ chatId: chat.id, content: followUpContent })
+    }
   }
 
   const createOnPress = () => {
-    if (user.valid) {
-      Promise.resolve(toggleAddFollowUpMode(true))
-        .then(() => window.scrollTo(0, document.body.scrollHeight))
-    } else {
-      modalDispatch.auth()
-    }
+    Promise.resolve(toggleAddFollowUpMode(true))
+      .then(() => window.scrollTo(0, document.body.scrollHeight))
   }
 
   /*

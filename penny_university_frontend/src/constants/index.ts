@@ -11,6 +11,8 @@ const ApiRoutes = {
   updateUser: (id: string) => `users/${id}/`,
   resendEmail: 'auth/verification-email/',
   verifyEmail: 'auth/verify/',
+  requestPasswordReset: 'auth/password/reset/',
+  resetPassword: 'auth/password/reset/confirm/',
 }
 
 export const Routes = {
@@ -18,6 +20,7 @@ export const Routes = {
   Chats: '/chats',
   ChatDetail: '/chats/:id',
   Home: '/',
+  ResetPassword: '/reset-password',
   VerifyEmail: '/verify',
 }
 

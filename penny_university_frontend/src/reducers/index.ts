@@ -1,6 +1,8 @@
 import {
   combineReducers, applyMiddleware, createStore, compose, AnyAction,
 } from 'redux'
+import { connectRouter, routerMiddleware } from 'connected-react-router'
+import { createBrowserHistory } from 'history'
 
 import { normalize } from 'normalizr'
 import thunk from 'redux-thunk'
@@ -31,6 +33,7 @@ const failureTypes = [
   UserActions.LOGOUT_FAILURE,
   UserActions.RESEND_VERIFY_EMAIL_FAILURE,
   UserActions.VERIFY_EMAIL_FAILURE,
+  UserActions.RESET_PASSWORD_FAILURE,
 ]
 
 const entities = (state: EntityState = { chats: {}, followUps: {}, users: {} }, action: AnyAction): EntityState => {
@@ -60,10 +63,10 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {} }, 
   return state
 }
 
-const errorReducer = (state = { status: NaN, message: '' }, action: AnyAction): ErrorState => {
+const errorReducer = (state = { status: NaN, body: null }, action: AnyAction): ErrorState => {
   const { type, payload } = action
   if (type === ChatActions.CLEAR_ERROR_MESSAGE) {
-    return { status: NaN, message: '' }
+    return { status: NaN, body: null }
   } if (failureTypes.includes(action.type)) {
     return payload
   }
@@ -97,10 +100,13 @@ export const initialState = {
     users: {},
   },
   pagination: paginationInitialState,
-  error: { status: NaN, message: '' },
+  error: { status: NaN, body: null },
 }
 
+export const history = createBrowserHistory()
+
 export const rootReducer = combineReducers({
+  router: connectRouter(history),
   entities,
   error: errorReducer,
   pagination,
@@ -109,7 +115,7 @@ export const rootReducer = combineReducers({
 
 // @ts-ignore
 const store = createStore(rootReducer, initialState, composeEnhancers(
-  applyMiddleware(thunk, api, userMiddleware, logging),
+  applyMiddleware(routerMiddleware(history), thunk, api, userMiddleware, logging),
 ))
 
 export type RootState = ReturnType<typeof rootReducer>

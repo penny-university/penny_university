@@ -1,10 +1,12 @@
 import json
-import urllib.parse
+import urllib
+import hashlib
 from datetime import datetime, timedelta
 
 from background_task import background as original_background
 from django.conf import settings
 from pytz import timezone, utc
+from sentry_sdk import capture_exception
 
 from common.utils import get_slack_client
 from pennychat.models import PennyChatSlackInvitation, Participant
@@ -26,6 +28,7 @@ PENNY_CHAT_EDIT = 'penny_chat_edit'
 PENNY_CHAT_SHARE = 'penny_chat_share'
 PENNY_CHAT_CAN_ATTEND = 'penny_chat_can_attend'
 PENNY_CHAT_CAN_NOT_ATTEND = 'penny_chat_can_not_attend'
+GO_TO_FOLLOWUP = 'go_to_followup'
 
 PENNY_CHAT_ID = 'penny_chat_id'
 
@@ -62,7 +65,7 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
 
 @background
 def share_penny_chat_invitation(penny_chat_id):
-    """Shares penny chat invitations with people and channels in the invitee list"""
+    """Shares penny chat invitations with people and channels in the invitee list."""
     penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
     slack_client = get_slack_client()
 
@@ -73,7 +76,8 @@ def share_penny_chat_invitation(penny_chat_id):
         # until this is resolved we will not be able to remove shared messages in private channels
         try:
             slack_client.chat_delete(channel=channel, ts=ts)
-        except:  # noqa
+        except Exception as e:  # noqa
+            capture_exception(e)
             # can't do anything about it anyway... might as well continue
             pass
     invitation_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=INVITE)
@@ -98,8 +102,11 @@ def share_penny_chat_invitation(penny_chat_id):
     penny_chat_invitation.save()
 
 
-def send_penny_chat_reminders():
-    """This sends out reminders for any chat that is about to happen."""
+def send_penny_chat_reminders_and_mark_chat_as_reminded():
+    """This sends out reminders for any chat that is about to happen and also marks a chat as REMINDED.
+
+    Handled in background_tasks.py
+    """
     slack_client = get_slack_client()
 
     now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
@@ -107,12 +114,41 @@ def send_penny_chat_reminders():
         status__gte=PennyChatSlackInvitation.SHARED,
         status__lt=PennyChatSlackInvitation.REMINDED,
         date__gte=now,
-        date__lt=now + timedelta(minutes=settings.REMINDER_BEFORE_PENNY_CHAT_MINUTES),
+        date__lt=now + timedelta(minutes=settings.CHAT_REMINDER_BEFORE_PENNY_CHAT_MINUTES),
     )
     for penny_chat_invitation in imminent_chats:
         penny_chat_invitation.status = PennyChatSlackInvitation.REMINDED
         penny_chat_invitation.save()
         reminder_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=REMIND)
+        participants = penny_chat_invitation.get_participants()
+        for user in participants:
+            profile = SocialProfile.objects.get(
+                user=user,
+                slack_team_id=penny_chat_invitation.created_from_slack_team_id,
+            )
+            slack_client.chat_postMessage(
+                channel=profile.slack_id,
+                blocks=reminder_blocks,
+            )
+
+
+def send_followup_reminder_and_mark_chat_as_completed():
+    """This sends out reminders for any chat that is about to happen and also marks a chat as COMPLETED.
+
+    Handled in background_tasks.py
+    """
+    slack_client = get_slack_client()
+
+    now = datetime.now().astimezone(timezone(settings.TIME_ZONE))
+    completed_chats = PennyChatSlackInvitation.objects.filter(
+        status__gte=PennyChatSlackInvitation.SHARED,
+        status__lt=PennyChatSlackInvitation.COMPLETED,
+        date__lt=now - timedelta(minutes=settings.FOLLOWUP_REMINDER_AFTER_PENNY_CHAT_MINUTES),
+    )
+    for penny_chat_invitation in completed_chats:
+        penny_chat_invitation.status = PennyChatSlackInvitation.COMPLETED
+        penny_chat_invitation.save()
+        reminder_blocks = _followup_reminder_blocks(penny_chat_invitation)
         participants = penny_chat_invitation.get_participants()
         for user in participants:
             profile = SocialProfile.objects.get(
@@ -131,6 +167,8 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
 
     include_calendar_link = mode in {PREVIEW, INVITE, UPDATE}
     include_rsvp = mode in {INVITE, UPDATE}
+    include_participant_pictures = mode in {REMIND} and \
+        len(penny_chat_invitation.get_participants()) > 0
 
     organizer = get_or_create_social_profile_from_slack_id(
         penny_chat_invitation.organizer_slack_id,
@@ -230,7 +268,92 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
             }
         )
 
+    if include_participant_pictures:
+        participants = penny_chat_invitation.get_participants()
+
+        default = "https://avatars.slack-edge.com/2020-05-25/1144415980914_c8a4ff7c783de54f72e5_512.png"
+        size = 40
+        profiles = []
+        for participant in participants:
+            # get the (gravatar) profile image of a participant
+            email = participant.email
+            # https://en.gravatar.com/site/implement/images/python/
+            gravatar_url = "https://www.gravatar.com/avatar/" +\
+                hashlib.md5(email.lower().encode('utf-8')).hexdigest() + "?" +\
+                urllib.parse.urlencode({'d': default, 's': str(size)})
+
+            if participant.first_name != "" and participant.last_name != "":
+                name = participant.first_name + " " + participant.last_name
+            else:
+                name = participant.username
+
+            profiles.append({
+                'name': name,
+                'image_url': gravatar_url
+            })
+
+        number_votes_text = f"{len(profiles)} attending"
+
+        attendee_images = [
+            {
+                'type': 'image',
+                'image_url': profile['image_url'],
+                'alt_text': profile['name']
+            }
+            for profile in profiles
+        ]
+
+        elements = attendee_images + [
+            {
+                'type': 'plain_text',
+                'emoji': True,
+                'text': number_votes_text
+            }
+        ]
+
+        body.append(
+            {
+                'type': 'context',
+                'elements': elements
+            }
+        )
+
     return body
+
+
+def _followup_reminder_blocks(penny_chat_invitation):
+    organizer = get_or_create_social_profile_from_slack_id(
+        penny_chat_invitation.organizer_slack_id,
+        slack_client=get_slack_client(),
+    )
+    return [
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'{organizer.real_name}\'s Penny Chat *"{penny_chat_invitation.title}"* has completed. '
+                        'How did it go?\n\nIf you learned something new, then consider writing a Penny Chat '
+                        'Follow-Up and sharing what you learned with the community. This is also a great way '
+                        'to say _*thank you*_ to all those that attended the Penny Chat.'
+            }
+        },
+        {
+            'type': 'actions',
+            'elements': [
+                {
+                    'type': 'button',
+                    'text': {
+                        'type': 'plain_text',
+                        'text': ':pencil2: Write a Follow-Up',
+                        'emoji': True
+                    },
+                    'style': 'primary',
+                    'url': f'https://www.pennyuniversity.org/chats/{penny_chat_invitation.id}',
+                    'action_id': GO_TO_FOLLOWUP
+                }
+            ]
+        }
+    ]
 
 
 def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):

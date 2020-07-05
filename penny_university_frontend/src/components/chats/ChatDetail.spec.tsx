@@ -57,7 +57,7 @@ test('users can only create follow ups when authenticated', () => {
   expect(markdownButton).toBeTruthy()
 })
 
-test('users can only create follow ups when authenticated', () => {
+test('users can create follow ups when unauthenticated', () => {
   render(
     <Router history={history}>
       <ChatDetail
@@ -75,5 +75,5 @@ test('users can only create follow ups when authenticated', () => {
   fireEvent.click(addNewButton[0])
 
   const markdownButton = screen.queryByText('Save Follow Up')
-  expect(markdownButton).toBeNull()
+  expect(markdownButton).toBeTruthy()
 })

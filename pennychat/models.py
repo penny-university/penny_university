@@ -84,6 +84,7 @@ class FollowUp(models.Model):
     content = models.TextField()
     date = models.DateTimeField(default=timezone.now)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='follow_ups')
+    historical = models.BooleanField(default=False)
 
     def __repr__(self):
         return pprint_obj(self)

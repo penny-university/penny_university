@@ -2,6 +2,7 @@ from rest_framework import (
     generics,
     views,
 )
+from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
@@ -10,12 +11,14 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND,
 )
 
+from sentry_sdk import capture_exception
+
 from common.permissions import (
     method_user_is_self,
     method_is_authenticated,
 )
-from pennychat.serializers import UserChatSerializer
-from pennychat.models import Participant
+from pennychat.serializers import UserChatSerializer, FollowUpWriteSerializer
+from pennychat.models import Participant, FollowUp
 from .models import User
 from .tokens import verification_token_generator
 from .serializers import (
@@ -44,10 +47,20 @@ class RegisterUser(generics.CreateAPIView):
                 user.first_name = serializer.validated_data['first_name']
                 user.last_name = serializer.validated_data['last_name']
                 user.save()
-            except User.DoesNotExist:
+            except User.DoesNotExist as e:
+                capture_exception(e)
                 user = serializer.save()
             token = verification_token_generator.make_token(user)
             user.send_verification_email(token=token)
+            follow_up = request.data.get('follow_up', None)
+            if follow_up:
+                follow_up_serializer = FollowUpWriteSerializer(data={
+                    'penny_chat': follow_up.get('chat_id', None),
+                    'content': follow_up.get('content', None),
+                    'user': user.id
+                })
+                if follow_up_serializer.is_valid():
+                    follow_up_serializer.save()
             return Response(status=HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -63,7 +76,8 @@ class VerifyEmail(views.APIView):
                     user.save()
                     return Response(status=HTTP_204_NO_CONTENT)
                 return Response({'detail': 'Verification token is invalid.'}, status=HTTP_400_BAD_REQUEST)
-            except User.DoesNotExist:
+            except User.DoesNotExist as e:
+                capture_exception(e)
                 return Response(status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -76,8 +90,18 @@ class SendVerificationEmail(views.APIView):
                 user = User.objects.get(email=serializer.validated_data['email'])
                 token = verification_token_generator.make_token(user)
                 user.send_verification_email(token=token)
+                follow_up = request.data.get('follow_up', None)
+                if follow_up:
+                    follow_up_serializer = FollowUpWriteSerializer(data={
+                        'penny_chat': follow_up.get('chat_id', None),
+                        'content': follow_up.get('content', None),
+                        'user': user.id
+                    })
+                    if follow_up_serializer.is_valid():
+                        follow_up_serializer.save()
                 return Response(status=HTTP_204_NO_CONTENT)
-            except User.DoesNotExist:
+            except User.DoesNotExist as e:
+                capture_exception(e)
                 return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -93,7 +117,8 @@ class UserExists(views.APIView):
                 if not user.is_verified:
                     return Response({'detail': 'User email has not been verified.'}, status=HTTP_403_FORBIDDEN)
                 return Response(status=HTTP_204_NO_CONTENT)
-            except User.DoesNotExist:
+            except User.DoesNotExist as e:
+                capture_exception(e)
                 return Response({'detail': 'User with provided email does not exist.'}, status=HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 

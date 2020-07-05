@@ -1,0 +1,23 @@
+import React from 'react'
+import {
+  ModalHeader, ModalBody,
+} from 'reactstrap'
+import modalDispatch from '../dispatch.ts'
+
+type AuthPasswordResetModalProps = {
+  email: string
+}
+
+const AuthPasswordResetModal = ({ email }: AuthPasswordResetModalProps) => (
+  <>
+    <ModalHeader toggle={modalDispatch.close}>Reset Password</ModalHeader>
+    <ModalBody>
+      Password reset request sent to
+      {' '}
+      {email}
+      !
+    </ModalBody>
+  </>
+)
+
+export default AuthPasswordResetModal

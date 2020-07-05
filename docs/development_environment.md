@@ -66,6 +66,7 @@ instead.
     PENNY_DEBUG=TRUE
     SECRET_KEY=chicken_pajamas_dont_tell_no_one
     SLACK_API_KEY=xoxb-<we'll get to this soon>
+    FRONT_END_HOST=https://penny-<your_name>.herokuapp.com
     ```
 * **Check:** visit https://penny-<your_name>.herokuapp.com/ and make sure it loads
 * NOTE: The above instructions don't set up the React app on QA. To do this refer to the notes in the maintenance guide.

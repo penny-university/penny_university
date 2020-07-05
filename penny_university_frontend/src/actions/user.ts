@@ -32,6 +32,12 @@ export const Actions = {
   VERIFY_EMAIL_REQUEST: 'VERIFY_EMAIL_REQUEST',
   VERIFY_EMAIL_SUCCESS: 'VERIFY_EMAIL_SUCCESS',
   VERIFY_EMAIL_FAILURE: 'VERIFY_EMAIL_FAILURE',
+  REQUEST_PASSWORD_RESET_REQUEST: 'REQUEST_PASSWORD_RESET_REQUEST',
+  REQUEST_PASSWORD_RESET_SUCCESS: 'REQUEST_PASSWORD_RESET_SUCCESS',
+  REQUEST_PASSWORD_RESET_FAILURE: 'REQUEST_PASSWORD_RESET_FAILURE',
+  RESET_PASSWORD_REQUEST: 'RESET_PASSWORD_REQUEST',
+  RESET_PASSWORD_SUCCESS: 'RESET_PASSWORD_SUCCESS',
+  RESET_PASSWORD_FAILURE: 'RESET_PASSWORD_FAILURE',
 }
 
 export const setToken = (token: string) => ({
@@ -52,7 +58,8 @@ export const fetchUser = () => ({
   },
 })
 
-const login = (payload: { email: string, password: string }): AnyAction => ({
+const login = (payload:
+  { email: string, password: string, followUp: { chatId: number, content: string } | undefined }): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.LOGIN_REQUEST, Actions.LOGIN_SUCCESS, Actions.LOGIN_FAILURE],
@@ -62,25 +69,26 @@ const login = (payload: { email: string, password: string }): AnyAction => ({
   },
 })
 
-export const signup = (payload: { email: string, password: string }): AnyAction => ({
+export const signup = (payload:
+  { email: string, password: string, followUp: { chatId: number, content: string } | undefined, }): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.SIGNUP_REQUEST, Actions.SIGNUP_SUCCESS, Actions.SIGNUP_FAILURE],
     endpoint: ApiRoutes.register,
     method: 'POST',
     payload,
-    meta: { email: payload.email },
+    meta: { email: payload.email, followUp: !!payload.followUp },
   },
 })
 
-export const userExists = (email: string) => ({
+export const userExists = (email: string, followUp?: { chatId: number, content: string }) => ({
   type: CALL_API,
   payload: {
     types: [Actions.USER_EXISTS_REQUEST, Actions.USER_EXISTS_SUCCESS, Actions.USER_EXISTS_FAILURE],
     endpoint: ApiRoutes.exists,
     method: 'POST',
     payload: { email },
-    meta: { email },
+    meta: { email, followUp },
   },
 })
 
@@ -97,17 +105,17 @@ export const logoutRequest = () => ({
   },
 })
 
-export const resendVerifyEmail = (email: string) => ({
+export const resendVerifyEmail = (email: string, followUp: { chatId: number, content: string } | undefined) => ({
   type: CALL_API,
   payload: {
     types: [Actions.RESEND_VERIFY_EMAIL_REQUEST, Actions.RESEND_VERIFY_EMAIL_SUCCESS, Actions.RESEND_VERIFY_EMAIL_FAILURE],
     endpoint: ApiRoutes.resendEmail,
-    payload: { email },
+    payload: { email, followUp },
     method: 'POST',
   },
 })
 
-export const verifyEmail = (payload: {token: string, email: string }) => ({
+export const verifyEmail = (payload: { token: string, email: string }) => ({
   type: CALL_API,
   payload: {
     types: [Actions.VERIFY_EMAIL_REQUEST, Actions.VERIFY_EMAIL_SUCCESS, Actions.VERIFY_EMAIL_FAILURE],
@@ -117,17 +125,44 @@ export const verifyEmail = (payload: {token: string, email: string }) => ({
   },
 })
 
-// eslint-disable-next-line max-len
-export const dispatchLogin = (payload: { email: string, password: string }) => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(login(payload))
-// eslint-disable-next-line max-len
-export const dispatchLogout = () => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
+export const dispatchLogin = (payload:
+  { email: string, password: string, followUp: { chatId: number, content: string } | undefined }) => login(payload)
 
-export const updateUser = (payload: {firstName: string, lastName: string}, id: string) => ({
+export const dispatchLogout = () => async (dispatch:
+  ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
+
+export const updateUser = (payload: { firstName: string, lastName: string }, id: string) => ({
   type: CALL_API,
   payload: {
     types: [Actions.UPDATE_USER_REQUEST, Actions.UPDATE_USER_SUCCESS, Actions.UPDATE_USER_FAILURE],
     endpoint: ApiRoutes.updateUser(id),
     method: 'PATCH',
+    payload,
+  },
+})
+
+export const requestPasswordReset = (payload: {email: string}): AnyAction => ({
+  type: CALL_API,
+  payload: {
+    types: [
+      Actions.REQUEST_PASSWORD_RESET_REQUEST,
+      Actions.REQUEST_PASSWORD_RESET_SUCCESS,
+      Actions.REQUEST_PASSWORD_RESET_FAILURE,
+    ],
+    endpoint: ApiRoutes.requestPasswordReset,
+    method: 'POST',
+    payload,
+    meta: { email: payload.email },
+  },
+})
+
+export const resetPassword = (payload:
+  {uid: string, token: string, newPassword1: string, newPassword2: string}): AnyAction => ({
+  type: CALL_API,
+  payload: {
+    types: [Actions.RESET_PASSWORD_REQUEST, Actions.RESET_PASSWORD_SUCCESS, Actions.RESET_PASSWORD_FAILURE],
+    endpoint: ApiRoutes.resetPassword,
+    method: 'POST',
     payload,
   },
 })

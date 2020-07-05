@@ -14,6 +14,8 @@ import os
 import sys
 
 import dj_database_url
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
     'django_filters',
+    'common',
     'bot',
     'api',
     'home',
@@ -148,10 +151,22 @@ LOGGING = {
 
 AUTH_USER_MODEL = 'users.User'
 
+############################################
+# Put typical django stuff above
+#
+# Put infrastructural stuff specific to Penny U below this.
+############################################
+
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_DSN'),
+    integrations=[DjangoIntegration()],
+    send_default_pii=True,  # TODO consider NOT sending PII (e.g. user ids) once we mature the code base
+)
 
 ############################################
-# Put basic django stove above
-# Put stuff more specific to our app below
+# Put infrastructural stuff specific to Penny U above this.
+#
+# Put product specific configuration below this.
 ############################################
 
 # Slack
@@ -175,7 +190,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-
 # Twilio SendGrid
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
@@ -186,9 +200,10 @@ EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY')
 
 # Override Auth Serializers
 REST_AUTH_SERIALIZERS = {
-    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer'
+    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'users.serializers.CustomPasswordResetSerializer',
 }
 
-
 # Background Tasks
-REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # to make sure we remind them MORE than an hour in advance
+CHAT_REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # extra 15 minutes to make sure we remind them MORE than an hour in advance
+FOLLOWUP_REMINDER_AFTER_PENNY_CHAT_MINUTES = 30

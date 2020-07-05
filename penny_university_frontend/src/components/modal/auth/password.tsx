@@ -5,18 +5,22 @@ import { connect } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { AnyAction } from 'redux'
 import {
-  Form, ModalHeader, ModalBody, Button,
+  Form, ModalHeader, ModalBody, ModalFooter, Button,
 } from 'reactstrap'
 import modalDispatch from '../dispatch.ts'
-import { dispatchLogin } from '../../../actions/user.ts'
+import { dispatchLogin, requestPasswordReset } from '../../../actions/user.ts'
 import { Input } from '../../fields/index.ts'
 
 type AuthPasswordModalProps = {
   email: string,
-  login: (payload: { email: string, password: string }) => void,
+  followUp?: { chatId: number, content: string } | undefined,
+  login: (payload: {email: string, password: string, followUp: { chatId: number, content: string } | undefined }) => void,
+  requestPasswordReset: (payload: {email: string}) => void,
 }
 
-const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
+const AuthPasswordModal = ({
+  email, login, followUp, requestPasswordReset,
+}: AuthPasswordModalProps) => {
   const [password, setPassword] = useState('')
   return (
     <>
@@ -24,7 +28,7 @@ const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
       <ModalBody>
         <Form onSubmit={(e) => {
           e.preventDefault()
-          login({ email, password })
+          login({ email, password, followUp })
         }}
         >
           <Input
@@ -42,15 +46,26 @@ const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
           </div>
         </Form>
       </ModalBody>
+      <ModalFooter>
+        <Button color="link" onClick={() => { requestPasswordReset({ email }) }}>Forgot password?</Button>
+      </ModalFooter>
     </>
   )
+}
+
+AuthPasswordModal.defaultProps = {
+  followUp: undefined,
 }
 
 const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  login: (payload: { email: string, password: string }) => dispatch(dispatchLogin(payload)),
+  login:
+  (payload:
+    {email: string, password: string, followUp:
+      { chatId: number, content: string } | undefined }) => dispatch(dispatchLogin(payload)),
+  requestPasswordReset: (payload: {email: string}) => dispatch(requestPasswordReset(payload)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthPasswordModal)

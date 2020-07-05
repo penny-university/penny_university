@@ -42,7 +42,7 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
           </Dropdown>
         )
           : (
-            <Button onClick={modalDispatch.auth}>Login</Button>
+            <Button onClick={() => modalDispatch.auth()}>Login</Button>
           )}
       </Container>
     </Navbar>

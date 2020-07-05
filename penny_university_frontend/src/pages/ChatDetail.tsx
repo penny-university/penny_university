@@ -34,10 +34,11 @@ type ChatDetailPageProps = {
 const ChatDetailPage = ({
   id, chat, followUpsList, loadChatDetail, loadFollowUps, createFollowUp, updateFollowUp, user, getUserByID,
 }: ChatDetailPageProps) => {
+  const userID = user?.id
   useEffect(() => {
     loadChatDetail(id)
     loadFollowUps(id)
-  }, [id, loadChatDetail, loadFollowUps])
+  }, [id, loadChatDetail, loadFollowUps, userIDp])
 
   return (
     <ChatDetail

@@ -76,10 +76,26 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
           type: successType,
         })
       },
-      (error: { message: string, status: number }) => next({
-        type: failureType,
-        payload: { message: error.message || 'An error occurred.', status: error.status, meta },
-      }),
+      async (error: any) => {
+        let errorBody = null;
+        try {
+          await error.json().then((json: any) => {
+            errorBody = camelizeKeys(json)
+          })
+          return next({
+            type: failureType,
+            payload: { body: errorBody || 'An error occurred.', status: error.status, meta },
+          })
+        } catch (e) {
+          if (e instanceof TypeError) {
+            return next({
+              type: failureType,
+              payload: { body: error.message || 'An error occurred.', status: error.status, meta },
+            })
+          }
+          throw e;
+        }
+      },
     )
   }
   return next(action)
