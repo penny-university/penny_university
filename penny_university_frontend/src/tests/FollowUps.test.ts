@@ -38,7 +38,7 @@ describe('follow up actions', () => {
       },
       {
         type: 'FOLLOW_UPS_FAILURE',
-        payload: { message: 'It failed!', status: undefined, meta: { chatID: '1' } },
+        payload: { body: 'It failed!', status: undefined, meta: { chatID: '1' } },
       },
     ]
     // @ts-ignore

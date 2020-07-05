@@ -42,7 +42,7 @@ describe('chat actions', () => {
       },
       {
         type: 'CHATS_LIST_FAILURE',
-        payload: { message: 'It failed!', status: undefined, meta: { userID: undefined }, },
+        payload: { body: 'It failed!', status: undefined, meta: { userID: undefined }, },
       },
     ]
     // @ts-ignore
@@ -79,7 +79,7 @@ describe('chat actions', () => {
       },
       {
         type: 'CHAT_DETAIL_FAILURE',
-        payload: { message: 'It failed!', status: undefined },
+        payload: { body: 'It failed!', status: undefined },
       },
     ]
     // @ts-ignore

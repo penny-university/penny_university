@@ -62,10 +62,10 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {}, },
   return state
 }
 
-const errorReducer = (state = { status: NaN, message: '' }, action: AnyAction): ErrorState => {
+const errorReducer = (state = { status: NaN, body: null }, action: AnyAction): ErrorState => {
   const { type, payload } = action
   if (type === ChatActions.CLEAR_ERROR_MESSAGE) {
-    return { status: NaN, message: '' }
+    return { status: NaN, body: null }
   } else if (failureTypes.includes(action.type)) {
     return payload
   }
@@ -101,7 +101,7 @@ export const initialState = {
     users: {},
   },
   pagination: paginationInitialState,
-  error: { status: NaN, message: '' },
+  error: { status: NaN, body: null },
 }
 
 export const history = createBrowserHistory()

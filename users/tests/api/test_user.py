@@ -14,7 +14,7 @@ def test_register_user(mocker):
     client = APIClient()
     data = {
         'email': 'test@profile.com',
-        'password': 'password',
+        'password': 'SuperStrong1!',
         'first_name': 'test',
         'last_name': 'profile',
     }
@@ -33,7 +33,7 @@ def test_register_user_with_follow_up(mocker, test_chat_2):
     content = 'follow up text'
     data = {
         'email': 'test@profile.com',
-        'password': 'password',
+        'password': 'SuperStrong1!',
         'first_name': 'test',
         'last_name': 'profile',
         'follow_up': {
@@ -55,7 +55,7 @@ def test_register_user__exists_with_unusable_password(test_user, mocker):
     client = APIClient()
     data = {
         'email': 'test@profile.com',
-        'password': 'password',
+        'password': 'SuperStrong1!',
         'first_name': 'existing',
         'last_name': 'person',
     }

@@ -35,7 +35,7 @@ const VerifyPage = ({ verify, location, error }: VerifyPageProps) => {
 
 const mapStateToProps = (state: RootState) => {
   const { error } = state
-  return { error: error?.message }
+  return { error: error?.body }
 }
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
