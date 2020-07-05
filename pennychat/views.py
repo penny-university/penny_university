@@ -8,29 +8,31 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
-from pytz import timezone
 
 from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
 from common.permissions import IsOwner, method_is_authenticated, perform_is_authenticated
 from django_filters import rest_framework as filters
-import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
 
 class PennyChatFilter(filters.FilterSet):
-    upcoming_or_popular = filters.Filter('filter_upcoming_or_popular')
+    upcoming_or_popular = filters.Filter(method='filter_upcoming_or_popular')
 
-    def filter_upcoming_or_popular(self, qs, value):
-        return qs.filter(
-            Q(follow_ups__isnull=False) | Q(date__gt=datetime.now().astimezone(timezone(settings.TIME_ZONE)))
-        )
+    def filter_upcoming_or_popular(self, qs, name, value):
+        if value == 'true':
+            return qs.filter(
+                Q(follow_ups__isnull=False) | Q(date__gt=timezone.now())
+            )
+        else:
+            raise RuntimeError(f'this only works with value="true", found "{value}"')
 
     class Meta:
         model = PennyChat
-        fields = ['participants__user_id']
+        fields = ['participants__user_id', 'upcoming_or_popular']
 
 
 class PennyChatViewSet(viewsets.ModelViewSet):
@@ -43,7 +45,8 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     filterset_class = PennyChatFilter
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

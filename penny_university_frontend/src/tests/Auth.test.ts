@@ -32,7 +32,7 @@ describe('auth flow', () => {
       body: { user: {} },
       headers: { 'content-type': 'application/json' },
     })
-    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular=true`, {
       body: { results: chats },
       headers: { 'content-type': 'application/json' },
     })
