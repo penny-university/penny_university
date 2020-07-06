@@ -33,7 +33,7 @@ const ChatCard = ({ chat }: ChatCardProps) =>
         <ParticipantList className="mr-2" participants={chat.participants} chatID={chat.id} />
       -
       <Link className="ml-2" to={`/chats/${chat.id}`}>
-          Follow Ups
+          {chat.followUpsCount} Follow Ups
       </Link>
       </div>
     </Card>
