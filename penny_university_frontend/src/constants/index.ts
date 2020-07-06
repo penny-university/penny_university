@@ -6,7 +6,7 @@ const ApiRoutes = {
   register: 'auth/register/',
   logout: 'auth/logout/',
   exists: 'auth/exists/',
-  chats:  'chats/',
+  chats:  'chats/?upcoming_or_popular=true',
   chatDetail: (id: number) => `chats/${id}/`,
   userChats: (userID: string) => `chats/?participants__user_id=${userID}`,
   updateUser: (id: string) => `users/${id}/`,

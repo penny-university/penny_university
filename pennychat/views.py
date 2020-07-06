@@ -1,5 +1,8 @@
+from datetime import datetime
 import logging
-from django.db.models import Q
+
+from django.conf import settings
+from django.db.models import Q, Count
 from rest_framework import viewsets, mixins, generics
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -9,22 +12,41 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from .models import PennyChat, FollowUp, Participant
 from .serializers import PennyChatSerializer, FollowUpSerializer, FollowUpWriteSerializer
 from common.permissions import IsOwner, method_is_authenticated, perform_is_authenticated
+from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
+
+
+class PennyChatFilter(filters.FilterSet):
+    upcoming_or_popular = filters.Filter(method='filter_upcoming_or_popular')
+
+    def filter_upcoming_or_popular(self, qs, name, value):
+        if value == 'true':
+            return qs.filter(
+                Q(follow_ups__isnull=False) | Q(date__gt=timezone.now())
+            )
+        else:
+            raise RuntimeError(f'this only works with value="true", found "{value}"')
+
+    class Meta:
+        model = PennyChat
+        fields = ['participants__user_id', 'upcoming_or_popular']
 
 
 class PennyChatViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows penny chats to be viewed or edited.
     """
-    queryset = PennyChat.objects.all().order_by('-date')
+    queryset = PennyChat.objects.annotate(follow_ups_count=Count('follow_ups')).order_by('-date')
     serializer_class = PennyChatSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['participants__user_id']
+    filterset_class = PennyChatFilter
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.get_queryset()
+        queryset = self.filter_queryset(queryset)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
