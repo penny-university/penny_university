@@ -60,7 +60,7 @@ def command(request):
     command = event['text'].split(' ', 1)[0]
     if command == 'chat':
         PennyChatBotModule.create_penny_chat(slack_client, event)
-    elif command == 'help':
+    else:
         blocks = [
             {
                 "type": "section",
