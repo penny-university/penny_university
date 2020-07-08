@@ -28,7 +28,16 @@ const AuthEmailModal = ({ userExists, followUp }: AuthEmailModalProps) => {
           return false
         }}
         >
-          <Input label="Email" type="email" name="email" id="email" placeholder="" required onChange={setEmail} value={email} />
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            id="email"
+            placeholder=""
+            required
+            onChange={setEmail}
+            value={email}
+          />
           <div className="text-center">
             <Button>
               Let&rsquo;s Go
@@ -44,11 +53,11 @@ AuthEmailModal.defaultProps = {
   followUp: undefined,
 }
 
-
 const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  userExists: (email: string, followUp: { chatId: number, content: string } | undefined) => dispatch(userExists(email, followUp)),
+  userExists:
+    (email: string, followUp: { chatId: number, content: string } | undefined) => dispatch(userExists(email, followUp)),
 })
 export default connect(mapStateToProps, mapDispatchToProps)(AuthEmailModal)

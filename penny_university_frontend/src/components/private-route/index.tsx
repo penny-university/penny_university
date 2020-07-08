@@ -20,12 +20,14 @@ type PrivateRouteProps = StateToPropsType & {
 }
 
 const PrivateRoute = (props: PrivateRouteProps) => {
-  const { component, user, path, exact } = props
+  const {
+    component, user, path, exact,
+  } = props
   const token = CookieHelper.getToken()
   if (user.valid || token) {
-    return <Route exact={ exact } path = { path } component={component} />
-   }
-  return <Redirect to={ Routes.Home } />
+    return <Route exact={exact} path={path} component={component} />
+  }
+  return <Redirect to={Routes.Home} />
 }
 
 const mapStateToProps = (state: RootState): StateToPropsType => ({

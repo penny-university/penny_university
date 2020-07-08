@@ -1,4 +1,4 @@
-import{ RootState } from '../reducers'
+import { RootState } from '../reducers'
 import * as selectEntities from './entities'
 import Chat from '../models/chat'
 
@@ -24,7 +24,7 @@ const getFollowupsForChatID = (state: RootState, id: number) => {
     const followUp = followUps[id]
     return followUp
   })
-  return followUpsList 
+  return followUpsList
 }
 
 export {

@@ -1,10 +1,11 @@
 import fetchMock from 'fetch-mock'
 import { loadChatDetail, loadChatsList } from '../actions/chat'
-import {rootReducer as  reducer} from '../reducers'
+import { rootReducer as reducer } from '../reducers'
 import { makeMockStore, initialState, baseUrl } from './config'
-import { chats, chatsNext, normalizedChats, users } from './data'
+import {
+  chats, chatsNext, normalizedChats, users,
+} from './data'
 import ApiRoutes from '../constants'
-
 
 describe('chat actions', () => {
   afterEach(() => {
@@ -42,7 +43,7 @@ describe('chat actions', () => {
       },
       {
         type: 'CHATS_LIST_FAILURE',
-        payload: { body: 'It failed!', status: undefined, meta: { userID: undefined }, },
+        payload: { body: 'It failed!', status: undefined, meta: { userID: undefined } },
       },
     ]
     // @ts-ignore
@@ -75,7 +76,7 @@ describe('chat actions', () => {
     const expectedActions = [
       {
         type: 'CHAT_DETAIL_REQUEST',
-        payload: { meta: undefined }
+        payload: { meta: undefined },
       },
       {
         type: 'CHAT_DETAIL_FAILURE',

@@ -9,16 +9,16 @@ interface DropdownProps {
   testID: string,
 }
 
-const Dropdown = ({ header, options, id, testID }: DropdownProps) => {
-  return (
-    <>
-      <MoreOptions id={id} testID={testID} />
-      <UncontrolledPopover trigger="legacy" placement="bottom" target={id}>
-        <PopoverHeader>{header}</PopoverHeader>
-        {options}
-      </UncontrolledPopover>
-    </>
-  )
-}
+const Dropdown = ({
+  header, options, id, testID,
+}: DropdownProps) => (
+  <>
+    <MoreOptions id={id} testID={testID} />
+    <UncontrolledPopover trigger="legacy" placement="bottom" target={id}>
+      <PopoverHeader>{header}</PopoverHeader>
+      {options}
+    </UncontrolledPopover>
+  </>
+)
 
 export default Dropdown

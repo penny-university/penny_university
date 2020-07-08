@@ -13,7 +13,9 @@ type ParticipantListProps = {
   getUserByID: (id: number) => User,
 }
 
-const ParticipantList = ({ className, participants, chatID, getUserByID }: ParticipantListProps) => {
+const ParticipantList = ({
+  className, participants, chatID, getUserByID,
+}: ParticipantListProps) => {
   const [popoverOpen, setPopoverOpen] = useState(false)
 
   const openPopover = () => setPopoverOpen(true)

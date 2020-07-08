@@ -8,9 +8,10 @@ import { Router } from 'react-router-dom'
 import api from '../middleware/api'
 import user from '../middleware/user'
 import { initialState, RootState } from '../reducers'
-import { allChatsNormalized, allChatIDs, allChats, allUsers, normalizedFollowUps } from './data'
+import {
+  allChatsNormalized, allChatIDs, allChats, allUsers, normalizedFollowUps,
+} from './data'
 import { User } from '../models'
-import { UserType } from '../models/user'
 
 export const baseUrl = 'http://localhost:8000/api/'
 const history = createMemoryHistory()
@@ -22,15 +23,14 @@ export const makeMockStore = (state = {}) => mockStore({
   ...state,
 })
 
-export const MockAppState = ({ store, children }: { store: RootState, children: React.Component }) => {
-  return (
-    <Provider store={makeMockStore(store)} >
+export const MockAppState = ({ store, children }:
+  { store: RootState, children: React.Component }) => (
+    <Provider store={makeMockStore(store)}>
       <Router history={history}>
         {children}
       </Router>
     </Provider>
-  )
-}
+)
 
 const unauthenticatedState = {
   user: {
@@ -64,15 +64,17 @@ const unauthenticatedState = {
         previous: allChats.previous,
         // @ts-ignore
         count: allChats.count,
-        ids: [1,3],
-      }
+        ids: [1, 3],
+      },
     },
     followUpsByChat: {},
   },
   error: { status: NaN, message: '' },
 }
 
-const authenticatedState = {...unauthenticatedState, user: { token: null, user: new User(allUsers ? allUsers['1'] : undefined)}}
+const authenticatedState = {
+  ...unauthenticatedState, user: { token: null, user: new User(allUsers ? allUsers['1'] : undefined) },
+}
 
 export {
   initialState,

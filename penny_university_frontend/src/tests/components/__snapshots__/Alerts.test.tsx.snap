@@ -34,7 +34,7 @@ exports[`error alert component renders correctly 1`] = `
   >
     <p
       className="mb-0"
-      key="ErrorMessage-0"
+      key="ErrorMessage-error"
     >
       error
     </p>

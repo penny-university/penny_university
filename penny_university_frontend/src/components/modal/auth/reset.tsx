@@ -8,16 +8,16 @@ type AuthPasswordResetModalProps = {
   email: string
 }
 
-const AuthPasswordResetModal = ({ email }: AuthPasswordResetModalProps) => {
-  return (
-    <>
-      <ModalHeader toggle={modalDispatch.close}>Reset Password</ModalHeader>
-      <ModalBody>
-        Password reset request sent to {email}!
-      </ModalBody>
-    </>
-  )
-}
-
+const AuthPasswordResetModal = ({ email }: AuthPasswordResetModalProps) => (
+  <>
+    <ModalHeader toggle={modalDispatch.close}>Reset Password</ModalHeader>
+    <ModalBody>
+      Password reset request sent to
+      {' '}
+      {email}
+      !
+    </ModalBody>
+  </>
+)
 
 export default AuthPasswordResetModal
