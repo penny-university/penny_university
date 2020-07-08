@@ -22,7 +22,7 @@ interface ChatDetailProps {
 }
 
 const ChatDetail = ({
-  chat, followUps, createFollowUp, updateFollowUp, user, getUserByID
+  chat, followUps, createFollowUp, updateFollowUp, user, getUserByID,
 }: ChatDetailProps) => {
   const [addFollowUpMode, toggleAddFollowUpMode] = useState(false)
   const [followUpContent, updateFollowUpContent] = useState('')

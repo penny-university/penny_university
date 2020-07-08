@@ -1,15 +1,15 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Alert } from 'reactstrap'
 import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { ChatActions } from '../../actions'
-import{ RootState } from '../../reducers'
+import { RootState } from '../../reducers'
 
 require('./style.scss')
 
 type AlertProps = {
-  error?: object,
+  error: Object | undefined,
   dismiss: () => void,
 }
 
@@ -20,16 +20,15 @@ export const ErrorAlert = ({ error, dismiss }: AlertProps) => {
 
   return error ? (
     <div className="alert-container">
-      <Alert color="danger" isOpen={true} toggle={onDismiss}>
-        {Object.values(error).flat().map((v, i) => <p key={`ErrorMessage-${i}`} className="mb-0">{v}</p>)}
+      <Alert color="danger" isOpen toggle={onDismiss}>
+        {Object.values(error).flat().map((v, i) => <p key={`ErrorMessage-${v}`} className="mb-0">{v}</p>)}
       </Alert>
     </div>
   ) : null
 }
 
-
 const mapStateToProps = (state: RootState) => ({
-  error: state?.error?.body
+  error: state?.error?.body,
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({

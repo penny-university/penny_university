@@ -17,26 +17,26 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
         <NavbarBrand href="/">Penny University</NavbarBrand>
         {user.valid ? (
 
-        <Dropdown isOpen={dropdownOpen} toggle={toggle}>
-          <DropdownToggle caret>
-            {`Hi, ${user.displayName}!`}
-          </DropdownToggle>
-          <DropdownMenu>
-            <div>
-              <Link
-                to={Routes.Profile.replace(':id', user.id.toString())}
-                className="btn btn-link"
-              >
-                Profile
-              </Link>
-            </div>
-            <div>
-              <Button
-                onClick={logout}
-                  color={'link'}
+          <Dropdown isOpen={dropdownOpen} toggle={toggle}>
+            <DropdownToggle caret>
+              {`Hi, ${user.displayName}!`}
+            </DropdownToggle>
+            <DropdownMenu>
+              <div>
+                <Link
+                  to={Routes.Profile.replace(':id', user.id.toString())}
+                  className="btn btn-link"
+                >
+                  Profile
+                </Link>
+              </div>
+              <div>
+                <Button
+                  onClick={logout}
+                  color="link"
                 >
                   Logout
-          </Button>
+                </Button>
               </div>
             </DropdownMenu>
           </Dropdown>
@@ -45,7 +45,7 @@ const Navigation = ({ user, logout }: { user: User, logout: () => void }) => {
             <Button onClick={() => modalDispatch.auth()}>Login</Button>
           )}
       </Container>
-    </Navbar >
+    </Navbar>
   )
 }
 

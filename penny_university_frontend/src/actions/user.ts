@@ -1,6 +1,6 @@
-import { CALL_API, APIPayload } from '../middleware/api'
 import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
+import { CALL_API, APIPayload } from '../middleware/api'
 import ApiRoutes from '../constants'
 
 export const Actions = {
@@ -40,7 +40,6 @@ export const Actions = {
   RESET_PASSWORD_FAILURE: 'RESET_PASSWORD_FAILURE',
 }
 
-
 export const setToken = (token: string) => ({
   type: Actions.SET_TOKEN,
   payload: token,
@@ -59,7 +58,8 @@ export const fetchUser = () => ({
   },
 })
 
-const login = (payload: { email: string, password: string, followUp: { chatId: number, content: string } | undefined }): AnyAction => ({
+const login = (payload:
+  { email: string, password: string, followUp: { chatId: number, content: string } | undefined }): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.LOGIN_REQUEST, Actions.LOGIN_SUCCESS, Actions.LOGIN_FAILURE],
@@ -69,7 +69,8 @@ const login = (payload: { email: string, password: string, followUp: { chatId: n
   },
 })
 
-export const signup = (payload: { email: string, password: string, followUp: { chatId: number, content: string } | undefined, }): AnyAction => ({
+export const signup = (payload:
+  { email: string, password: string, followUp: { chatId: number, content: string } | undefined, }): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.SIGNUP_REQUEST, Actions.SIGNUP_SUCCESS, Actions.SIGNUP_FAILURE],
@@ -79,7 +80,6 @@ export const signup = (payload: { email: string, password: string, followUp: { c
     meta: { email: payload.email, followUp: !!payload.followUp },
   },
 })
-
 
 export const userExists = (email: string, followUp?: { chatId: number, content: string }) => ({
   type: CALL_API,
@@ -125,9 +125,11 @@ export const verifyEmail = (payload: { token: string, email: string }) => ({
   },
 })
 
-export const dispatchLogin = (payload: { email: string, password: string, followUp: { chatId: number, content: string } | undefined }) => login(payload)
+export const dispatchLogin = (payload:
+  { email: string, password: string, followUp: { chatId: number, content: string } | undefined }) => login(payload)
 
-export const dispatchLogout = () => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
+export const dispatchLogout = () => async (dispatch:
+  ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
 
 export const updateUser = (payload: { firstName: string, lastName: string }, id: string) => ({
   type: CALL_API,
@@ -139,24 +141,28 @@ export const updateUser = (payload: { firstName: string, lastName: string }, id:
   },
 })
 
-
 export const requestPasswordReset = (payload: {email: string}): AnyAction => ({
   type: CALL_API,
   payload: {
-    types: [Actions.REQUEST_PASSWORD_RESET_REQUEST, Actions.REQUEST_PASSWORD_RESET_SUCCESS, Actions.REQUEST_PASSWORD_RESET_FAILURE],
+    types: [
+      Actions.REQUEST_PASSWORD_RESET_REQUEST,
+      Actions.REQUEST_PASSWORD_RESET_SUCCESS,
+      Actions.REQUEST_PASSWORD_RESET_FAILURE,
+    ],
     endpoint: ApiRoutes.requestPasswordReset,
     method: 'POST',
     payload,
     meta: { email: payload.email },
-  }
+  },
 })
 
-export const resetPassword = (payload: {uid: string, token: string, newPassword1: string, newPassword2: string}): AnyAction => ({
+export const resetPassword = (payload:
+  {uid: string, token: string, newPassword1: string, newPassword2: string}): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.RESET_PASSWORD_REQUEST, Actions.RESET_PASSWORD_SUCCESS, Actions.RESET_PASSWORD_FAILURE],
     endpoint: ApiRoutes.resetPassword,
     method: 'POST',
     payload,
-  }
+  },
 })

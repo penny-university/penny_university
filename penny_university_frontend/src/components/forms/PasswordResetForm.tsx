@@ -1,11 +1,11 @@
-import React, {useState} from 'react'
-import {Input} from '../fields';
-import {Button, Form} from 'reactstrap';
+import React, { useState } from 'react'
+import { Button, Form } from 'reactstrap';
+import { Input } from '../fields';
 
 type PasswordResetFormProps = {
   uid: string,
   token: string,
-  resetPassword: (payload: {uid: string, token: string, newPassword1: string, newPassword2: string}) => void,
+  resetPassword: (payload: { uid: string, token: string, newPassword1: string, newPassword2: string }) => void,
 }
 
 const PasswordResetForm = ({ uid, token, resetPassword }: PasswordResetFormProps) => {
@@ -14,16 +14,36 @@ const PasswordResetForm = ({ uid, token, resetPassword }: PasswordResetFormProps
 
   return (
     <Form onSubmit={(e) => {
-          e.preventDefault()
-          resetPassword({uid, token, newPassword1, newPassword2})
-        }}
-        >
-          <Input label="New Password" type="password" name="password" id="password" placeholder="" onChange={setNewPassword1} value={newPassword1} required />
-          <Input label="Confirm Password" type="password" name="confirmPassword" id="confirmPassword" placeholder="" onChange={setNewPassword2} value={newPassword2} required />
-          <div className="text-center">
-            <Button>Reset Password</Button>
-          </div>
-        </Form>
+      e.preventDefault()
+      resetPassword({
+        uid, token, newPassword1, newPassword2,
+      })
+    }}
+    >
+      <Input
+        label="New Password"
+        type="password"
+        name="password"
+        id="password"
+        placeholder=""
+        onChange={setNewPassword1}
+        value={newPassword1}
+        required
+      />
+      <Input
+        label="Confirm Password"
+        type="password"
+        name="confirmPassword"
+        id="confirmPassword"
+        placeholder=""
+        onChange={setNewPassword2}
+        value={newPassword2}
+        required
+      />
+      <div className="text-center">
+        <Button>Reset Password</Button>
+      </div>
+    </Form>
   )
 }
 

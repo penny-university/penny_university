@@ -6,8 +6,8 @@ import { AnyAction } from 'redux'
 import { connect } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { Container } from 'reactstrap'
-import { Modal } from './components'
-import { Navigation, Alert } from './components'
+import { Modal, Navigation, Alert } from './components'
+
 import ChatsPage from './pages/Chats'
 import ChatDetailPage from './pages/ChatDetail'
 import { ProfilePage } from './pages'
@@ -17,7 +17,7 @@ import * as selectors from './selectors'
 import { RootState } from './reducers'
 import { Routes } from './constants'
 import { User } from './models'
-import PasswordResetPage from "./pages/PasswordReset";
+import PasswordResetPage from './pages/PasswordReset';
 
 type StateProps = {
   user: User,
@@ -64,6 +64,5 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>): Dispatc
   dispatchBootstrap: () => dispatch(bootstrap()),
   dispatchLogout: () => dispatch(logout()),
 })
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

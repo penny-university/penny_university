@@ -75,3 +75,7 @@ jobs:
       working-directory: ./penny_university_frontend
       run: |
         CI=true npm test
+    - name: Eslint
+      working-directory: ./penny_university_frontend
+      run: |
+        npm run lint

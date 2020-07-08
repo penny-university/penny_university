@@ -35,8 +35,26 @@ const SettingsModal = ({ update, user }: SettingsModalProps) => {
           modalDispatch.close()
         }}
         >
-          <Input label="First Name" type="text" name="firstName" id="firstName" placeholder="" onChange={setFirstName} value={firstName} required />
-          <Input label="Last Name" type="text" name="lastName" id="lastName" placeholder="" onChange={setLastName} value={lastName} required />
+          <Input
+            label="First Name"
+            type="text"
+            name="firstName"
+            id="firstName"
+            placeholder=""
+            onChange={setFirstName}
+            value={firstName}
+            required
+          />
+          <Input
+            label="Last Name"
+            type="text"
+            name="lastName"
+            id="lastName"
+            placeholder=""
+            onChange={setLastName}
+            value={lastName}
+            required
+          />
           <div className="text-center">
             <Button>
               Update
@@ -47,7 +65,6 @@ const SettingsModal = ({ update, user }: SettingsModalProps) => {
     </>
   )
 }
-
 
 const mapStateToProps = () => ({
 })

@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import ReactMde from 'react-mde'
-import { Content } from '../content'
+import { Content } from '.'
 import 'react-mde/lib/styles/css/react-mde-editor.css'
 import 'react-mde/lib/styles/css/react-mde-toolbar.css'
 import 'react-mde/lib/styles/css/react-mde.css'
 import 'react-mde/lib/styles/css/react-mde-suggestions.css'
 
 require('./style.scss')
-
 
 type EditorTabs = 'write' | 'preview'
 
@@ -24,7 +23,7 @@ const EditContent = ({ content, onChange }: EditContentType) => {
       onChange={onChange}
       selectedTab={selectedTab}
       onTabChange={setSelectedTab}
-      generateMarkdownPreview={(markdown) => Promise.resolve(<Content content={markdown}/>)}
+      generateMarkdownPreview={(markdown) => Promise.resolve(<Content content={markdown} />)}
     />
   )
 }

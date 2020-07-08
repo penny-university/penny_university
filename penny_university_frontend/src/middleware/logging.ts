@@ -1,6 +1,8 @@
+import {
+  MiddlewareAPI, Dispatch, Middleware, AnyAction,
+} from 'redux'
 
-import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
-
+// eslint-disable-next-line max-len
 const logging: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyAction) => void) => (action: AnyAction) => {
   const before = store.getState()
   const result = next(action)
