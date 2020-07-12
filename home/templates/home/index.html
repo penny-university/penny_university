@@ -23,6 +23,9 @@
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
             <div class="d-flex flex-column flex-md-row align-items-center">
+                <a href="#faq" class="mr-2 mb-2 mb-md-0 btn btn-outline-dark" role="button" aria-pressed="true">
+                    FAQs <i class="fa fa-question"></i>
+                </a>
                 <a href="/chats" class="mr-2 mb-2 mb-md-0 btn btn-outline-dark" role="button" aria-pressed="true">
                     Chats <i class="fa fa-comments"></i>
                 </a>
@@ -59,7 +62,7 @@
     </div>
 </div>
 
-<div class="jumbotron jumbotron-fluid bg-dark mb-0">
+<div class="jumbotron jumbotron-fluid bg-dark text-white mb-0">
     <div class="container">
         <div class="row">
             <div class="col-md-2"></div>
@@ -81,28 +84,12 @@
     </div>
 </div>
 
-<div class="jumbotron jumbotron-fluid mb-0 bg-white">
+<div class="jumbotron jumbotron-fluid mb-0 bg-white" id="faq">
     <div class="container">
         <div class="row">
             <div class="col-md-8">
-                <h2>Our Tradition</h2>
-                <p><strong>350 years of history.</strong></p>
-                <p>
-                    The name "Penny University" is a reference to the early coffeehouses in Oxford, England.
-                    These coffeehouses held an important association with the European Age of Enlightenment.
-                    For the price of a penny, scholars and laypeople alike would be given admittance to the
-                    coffeehouse, enjoy an endless supply of coffee, and more importantly enjoy learning through
-                    conversations with their peers. Thus these coffeehouses came to be called "Penny Universities".
-                </p>
-                <p>
-                    Our new group, Penny University, serves as a modern take on this old tradition by connecting
-                    those who desire to learn with those who are willing to share what they know.
-                    This can certainly be at a coffeehouse, but anywhere else as well, including
-                    just a quick Google Hangout. There are no mentors or mentees, leaders or followers.
-                </p>
-                <p>
-                    <strong>We are all peers and we are here to both learn and to teach.</strong>
-                </p>
+                <h2>Frequently Asked Questions</h2>
+                {% include 'home/faq.html' %}
             </div>
             <div class="col-md-4 d-flex justify-content-center align-items-center">
                 <img src="{% static 'home/images/PennyUniversityLogoCircle.png' %}" class="img-fluid" alt="Penny">
@@ -111,7 +98,7 @@
     </div>
 </div>
 
-<div class="jumbotron jumbotron-fluid bg-dark mb-0">
+<div class="jumbotron jumbotron-fluid bg-dark text-white mb-0">
     <div class="container">
         <div class="row">
             <div class="col-md-4 d-flex justify-content-center align-items-center">
