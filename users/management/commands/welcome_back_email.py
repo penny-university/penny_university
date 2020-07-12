@@ -43,8 +43,9 @@ class Command(BaseCommand):
         present_emails = set(user.email for user in users)
         missing_emails = list(email for email in other_emails if email not in present_emails)
 
-        for user in list(users) + missing_emails:
+        for i, user in enumerate(list(users) + missing_emails):
             send_welcome_back_email(user, live_run=options['live_run'], test_email=options['test_email'])
+            print(f"sent to user #{i}: {user}")
 
 
 def send_welcome_back_email(user, live_run=False, test_email=None):
@@ -59,6 +60,7 @@ def send_welcome_back_email(user, live_run=False, test_email=None):
     text_content = render_to_string('users/welcome_back_email.txt', context)
     html_content = render_to_string('users/welcome_back_email.html', context)
     email = user.email if live_run else test_email
+
     if email:
         send_mail(
             subject='Greeting from Penny University | Take a look at what we\'ve been up to!',
@@ -67,4 +69,3 @@ def send_welcome_back_email(user, live_run=False, test_email=None):
             recipient_list=[email],
             html_message=html_content,
         )
-    print(f"sent to {user.email}")
