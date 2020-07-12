@@ -1,40 +1,35 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Alert } from 'reactstrap'
 import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { ChatActions } from '../../actions'
-import{ RootState } from '../../reducers'
+import { RootState } from '../../reducers'
 
-
+require('./style.scss')
 
 type AlertProps = {
-  error: string, 
+  error: Object | undefined,
   dismiss: () => void,
 }
 
 export const ErrorAlert = ({ error, dismiss }: AlertProps) => {
-  const [visible, setVisible] = useState(true)
-
   const onDismiss = () => {
-    setVisible(false)
     dismiss()
   }
 
   return error ? (
     <div className="alert-container">
-      <Alert color="danger" isOpen={visible} toggle={onDismiss}>
-        {error}
+      <Alert color="danger" isOpen toggle={onDismiss}>
+        {Object.values(error).flat().map((v, i) => <p key={`ErrorMessage-${v}`} className="mb-0">{v}</p>)}
       </Alert>
     </div>
   ) : null
 }
 
-
-const mapStateToProps = (state: RootState) => {
-  const { error } = state
-  return { error: error?.message }
-}
+const mapStateToProps = (state: RootState) => ({
+  error: state?.error?.body,
+})
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
   dismiss: () => dispatch({ type: ChatActions.CLEAR_ERROR_MESSAGE }),

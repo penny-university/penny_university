@@ -9,7 +9,7 @@ export const paginationInitialState = {
       previous: '',
       count: 0,
       ids: [],
-    }
+    },
   },
   followUpsByChat: {},
 }
@@ -22,7 +22,9 @@ const union = (a: Iterable<any>, b: Iterable<any>) => (
 // Reducer for handling actions that require pagination.
 // Requires three types (request, success, and failure),
 // and a function to map the pagination to a key, e.g. (action) => action.filterName.
-const paginate = ({ types, mapActionToKey }: { types: [Array<string>, Array<string>, Array<string>], mapActionToKey: (action: AnyAction) => string | undefined }) => {
+const paginate = ({ types, mapActionToKey }:
+  { types: [Array<string>, Array<string>, Array<string>], mapActionToKey:
+    (action: AnyAction) => string | undefined }) => {
   if (!Array.isArray(types) || types.length !== 3) {
     throw new Error('Expected types to be an array of three elements.')
   }
@@ -40,50 +42,50 @@ const paginate = ({ types, mapActionToKey }: { types: [Array<string>, Array<stri
     next: undefined,
     previous: undefined,
     count: 0,
-    ids: Array(),
+    ids: [],
   }, action: AnyAction) => {
     const { result, responseSchema } = action.payload || {}
-      if(requestTypes.includes(action.type)){
-        return {
-          ...state,
-          isFetching: true,
+    if (requestTypes.includes(action.type)) {
+      return {
+        ...state,
+        isFetching: true,
+      }
+    } if (successTypes.includes(action.type)) {
+      if (responseSchema) {
+        let { result: resultIds } = normalize(result, responseSchema)
+        if (typeof resultIds === 'string') {
+          resultIds = [resultIds]
         }
-       } else if (successTypes.includes(action.type)){
-        if (responseSchema) {
-          let { result: resultIds } = normalize(result, responseSchema)
-          if (typeof resultIds === 'string') {
-            resultIds = [resultIds]
-          }
-          return {
-            ...state,
-            isFetching: false,
-            ids: union(state.ids, resultIds),
-            next: action.payload?.meta.next,
-            previous: action.payload?.meta.previous,
-            count: action.payload?.meta.count,
-            
-          }
-        }
-      } else if (failureTypes.includes(action.type)){
         return {
           ...state,
           isFetching: false,
+          ids: union(state.ids, resultIds),
+          next: action.payload?.meta.next,
+          previous: action.payload?.meta.previous,
+          count: action.payload?.meta.count,
+
         }
       }
-      return state
+    } else if (failureTypes.includes(action.type)) {
+      return {
+        ...state,
+        isFetching: false,
+      }
     }
+    return state
+  }
 
-  return (state = paginationInitialState, action: AnyAction): PaginationState  => {
+  return (state = paginationInitialState, action: AnyAction): PaginationState => {
     // Update pagination by key
     const key = mapActionToKey(action)
-        if (key) {
-          return {
-            ...state,
-            // @ts-ignore
-            [key]: updatePagination(state[key], action),
-          }
-        }
-        return state
+    if (key) {
+      return {
+        ...state,
+        // @ts-ignore
+        [key]: updatePagination(state[key], action),
+      }
+    }
+    return state
   }
 }
 

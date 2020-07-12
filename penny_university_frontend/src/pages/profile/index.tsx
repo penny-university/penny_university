@@ -25,7 +25,9 @@ type TParams = { id: string };
 
 type ProfilePageProps = StateProps & DispatchProps & RouteComponentProps<TParams>
 
-const ProfilePage = ({ loadChatsList, match, me, user }: ProfilePageProps) => {
+const ProfilePage = ({
+  loadChatsList, match, me, user,
+}: ProfilePageProps) => {
   const { id } = match.params
   useEffect(() => {
     loadChatsList(ApiRoutes.userChats(id), id)
@@ -55,8 +57,7 @@ const mapStateToProps = (state: RootState, ownProps: ProfilePageProps) => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  // @ts-ignore
-  loadChatsList: (nextPageUrl: string, userID) => dispatch(loadChatsList(nextPageUrl, userID)),
+  loadChatsList: (nextPageUrl: string, userID: string) => dispatch(loadChatsList(nextPageUrl, userID)),
 })
 
 // @ts-ignore

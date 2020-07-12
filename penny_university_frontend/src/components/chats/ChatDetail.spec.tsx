@@ -1,13 +1,13 @@
-
 import '@testing-library/jest-dom'
 import React from 'react'
 import { createMemoryHistory } from 'history'
 import { render, fireEvent, screen } from '@testing-library/react'
-import ChatDetail from './ChatDetail'
 import { Router } from 'react-router-dom'
+import ChatDetail from './ChatDetail'
 import { normalizedChat, normalizedFollowUps, users } from '../../tests/data'
 import { User } from '../../models'
 import { TestIDs } from '../follow-ups/FollowUpCard'
+
 const history = createMemoryHistory()
 const followUps = Object.values(normalizedFollowUps)
 
@@ -26,7 +26,8 @@ test('users can only edit followups they created', () => {
         user={users['1']}
         getUserByID={(id: string) => users[id]}
       />
-    </Router>)
+    </Router>,
+  )
 
   const buttons = screen.getAllByTestId(TestIDs.subMenu)
   // There should be two followUps
@@ -46,14 +47,14 @@ test('users can only create follow ups when authenticated', () => {
         user={users['1']}
         getUserByID={(id: string) => users[id]}
       />
-    </Router>)
+    </Router>,
+  )
 
-  const addNewButton = screen.getAllByText("Add New Follow Up")
+  const addNewButton = screen.getAllByText('Add New Follow Up')
   fireEvent.click(addNewButton[0])
 
-  const markdownButton = screen.getByText("Save Follow Up")
+  const markdownButton = screen.getByText('Save Follow Up')
   expect(markdownButton).toBeTruthy()
-
 })
 
 test('users can create follow ups when unauthenticated', () => {
@@ -67,11 +68,12 @@ test('users can create follow ups when unauthenticated', () => {
         user={new User()}
         getUserByID={(id: string) => users[id]}
       />
-    </Router>)
+    </Router>,
+  )
 
-  const addNewButton = screen.getAllByText("Add New Follow Up")
+  const addNewButton = screen.getAllByText('Add New Follow Up')
   fireEvent.click(addNewButton[0])
 
-  const markdownButton = screen.queryByText("Save Follow Up")
+  const markdownButton = screen.queryByText('Save Follow Up')
   expect(markdownButton).toBeTruthy()
 })

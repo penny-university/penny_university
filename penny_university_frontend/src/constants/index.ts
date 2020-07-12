@@ -1,4 +1,3 @@
-
 const ApiRoutes = {
   user: 'auth/user/',
   userProfile: 'users/profile/',
@@ -6,12 +5,14 @@ const ApiRoutes = {
   register: 'auth/register/',
   logout: 'auth/logout/',
   exists: 'auth/exists/',
-  chats:  'chats/',
+  chats: 'chats/?upcoming_or_popular=true',
   chatDetail: (id: number) => `chats/${id}/`,
   userChats: (userID: string) => `chats/?participants__user_id=${userID}`,
   updateUser: (id: string) => `users/${id}/`,
   resendEmail: 'auth/verification-email/',
-  verifyEmail: 'auth/verify/', 
+  verifyEmail: 'auth/verify/',
+  requestPasswordReset: 'auth/password/reset/',
+  resetPassword: 'auth/password/reset/confirm/',
 }
 
 export const Routes = {
@@ -19,6 +20,7 @@ export const Routes = {
   Chats: '/chats',
   ChatDetail: '/chats/:id',
   Home: '/',
+  ResetPassword: '/reset-password',
   VerifyEmail: '/verify',
 }
 

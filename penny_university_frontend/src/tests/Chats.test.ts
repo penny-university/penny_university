@@ -1,10 +1,11 @@
 import fetchMock from 'fetch-mock'
 import { loadChatDetail, loadChatsList } from '../actions/chat'
-import {rootReducer as  reducer} from '../reducers'
+import { rootReducer as reducer } from '../reducers'
 import { makeMockStore, initialState, baseUrl } from './config'
-import { chats, chatsNext, normalizedChats, users } from './data'
+import {
+  chats, chatsNext, normalizedChats, users,
+} from './data'
 import ApiRoutes from '../constants'
-
 
 describe('chat actions', () => {
   afterEach(() => {
@@ -12,7 +13,7 @@ describe('chat actions', () => {
   })
 
   it('should dispatch CHAT_LIST_REQUEST and CHAT_LIST_SUCCESS', () => {
-    fetchMock.getOnce(`${baseUrl}chats/`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular=true`, {
       body: { results: chats },
       headers: { 'content-type': 'application/json' },
     })
@@ -27,7 +28,7 @@ describe('chat actions', () => {
   })
 
   it('should dispatch CHAT_LIST_REQUEST and CHAT_LIST_FAILURE', () => {
-    fetchMock.getOnce(`${baseUrl}chats/`, () => {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular=true`, () => {
       throw new Error('It failed!')
     })
 
@@ -42,7 +43,7 @@ describe('chat actions', () => {
       },
       {
         type: 'CHATS_LIST_FAILURE',
-        payload: { message: 'It failed!', status: undefined, meta: { userID: undefined }, },
+        payload: { body: 'It failed!', status: undefined, meta: { userID: undefined } },
       },
     ]
     // @ts-ignore
@@ -75,11 +76,11 @@ describe('chat actions', () => {
     const expectedActions = [
       {
         type: 'CHAT_DETAIL_REQUEST',
-        payload: { meta: undefined }
+        payload: { meta: undefined },
       },
       {
         type: 'CHAT_DETAIL_FAILURE',
-        payload: { message: 'It failed!', status: undefined },
+        payload: { body: 'It failed!', status: undefined },
       },
     ]
     // @ts-ignore
@@ -95,7 +96,7 @@ describe('chat reducers', () => {
   })
 
   it('should add chats to entities', () => {
-    fetchMock.getOnce(`${baseUrl}chats/`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular=true`, {
       body: { results: chats },
       headers: { 'content-type': 'application/json' },
     })
@@ -112,7 +113,7 @@ describe('chat reducers', () => {
   })
 
   it('should properly merge more chats in to entities', () => {
-    fetchMock.getOnce(`${baseUrl}chats/`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular=true`, {
       body: { results: chatsNext },
       headers: { 'content-type': 'application/json' },
     })
@@ -138,6 +139,7 @@ describe('chat reducers', () => {
       // @ts-ignore
       state = reducer(state, store.getActions()[1])
       expect(Object.keys(state.entities.chats)).toEqual(['1', '2', '3'])
+      expect(state.entities.chats['3'].followUpsCount).toEqual(13)
     })
   })
 
@@ -159,7 +161,7 @@ describe('chat reducers', () => {
   })
 
   it('should paginate chat ids', () => {
-    fetchMock.getOnce(`${baseUrl}chats/`, {
+    fetchMock.getOnce(`${baseUrl}chats/?upcoming_or_popular=true`, {
       body: { results: chats },
       headers: { 'content-type': 'application/json' },
     })

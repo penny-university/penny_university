@@ -30,7 +30,11 @@ const AuthSignupModal = ({ signup, email: orignalEmail, followUp }: AuthSignupMo
   const [email, setEmail] = useState(orignalEmail)
   return (
     <>
-      <ModalHeader toggle={modalDispatch.close}>Looks like you're new. Fill out this form to create an account.</ModalHeader>
+      <ModalHeader
+        toggle={modalDispatch.close}
+      >
+        Looks like you&apos;re new. Fill out this form to create an account.
+      </ModalHeader>
       <ModalBody>
         <Form onSubmit={(e) => {
           e.preventDefault()
@@ -39,10 +43,46 @@ const AuthSignupModal = ({ signup, email: orignalEmail, followUp }: AuthSignupMo
           })
         }}
         >
-          <Input label="First Name" type="text" name="firstName" id="firstName" placeholder="" onChange={setFirstName} value={firstName} required />
-          <Input label="Last Name" type="text" name="lastName" id="lastName" placeholder="" onChange={setLastName} value={lastName} required />
-          <Input label="Email" type="email" name="email" id="email" placeholder="" onChange={setEmail} value={email} helperText={"If you are part of the Penny U Slack, use the same email as that slack account."} />
-          <Input label="Password" type="password" name="password" id="password" placeholder="" onChange={setPassword} value={password} required />
+          <Input
+            label="First Name"
+            type="text"
+            name="firstName"
+            id="firstName"
+            placeholder=""
+            onChange={setFirstName}
+            value={firstName}
+            required
+          />
+          <Input
+            label="Last Name"
+            type="text"
+            name="lastName"
+            id="lastName"
+            placeholder=""
+            onChange={setLastName}
+            value={lastName}
+            required
+          />
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            id="email"
+            placeholder=""
+            onChange={setEmail}
+            value={email}
+            helperText="If you are part of the Penny U Slack, use the same email as that slack account."
+          />
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            id="password"
+            placeholder=""
+            onChange={setPassword}
+            value={password}
+            required
+          />
           <div className="text-center">
             <Button>
               Let&rsquo;s Go
@@ -53,7 +93,6 @@ const AuthSignupModal = ({ signup, email: orignalEmail, followUp }: AuthSignupMo
     </>
   )
 }
-
 
 const mapStateToProps = () => ({
 })

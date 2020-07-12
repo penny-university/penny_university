@@ -1,9 +1,11 @@
-import { MiddlewareAPI, Dispatch, Middleware, AnyAction } from "redux"
+import {
+  MiddlewareAPI, Dispatch, Middleware, AnyAction,
+} from 'redux'
 import { camelizeKeys, decamelizeKeys } from 'humps'
 import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
-const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 
+const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 
 export type APIPayload<P> = {
   types: [string, string, string],
@@ -66,16 +68,34 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
     const token = selectors.user.getToken(store.getState())
     return callApi(endpoint, method, payload, token).then(
       (response: any) => {
-        const metaWithPagination = response.results ? { ...meta, count: response.count, next: response.next, previous: response.previous } : meta
+        const metaWithPagination = response.results ? {
+          ...meta, count: response.count, next: response.next, previous: response.previous,
+        } : meta
         return next({
           payload: { result: response.results || response, responseSchema, meta: metaWithPagination },
           type: successType,
         })
       },
-      (error: { message: string, status: number }) => next({
-        type: failureType,
-        payload: { message: error.message || 'An error occurred.', status: error.status, meta },
-      }),
+      async (error: any) => {
+        let errorBody = null;
+        try {
+          await error.json().then((json: any) => {
+            errorBody = camelizeKeys(json)
+          })
+          return next({
+            type: failureType,
+            payload: { body: errorBody || 'An error occurred.', status: error.status, meta },
+          })
+        } catch (e) {
+          if (e instanceof TypeError) {
+            return next({
+              type: failureType,
+              payload: { body: error.message || 'An error occurred.', status: error.status, meta },
+            })
+          }
+          throw e;
+        }
+      },
     )
   }
   return next(action)

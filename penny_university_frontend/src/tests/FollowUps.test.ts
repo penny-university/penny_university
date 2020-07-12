@@ -38,7 +38,7 @@ describe('follow up actions', () => {
       },
       {
         type: 'FOLLOW_UPS_FAILURE',
-        payload: { message: 'It failed!', status: undefined, meta: { chatID: '1' } },
+        payload: { body: 'It failed!', status: undefined, meta: { chatID: '1' } },
       },
     ]
     // @ts-ignore
@@ -54,14 +54,10 @@ describe('follow up reducers', () => {
   })
 
   it('should add follow ups to entities', () => {
-    const followUpsForChat = normalizedFollowUps['1']
     fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
       body: { results: followUps },
       headers: { 'content-type': 'application/json' },
     })
-
-    // user will be normalized in response
-    const expectedFollowUp = { ...followUpsForChat[0], user: 1 }
 
     const store = makeMockStore()
     // @ts-ignore
@@ -73,12 +69,11 @@ describe('follow up reducers', () => {
   })
 
   it('should add user profile to entities', () => {
-    const followUpsForChat = normalizedFollowUps['1']
     fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
       body: { results: followUps },
       headers: { 'content-type': 'application/json' },
     })
-    
+
     const store = makeMockStore()
     // @ts-ignore
     return store.dispatch(loadFollowUps('1')).then(() => {
@@ -89,7 +84,6 @@ describe('follow up reducers', () => {
   })
 
   it('should paginate follow up ids', () => {
-    const followUpsForChat = normalizedFollowUps['1']
     fetchMock.getOnce(`${baseUrl}chats/1/follow-ups/`, {
       body: { results: followUps },
       headers: { 'content-type': 'application/json' },

@@ -8,18 +8,29 @@ export interface ChatType {
   followups: string,
   url: string,
   participants: Array<Participant>,
+  followUpsCount: number,
 }
-
 
 class Chat implements ChatType {
   id: number
+
   title: string
+
   date: string
+
   description: string
+
   followups: string
+
   url: string
+
   participants: Array<Participant>
-  constructor(data: ChatType = { id: NaN, title: '', date: '', description: '', followups: '', url: '', participants: []}) {
+
+  followUpsCount: number
+
+  constructor(data: ChatType = {
+    id: NaN, title: '', date: '', description: '', followups: '', url: '', participants: [], followUpsCount: NaN,
+  }) {
     this.id = data.id
     this.title = data.title
     this.date = data.date
@@ -27,11 +38,12 @@ class Chat implements ChatType {
     this.followups = data.followups
     this.url = data.url
     this.participants = data.participants
+    this.followUpsCount = data.followUpsCount
   }
 
   getUserRole(id: number): 'Organizer' | 'Participant' | '' {
-    const { role } = this.participants.find((p: Participant) => p.user.toString() === id.toString()) || { role: ''}
-    return role 
+    const { role } = this.participants.find((p: Participant) => p.user.toString() === id.toString()) || { role: '' }
+    return role
   }
 
   isOrganizer(id: number): boolean {
@@ -39,7 +51,7 @@ class Chat implements ChatType {
   }
 
   get formattedDate(): string {
-    let dateFormat = moment(this.date) > moment() ? 'M/D/YYYY @ h:mm A' : 'M/D/YYYY'
+    const dateFormat = moment(this.date) > moment() ? 'M/D/YYYY @ h:mm A' : 'M/D/YYYY'
     return moment(this.date).format(dateFormat)
   }
 

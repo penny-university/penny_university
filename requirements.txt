@@ -12,6 +12,7 @@ djangorestframework>=3.10.3
 django-cors-headers>=3.2.1
 dj-rest-auth==1.0.1
 django-filter==2.2.0
+urllib3==1.25.9
 
 # I had a little trouble installing psycopg2, this finally worked
 # brew install postgres

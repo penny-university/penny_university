@@ -43,10 +43,11 @@ class PennyChatSerializer(serializers.HyperlinkedModelSerializer):
     follow_ups = serializers.HyperlinkedIdentityField(view_name='followup-list')
     participants = ParticipantSerializer(many=True, read_only=True)
     date = serializers.DateTimeField(required=True)
+    follow_ups_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = PennyChat
-        fields = ['id', 'url', 'title', 'description', 'date', 'follow_ups', 'participants']
+        fields = ['id', 'url', 'title', 'description', 'date', 'follow_ups', 'participants', 'follow_ups_count']
 
 
 class UserChatSerializer(serializers.ModelSerializer):

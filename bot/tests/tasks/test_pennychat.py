@@ -379,6 +379,9 @@ def test_organizer_edit_after_share_blocks(mocker):
     assert 'You just shared this invitation with:* user_1, user_2, <#Chan1>, and <#Chan2>.' in template
 
 
+# is this (fixture) okay? I was getting an error about not being allowed a
+# database access in bot/tasks/pennychat.py:243 for accessing participants
+@pytest.mark.django_db
 def test_penny_chat_details_blocks(mocker):
     organizer_slack_id = 'organizer_slack_id'
     penny_chat = PennyChatSlackInvitation(
@@ -425,6 +428,52 @@ def test_penny_chat_details_blocks(mocker):
     assert 'Count me in' not in remind_blocks, 'should not be there when include_rsvp is False'
     assert 'I can\'t make it' not in remind_blocks, 'should not be there when include_rsvp is False'
     assert 'calendar.google.com'not in remind_blocks, 'should not have calendar link when include_calendar_link is False'
+    assert 'image' not in remind_blocks, 'should not be an image showing the profile picture of the participants'
+    assert 'context' not in remind_blocks, 'should not have a participant block when no participants'
+
+
+@pytest.mark.django_db
+def test_penny_chat_details_blocks_with_multiple_participants(mocker):
+    slack_id = 'slack_id'
+    organizer_slack_id = 'organizer_slack_id'
+
+    penny_chat_invitation = PennyChatSlackInvitation.objects.create(
+        title='Chat 1',
+        description='The first test chat',
+        date=datetime.now().astimezone(TIMEZONE) - timedelta(weeks=4),
+        invitees='foo,man',
+        channels='itsy,bitsy,spider',
+        organizer_slack_id=organizer_slack_id,
+    )
+
+    profile = SocialProfile.objects.create(
+        slack_id=slack_id,
+        display_name='booger',
+        user=User.objects.create_user('booger')
+    )
+    organizer = SocialProfile(slack_id=organizer_slack_id, real_name='John Berryman', slack_team_id=SLACK_TEAM_ID)
+
+    penny_chat_invitation.save_participant(profile.user, Participant.ATTENDEE)
+
+    with _make_get_or_create_social_profile_from_slack_id_mocks(mocker, 'bot.tasks.pennychat', [organizer]):
+        remind_blocks = str(_penny_chat_details_blocks(penny_chat_invitation, mode=pennychat_constants.REMIND))
+
+    assert '1 attending' in remind_blocks, 'should have a participant attending'
+
+    # test with more than one participant
+    slack_id_2 = 'slack_id_2'
+    profile2 = SocialProfile.objects.create(
+        slack_id=slack_id_2,
+        display_name='booger2',
+        user=User.objects.create_user('booger2')
+    )
+
+    penny_chat_invitation.save_participant(profile2.user, Participant.ATTENDEE)
+
+    with _make_get_or_create_social_profile_from_slack_id_mocks(mocker, 'bot.tasks.pennychat', [organizer]):
+        remind_blocks = str(_penny_chat_details_blocks(penny_chat_invitation, mode=pennychat_constants.REMIND))
+
+    assert '2 attending' in remind_blocks, 'should have 2 participants attending'
 
 
 def test_followup_reminder_blocks(mocker):

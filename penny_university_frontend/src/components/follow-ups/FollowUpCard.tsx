@@ -1,14 +1,13 @@
 import React, { useState } from 'react'
 import { FollowUp, User } from '../../models'
-import { FollowUpType} from '../../models/followUp'
-import { Dropdown } from '../../components'
+import { FollowUpType } from '../../models/followUp'
+import { Dropdown } from '..'
 import { Content, EditContent } from '../content'
 import { EditButton, SaveButton } from '../buttons'
 import FollowUpUserInfo from './FollowUpUserInfo'
 
-
-export const TestIDs ={
-  subMenu: 'followup-submenu'
+export const TestIDs = {
+  subMenu: 'followup-submenu',
 }
 
 type FollowUpCard = {
@@ -19,18 +18,30 @@ type FollowUpCard = {
   role: 'Organizer' | 'Participant' | ''
 }
 
-const FollowUpButtons = ({ editOnPress, saveOnPress, editMode, id }: { editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number }) => editMode
+const FollowUpButtons = ({
+  editOnPress, saveOnPress, editMode, id,
+}: { editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number }) => (editMode
   ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
-  : <Dropdown
-    id={`followup-dropdown-${id}`}
-    header="Options"
-    testID={TestIDs.subMenu}
-    options={[
-      <EditButton className="align-self-start" type="Follow Up" onClick={editOnPress} key={`edit-followup-${id}`} color="link" />,
-    ]}
-  />
+  : (
+    <Dropdown
+      id={`followup-dropdown-${id}`}
+      header="Options"
+      testID={TestIDs.subMenu}
+      options={[
+        <EditButton
+          className="align-self-start"
+          type="Follow Up"
+          onClick={editOnPress}
+          key={`edit-followup-${id}`}
+          color="link"
+        />,
+      ]}
+    />
+  ))
 
-const FollowUpCard = ({ followUp, updateFollowUp, canEdit, user, role }: FollowUpCard) => {
+const FollowUpCard = ({
+  followUp, updateFollowUp, canEdit, user, role,
+}: FollowUpCard) => {
   const [editMode, toggleEditMode] = useState(false)
   const [content, updateContent] = useState(followUp.content)
 
@@ -46,7 +57,14 @@ const FollowUpCard = ({ followUp, updateFollowUp, canEdit, user, role }: FollowU
     <div className="pt-2">
       <div className="d-flex justify-content-between">
         <FollowUpUserInfo user={user} date={followUp.formattedDate} role={role} />
-        {canEdit ? <FollowUpButtons id={followUp.id} editMode={editMode} saveOnPress={saveFollowUp} editOnPress={editOnPress} /> : null}
+        {canEdit ? (
+          <FollowUpButtons
+            id={followUp.id}
+            editMode={editMode}
+            saveOnPress={saveFollowUp}
+            editOnPress={editOnPress}
+          />
+        ) : null}
       </div>
       {editMode
         ? <EditContent content={content} onChange={updateContent} />

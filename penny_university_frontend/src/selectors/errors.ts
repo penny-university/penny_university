@@ -4,10 +4,10 @@ const getError = (store: RootState) => store.error
 
 const getErrorStatus = (store: RootState) => getError(store)?.status
 
-const getErrorMessage = (store: RootState) => getError(store)?.message
+const getErrorMessages = (store: RootState) => getError(store)?.body
 
 export {
   getError,
-  getErrorMessage,
+  getErrorMessages,
   getErrorStatus,
 }

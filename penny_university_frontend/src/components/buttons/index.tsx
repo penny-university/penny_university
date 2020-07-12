@@ -1,20 +1,38 @@
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faPlus, faTimes, faPen, faSave, faHeart, IconDefinition, faCog, faEllipsisH, 
+  faPlus, faTimes, faPen, faSave, faHeart, IconDefinition, faCog, faEllipsisH,
 } from '@fortawesome/free-solid-svg-icons'
 import classNames from 'classnames/dedupe'
 import { Button } from 'reactstrap'
 
-
 require('./style.scss')
+
+interface Props {
+  className: string,
+  size: 'md',
+  onClick: () => void | null,
+  title: string,
+  detail: string,
+  icon: IconDefinition,
+  color: string,
+  id: string,
+  testID?: string | null,
+}
 
 const IconButton = ({
   className, size, onClick, title, detail, icon, color, id, testID,
-}: { className: string, size: 'md', onClick: () => void, title: string, detail: string, icon: IconDefinition, color: string, id: string, testID?: string | null, }) => {
+}: Props) => {
   const text = title && detail ? `${title} ${detail}` : title || detail
   return (
-    <Button size={size} color={color} onClick={onClick} className={classNames(className, 'edit-button')} id={id} data-testid={testID}>
+    <Button
+      size={size}
+      color={color}
+      onClick={onClick}
+      className={classNames(className, 'edit-button')}
+      id={id}
+      data-testid={testID}
+    >
       <FontAwesomeIcon icon={icon} />
       {text}
     </Button>
@@ -35,8 +53,8 @@ IconButton.defaultProps = {
 const CancelButton = ({
   className, onClick, type: detail,
 }: { className: string, type?: string, onClick: () => void }) => (
-    <IconButton color="secondary" className={className} onClick={onClick} detail={detail} title="Cancel" icon={faTimes} />
-  )
+  <IconButton color="secondary" className={className} onClick={onClick} detail={detail} title="Cancel" icon={faTimes} />
+)
 
 CancelButton.defaultProps = {
   className: '',
@@ -45,19 +63,18 @@ CancelButton.defaultProps = {
 const CreateButton = ({
   className, type: detail, onClick,
 }: { className: string, type: string, onClick: () => void }) => (
-    <IconButton onClick={onClick} className={className} detail={detail} title="Add New" icon={faPlus} />
-  )
-
+  <IconButton onClick={onClick} className={className} detail={detail} title="Add New" icon={faPlus} />
+)
 
 CreateButton.defaultProps = {
   className: '',
 }
 
 const EditButton = ({
-  className, onClick, type: detail, color
+  className, onClick, type: detail, color,
 }: { className: string, type: string, onClick: () => void, color?: string }) => (
-    <IconButton detail={detail} title="Edit" className={className} onClick={onClick} icon={faPen} color={color} />
-  )
+  <IconButton detail={detail} title="Edit" className={className} onClick={onClick} icon={faPen} color={color} />
+)
 
 EditButton.defaultProps = {
   className: '',
@@ -90,7 +107,7 @@ const MoreOptions = ({
 
 MoreOptions.defaultProps = {
   className: '',
-  onClick: () => {  },
+  onClick: null,
 }
 
 const SettingsButton = ({

@@ -3,7 +3,7 @@ import { AnyAction } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import InfiniteScroll from "react-infinite-scroller"
+import InfiniteScroll from 'react-infinite-scroller'
 import { loadChatsList } from '../../actions/chat'
 import { RootState } from '../../reducers'
 import * as selectors from '../../selectors'
@@ -27,7 +27,9 @@ type OwnProps = {
 
 type ChatListProps = StateProps & DispatchProps & OwnProps & RouteComponentProps<{}>
 
-const ChatList = ({ chats, getChatByID, nextPageUrl, isFetching, loadChatsList, filter }: ChatListProps) => {
+const ChatList = ({
+  chats, getChatByID, nextPageUrl, isFetching, loadChatsList, filter,
+}: ChatListProps) => {
   const loadMore = () => {
     if (!isFetching) {
       loadChatsList(nextPageUrl, filter.key)
@@ -45,7 +47,7 @@ const ChatList = ({ chats, getChatByID, nextPageUrl, isFetching, loadChatsList, 
         {chats.map((chatID: number) => (
           <ChatCard chat={getChatByID(chatID)} key={`ChatCard-${chatID}`} />))}
       </InfiniteScroll>
-    </div >
+    </div>
   )
 }
 
