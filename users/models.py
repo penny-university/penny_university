@@ -26,7 +26,7 @@ class User(AbstractUser):
         send_mail(
             'Welcome to Penny University | Verify Your Email',
             text_email,
-            '"Penny University" <invite@pennyuniversity.org>',
+            '"Penny University" <welcome@pennyuniversity.org>',
             [self.email],
             html_message=html_email,
         )
