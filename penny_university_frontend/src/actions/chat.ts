@@ -1,3 +1,4 @@
+import { AnyAction } from 'redux';
 import { CALL_API } from '../middleware/api'
 import { Schemas } from '../models/schemas'
 import ApiRoutes from '../constants'
@@ -23,7 +24,7 @@ export const Actions = {
 }
 
 // Creates an action that will fetch the chats list
-export const loadChatsList = (nextPageUrl: string, userID?: string) => ({
+export const loadChatsList = (nextPageUrl: string, userID?: string): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.CHATS_LIST_REQUEST, Actions.CHATS_LIST_SUCCESS, Actions.CHATS_LIST_FAILURE],
@@ -34,7 +35,7 @@ export const loadChatsList = (nextPageUrl: string, userID?: string) => ({
 })
 
 // Creates an action that will fetch a chat
-export const loadChatDetail = (chatID: number) => ({
+export const loadChatDetail = (chatID: number): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.CHAT_DETAIL_REQUEST, Actions.CHAT_DETAIL_SUCCESS, Actions.CHAT_DETAIL_FAILURE],
@@ -44,7 +45,7 @@ export const loadChatDetail = (chatID: number) => ({
 })
 
 // Creates an action that will fetch the follow ups associated with a chat
-export const loadFollowUps = (chatID: number, nextPageUrl: string | undefined) => ({
+export const loadFollowUps = (chatID: number, nextPageUrl: string | undefined): AnyAction => ({
   type: CALL_API,
   payload: {
     meta: { chatID },
@@ -54,7 +55,7 @@ export const loadFollowUps = (chatID: number, nextPageUrl: string | undefined) =
   },
 })
 
-export const updateFollowUp = (followUp: FollowUpType) => ({
+export const updateFollowUp = (followUp: FollowUpType): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.UPDATE_FOLLOW_UP_REQUEST, Actions.UPDATE_FOLLOW_UP_SUCCESS, Actions.UPDATE_FOLLOW_UP_FAILURE],
@@ -65,7 +66,7 @@ export const updateFollowUp = (followUp: FollowUpType) => ({
   },
 })
 
-export const createFollowUp = (chatID: number, followUp: { content: string }) => ({
+export const createFollowUp = (chatID: number, followUp: { content: string }): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.CREATE_FOLLOW_UP_REQUEST, Actions.CREATE_FOLLOW_UP_SUCCESS, Actions.CREATE_FOLLOW_UP_FAILURE],

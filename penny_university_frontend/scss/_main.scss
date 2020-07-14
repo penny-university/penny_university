@@ -13,6 +13,16 @@ pre {
   padding: .5rem;
 }
 
+.accordion {
+  .card {
+    border-color: #9e9178 !important;
+  }
+
+  .card-header {
+    background-color: $secondary !important;
+  }
+}
+
 .overlay-text {
   position: relative;
   z-index: 1;
@@ -39,6 +49,25 @@ pre {
 
 h1, h2, h3, .navbar-brand {
   text-transform: capitalize;
+}
+
+.social-icons {
+  .fa {
+    padding: 10px;
+    font-size: 20px !important;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 0 5px;
+  }
+
+  .fa:hover {
+    color: #fff;
+    opacity: 0.7;
+    text-decoration: none;
+  }
 }
 
 /* Set a specific color for each brand */
