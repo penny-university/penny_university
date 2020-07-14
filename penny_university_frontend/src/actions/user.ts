@@ -40,16 +40,16 @@ export const Actions = {
   RESET_PASSWORD_FAILURE: 'RESET_PASSWORD_FAILURE',
 }
 
-export const setToken = (token: string) => ({
+export const setToken = (token: string): AnyAction => ({
   type: Actions.SET_TOKEN,
   payload: token,
 })
 
-export const bootstrap = () => ({
+export const bootstrap: object = (): AnyAction => ({
   type: Actions.BOOTSTRAP,
 })
 
-export const fetchUser = () => ({
+export const fetchUser = (): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.FETCH_USER_REQUEST, Actions.FETCH_USER_SUCCESS, Actions.FETCH_USER_FAILURE],
@@ -81,7 +81,7 @@ export const signup = (payload:
   },
 })
 
-export const userExists = (email: string, followUp?: { chatId: number, content: string }) => ({
+export const userExists = (email: string, followUp?: { chatId: number, content: string }) : AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.USER_EXISTS_REQUEST, Actions.USER_EXISTS_SUCCESS, Actions.USER_EXISTS_FAILURE],
@@ -92,11 +92,11 @@ export const userExists = (email: string, followUp?: { chatId: number, content: 
   },
 })
 
-export const logout = () => ({
+export const logout = (): AnyAction => ({
   type: Actions.LOGOUT_USER,
 })
 
-export const logoutRequest = () => ({
+export const logoutRequest = (): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.LOGOUT_REQUEST, Actions.LOGOUT_SUCCESS, Actions.LOGOUT_FAILURE],
@@ -105,7 +105,7 @@ export const logoutRequest = () => ({
   },
 })
 
-export const resendVerifyEmail = (email: string, followUp: { chatId: number, content: string } | undefined) => ({
+export const resendVerifyEmail = (email: string, followUp: { chatId: number, content: string } | undefined): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.RESEND_VERIFY_EMAIL_REQUEST, Actions.RESEND_VERIFY_EMAIL_SUCCESS, Actions.RESEND_VERIFY_EMAIL_FAILURE],
@@ -115,7 +115,7 @@ export const resendVerifyEmail = (email: string, followUp: { chatId: number, con
   },
 })
 
-export const verifyEmail = (payload: { token: string, email: string }) => ({
+export const verifyEmail = (payload: { token: string, email: string }): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.VERIFY_EMAIL_REQUEST, Actions.VERIFY_EMAIL_SUCCESS, Actions.VERIFY_EMAIL_FAILURE],
