@@ -45,7 +45,7 @@ export const setToken = (token: string): AnyAction => ({
   payload: token,
 })
 
-export const bootstrap: object = (): AnyAction => ({
+export const bootstrap = (): AnyAction => ({
   type: Actions.BOOTSTRAP,
 })
 
