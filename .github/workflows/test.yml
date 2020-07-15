@@ -79,3 +79,12 @@ jobs:
       working-directory: ./penny_university_frontend
       run: |
         npm run lint
+    - name: Build Frontend
+      # this broke deployment once, so better check
+      working-directory: ./penny_university_frontend
+      env:
+        CI: false
+        REACT_APP_API_ROOT: "/api/"
+      run: |
+        npm install
+        npm run build
