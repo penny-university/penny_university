@@ -9,7 +9,7 @@ import { RootState } from '../../reducers'
 require('./style.scss')
 
 type AlertProps = {
-  error: Object | undefined,
+  error: Object | string | undefined,
   dismiss: () => void,
 }
 
@@ -21,7 +21,10 @@ export const ErrorAlert = ({ error, dismiss }: AlertProps) => {
   return error ? (
     <div className="alert-container">
       <Alert color="danger" isOpen toggle={onDismiss}>
-        {Object.values(error).flat().map((v, i) => <p key={`ErrorMessage-${v}`} className="mb-0">{v}</p>)}
+        {
+          typeof error === "string" ? <p className="mb-0">{error}</p> :
+            Object.values(error).flat().map((v, i) => <p key={`ErrorMessage-${v}`} className="mb-0">{v}</p>)
+        }
       </Alert>
     </div>
   ) : null
