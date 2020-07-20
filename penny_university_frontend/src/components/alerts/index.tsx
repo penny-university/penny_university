@@ -22,8 +22,8 @@ export const ErrorAlert = ({ error, dismiss }: AlertProps) => {
     <div className="alert-container">
       <Alert color="danger" isOpen toggle={onDismiss}>
         {
-          typeof error === "string" ? <p className="mb-0">{error}</p> :
-            Object.values(error).flat().map((v, i) => <p key={`ErrorMessage-${v}`} className="mb-0">{v}</p>)
+          typeof error === 'string' ? <p className="mb-0">{error}</p>
+            : Object.values(error).flat().map((v, i) => <p key={`ErrorMessage-${v}`} className="mb-0">{v}</p>)
         }
       </Alert>
     </div>
