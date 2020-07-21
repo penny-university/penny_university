@@ -19,11 +19,12 @@ type VerifyPageProps = StateProps & DispatchProps & RouteComponentProps<{}>
 
 const VerifyPage = ({ verify, location, error }: VerifyPageProps) => {
   const parsed = queryString.parse(location.search);
+  const { token, email } = parsed
   useEffect(() => {
-    if (typeof parsed?.token === 'string' && typeof parsed?.email === 'string') {
-      verify({ token: parsed?.token, email: parsed?.email })
+    if (typeof token === 'string' && typeof email === 'string') {
+      verify({ token, email })
     }
-  }, [verify, parsed])
+  }, [verify, token, email])
   const message = error ? 'There was an issue verifying your email 😞' : 'Thanks for verifying your email 🙂'
   return (
     <div>
