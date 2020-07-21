@@ -29,6 +29,9 @@ class User(AbstractUser):
             html_message=html_email,
         )
 
+    def __repr__(self):
+        return pprint_obj(self)
+
 
 class SocialProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='social_profiles')
