@@ -9,6 +9,7 @@ import { FollowUpCard } from '../follow-ups'
 import modalDispatch from '../modal/dispatch'
 import { Chat, FollowUp, User } from '../../models'
 import { FollowUpType } from '../../models/followUp'
+import ParticipantList from './ParticipantList'
 
 require('./styles.scss')
 
@@ -61,11 +62,15 @@ const ChatDetail = ({
         <div className="mb-4">
           <CreateButton type="Follow Up" onClick={createOnPress} />
         </div>
-        <h5 className="mb-3">
-          {followUps.length}
-          {' '}
-          Follow Ups
-        </h5>
+        <div className="d-flex">
+          <ParticipantList className="mr-2 h5" participants={chat.participants} chatID={chat.id} getUserByID={getUserByID} />
+          <h5>-</h5>
+          <h5 className="mb-3 ml-2">
+            {followUps.length}
+            {' '}
+            Follow Ups
+          </h5>
+        </div>
         {followUps.map((followUp) => {
           const followUpUser = getUserByID(followUp.user)
           const role = chat.getUserRole(followUp.user)
