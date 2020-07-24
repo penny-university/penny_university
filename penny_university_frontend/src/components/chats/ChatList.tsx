@@ -8,12 +8,13 @@ import { loadChatsList } from '../../actions/chat'
 import { RootState } from '../../reducers'
 import * as selectors from '../../selectors'
 import ChatCard from './ChatCard'
-import { Chat } from '../../models'
+import { Chat, User } from '../../models'
 
 type StateProps = {
   nextPageUrl: string,
   chats: Array<number>,
   getChatByID: (id: number) => Chat,
+  getUserByID: (id: number) => User,
   isFetching: boolean,
 }
 
@@ -28,7 +29,7 @@ type OwnProps = {
 type ChatListProps = StateProps & DispatchProps & OwnProps & RouteComponentProps<{}>
 
 const ChatList = ({
-  chats, getChatByID, nextPageUrl, isFetching, loadChatsList, filter,
+  chats, getChatByID, getUserByID, nextPageUrl, isFetching, loadChatsList, filter,
 }: ChatListProps) => {
   const loadMore = () => {
     if (!isFetching) {
@@ -45,7 +46,7 @@ const ChatList = ({
         threshold={200}
       >
         {chats.map((chatID: number) => (
-          <ChatCard chat={getChatByID(chatID)} key={`ChatCard-${chatID}`} />))}
+          <ChatCard chat={getChatByID(chatID)} key={`ChatCard-${chatID}`} getUserByID={getUserByID} />))}
       </InfiniteScroll>
     </div>
   )
@@ -58,6 +59,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
     chats: chatsPagination.ids,
     nextPageUrl,
     getChatByID: (id: number) => selectors.chats.getChatByID(state, id),
+    getUserByID: (id: string) => selectors.entities.getUserByID(state, id),
     isFetching: selectors.pagination.isFetchingChats(state, ownProps.filter.key),
   }
 }

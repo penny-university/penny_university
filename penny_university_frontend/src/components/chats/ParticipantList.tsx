@@ -1,9 +1,6 @@
 import React, { useState } from 'react'
-import { connect } from 'react-redux'
 import { Popover, PopoverHeader, PopoverBody } from 'reactstrap'
 import { Link } from 'react-router-dom'
-import * as selectors from '../../selectors'
-import { RootState } from '../../reducers'
 import User from '../../models/user'
 
 type ParticipantListProps = {
@@ -61,8 +58,4 @@ const ParticipantList = ({
   )
 }
 
-const mapStateToProps = (state: RootState) => ({
-  getUserByID: (id: string) => selectors.entities.getUserByID(state, id),
-})
-// @ts-ignore
-export default connect(mapStateToProps)(ParticipantList)
+export default ParticipantList
