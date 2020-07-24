@@ -8,17 +8,18 @@ import {
 import Date from '../Date'
 import { Content } from '../content'
 import ParticipantList from './ParticipantList'
-import { Chat } from '../../models'
+import { Chat, User } from '../../models'
 
 export const TestIDs = {
   chatCard: 'chart-card',
 }
 
 type ChatCardProps = {
-  chat: Chat | undefined
+  chat: Chat | undefined,
+  getUserByID: (id: number) => User,
 }
 
-const ChatCard = ({ chat }: ChatCardProps) => (chat ? (
+const ChatCard = ({ chat, getUserByID }: ChatCardProps) => (chat ? (
   <Card body className="mb-3 border-0 shadow-sm" data-testid={TestIDs.chatCard}>
     <CardTitle tag="h5">
       <Link className="text-reset" to={`/chats/${chat.id}`}>{chat.title}</Link>
@@ -28,7 +29,7 @@ const ChatCard = ({ chat }: ChatCardProps) => (chat ? (
     {chat.description
       ? <Content content={chat.description} /> : null}
     <div className="d-flex">
-      <ParticipantList className="mr-2" participants={chat.participants} chatID={chat.id} />
+      <ParticipantList className="mr-2" participants={chat.participants} chatID={chat.id} getUserByID={getUserByID} />
       -
       <Link className="ml-2" to={`/chats/${chat.id}`}>
         {chat.followUpsCount}
