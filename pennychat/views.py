@@ -39,7 +39,7 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows penny chats to be viewed or edited.
     """
-    queryset = PennyChat.objects.annotate(follow_ups_count=Count('follow_ups')).order_by('-date')
+    queryset = PennyChat.objects.annotate(follow_ups_count=Count('follow_ups', distinct=True)).order_by('-date')
     serializer_class = PennyChatSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = PennyChatFilter
