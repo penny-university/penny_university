@@ -18,6 +18,7 @@ The goal of this document is to enumerate all the pieces so that we don't lose t
 * Internal API (see api directory)
 * Importing data from forum (pennychat/management/commands/import_google_forum.py)
 * Importing users from Slack (users/management/commands/import_users_from_slack.py)
+* Merge two users using their email (users/management/commands/merge_users.py)
 
 ## Other
 * Bot framework (bot/processors/base.py) This was used to build the greeting and pennychat processors. This file should be treated as if it's a vendored import. Don't include Penny University specific things back in it.
