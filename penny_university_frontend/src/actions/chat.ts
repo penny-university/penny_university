@@ -20,6 +20,9 @@ export const Actions = {
   UPDATE_FOLLOW_UP_REQUEST: 'UPDATE_FOLLOW_UP_REQUEST',
   UPDATE_FOLLOW_UP_SUCCESS: 'UPDATE_FOLLOW_UP_SUCCESS',
   UPDATE_FOLLOW_UP_FAILURE: 'UPDATE_FOLLOW_UP_FAILURE',
+  DELETE_FOLLOW_UP_REQUEST: 'DELETE_FOLLOW_UP_REQUEST',
+  DELETE_FOLLOW_UP_SUCCESS: 'DELETE_FOLLOW_UP_SUCCESS',
+  DELETE_FOLLOW_UP_FAILURE: 'DELETE_FOLLOW_UP_FAILURE',
   CLEAR_ERROR_MESSAGE: 'CLEAR_ERROR_MESSAGE',
 }
 
@@ -76,4 +79,15 @@ export const createFollowUp = (chatID: number, followUp: { content: string }): A
     payload: followUp,
     meta: { chatID },
   },
+})
+
+export const deleteFollowUp = (followUpID: number): AnyAction => ({
+  type: CALL_API,
+  payload: {
+    types: [Actions.DELETE_FOLLOW_UP_REQUEST, Actions.DELETE_FOLLOW_UP_SUCCESS, Actions.DELETE_FOLLOW_UP_FAILURE],
+    endpoint: `follow-ups/${followUpID}/`,
+    schema: Schemas.FOLLOW_UP,
+    method: 'DELETE',
+    meta: { followUpID },
+  }
 })

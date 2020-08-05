@@ -38,7 +38,7 @@ const failureTypes = [
 
 const entities = (state: EntityState = { chats: {}, followUps: {}, users: {} }, action: AnyAction): EntityState => {
   const { result, responseSchema } = action.payload || {}
-  if (result && responseSchema) {
+  if (result && Object.keys(result).length > 0 && responseSchema) {
     const { entities: { chats = {}, users = {}, followUps = {} } = {} } = normalize(result, responseSchema)
     return {
       chats: {
@@ -58,6 +58,11 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {} }, 
   if (action.type === UserAction.UPDATE_USER_SUCCESS) {
     const newState = { ...state }
     newState.users[action.payload.result.id] = { ...newState.users[action.payload.result.id], ...action.payload.result }
+    return newState
+  }
+  if (action.type === ChatActions.DELETE_FOLLOW_UP_SUCCESS) {
+    const newState = { ...state }
+    delete newState.followUps[action.payload.meta.followUpID]
     return newState
   }
   return state

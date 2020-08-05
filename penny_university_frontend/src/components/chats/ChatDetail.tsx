@@ -18,12 +18,13 @@ interface ChatDetailProps {
   followUps: Array<FollowUp>,
   createFollowUp: (id: number, content: { content: string }) => void,
   updateFollowUp: (followup: FollowUpType) => void,
+  deleteFollowUp: (followUpID: number) => void,
   user: User,
   getUserByID: (id: number) => User,
 }
 
 const ChatDetail = ({
-  chat, followUps, createFollowUp, updateFollowUp, user, getUserByID,
+  chat, followUps, createFollowUp, updateFollowUp, deleteFollowUp, user, getUserByID,
 }: ChatDetailProps) => {
   const [addFollowUpMode, toggleAddFollowUpMode] = useState(false)
   const [followUpContent, updateFollowUpContent] = useState('')
@@ -79,6 +80,7 @@ const ChatDetail = ({
               key={`FollowUpCard-${followUp.id}`}
               followUp={followUp}
               updateFollowUp={updateFollowUp}
+              deleteFollowUp={deleteFollowUp}
               user={followUpUser}
               role={role}
               canEdit={user?.id === followUpUser?.id}

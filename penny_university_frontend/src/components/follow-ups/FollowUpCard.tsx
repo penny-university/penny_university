@@ -3,7 +3,7 @@ import { FollowUp, User } from '../../models'
 import { FollowUpType } from '../../models/followUp'
 import { Dropdown } from '..'
 import { Content, EditContent } from '../content'
-import { EditButton, SaveButton } from '../buttons'
+import { DeleteButton, EditButton, SaveButton } from '../buttons'
 import FollowUpUserInfo from './FollowUpUserInfo'
 
 export const TestIDs = {
@@ -12,6 +12,7 @@ export const TestIDs = {
 
 type FollowUpCard = {
   followUp: FollowUp,
+  deleteFollowUp: (followUpID: number) => void,
   updateFollowUp: (followUp: FollowUpType) => void,
   canEdit: boolean,
   user: User,
@@ -19,8 +20,8 @@ type FollowUpCard = {
 }
 
 const FollowUpButtons = ({
-  editOnPress, saveOnPress, editMode, id,
-}: { editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number }) => (editMode
+  deleteOnPress, editOnPress, saveOnPress, editMode, id,
+}: { deleteOnPress: () => void, editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number }) => (editMode
   ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
   : (
     <Dropdown
@@ -35,12 +36,19 @@ const FollowUpButtons = ({
           key={`edit-followup-${id}`}
           color="link"
         />,
+        <DeleteButton
+          className="align-self-start"
+          type="Follow Up"
+          onClick={deleteOnPress}
+          key={`delete-followup-${id}`}
+          color="link"
+        />,
       ]}
     />
   ))
 
 const FollowUpCard = ({
-  followUp, updateFollowUp, canEdit, user, role,
+  followUp, deleteFollowUp, updateFollowUp, canEdit, user, role,
 }: FollowUpCard) => {
   const [editMode, toggleEditMode] = useState(false)
   const [content, updateContent] = useState(followUp.content)
@@ -53,6 +61,11 @@ const FollowUpCard = ({
   }
 
   const editOnPress = () => toggleEditMode(true)
+  const deleteOnPress = () => {
+    console.log('Delete Follow Up')
+    deleteFollowUp(followUp.id)
+  }
+
   return (
     <div className="pt-2">
       <div className="d-flex justify-content-between">
@@ -63,6 +76,7 @@ const FollowUpCard = ({
             editMode={editMode}
             saveOnPress={saveFollowUp}
             editOnPress={editOnPress}
+            deleteOnPress={deleteOnPress}
           />
         ) : null}
       </div>
