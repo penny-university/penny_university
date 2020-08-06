@@ -75,7 +75,7 @@ const paginate = ({ types, mapActionToKey }:
         isFetching: false,
       }
     } else if (deleteTypes.includes(action.type)) {
-      if (ChatActions.DELETE_FOLLOW_UP_SUCCESS) {
+      if (action.type === ChatActions.DELETE_FOLLOW_UP_SUCCESS) {
         const index = state.ids.indexOf(action.payload?.meta?.followUpID.toString())
         const newState = { ...state }
         newState.ids.splice(index, 1)
