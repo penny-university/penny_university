@@ -81,13 +81,13 @@ export const createFollowUp = (chatID: number, followUp: { content: string }): A
   },
 })
 
-export const deleteFollowUp = (followUpID: number): AnyAction => ({
+export const deleteFollowUp = (followUpID: number, chatID: number): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.DELETE_FOLLOW_UP_REQUEST, Actions.DELETE_FOLLOW_UP_SUCCESS, Actions.DELETE_FOLLOW_UP_FAILURE],
     endpoint: `follow-ups/${followUpID}/`,
     schema: Schemas.FOLLOW_UP,
     method: 'DELETE',
-    meta: { followUpID },
-  }
+    meta: { followUpID, chatID },
+  },
 })

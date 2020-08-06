@@ -5,6 +5,7 @@ import { Dropdown } from '..'
 import { Content, EditContent } from '../content'
 import { DeleteButton, EditButton, SaveButton } from '../buttons'
 import FollowUpUserInfo from './FollowUpUserInfo'
+import modalDispatch from '../modal/dispatch'
 
 export const TestIDs = {
   subMenu: 'followup-submenu',
@@ -12,7 +13,6 @@ export const TestIDs = {
 
 type FollowUpCard = {
   followUp: FollowUp,
-  deleteFollowUp: (followUpID: number) => void,
   updateFollowUp: (followUp: FollowUpType) => void,
   canEdit: boolean,
   user: User,
@@ -20,9 +20,10 @@ type FollowUpCard = {
 }
 
 const FollowUpButtons = ({
-  deleteOnPress, editOnPress, saveOnPress, editMode, id,
-}: { deleteOnPress: () => void, editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number }) => (editMode
-  ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
+  confirmDeleteOnPress, editOnPress, saveOnPress, editMode, id,
+}: {
+  confirmDeleteOnPress: () => void, editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number
+}) => (editMode ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
   : (
     <Dropdown
       id={`followup-dropdown-${id}`}
@@ -39,7 +40,7 @@ const FollowUpButtons = ({
         <DeleteButton
           className="align-self-start"
           type="Follow Up"
-          onClick={deleteOnPress}
+          onClick={confirmDeleteOnPress}
           key={`delete-followup-${id}`}
           color="link"
         />,
@@ -48,7 +49,7 @@ const FollowUpButtons = ({
   ))
 
 const FollowUpCard = ({
-  followUp, deleteFollowUp, updateFollowUp, canEdit, user, role,
+  followUp, updateFollowUp, canEdit, user, role,
 }: FollowUpCard) => {
   const [editMode, toggleEditMode] = useState(false)
   const [content, updateContent] = useState(followUp.content)
@@ -61,9 +62,8 @@ const FollowUpCard = ({
   }
 
   const editOnPress = () => toggleEditMode(true)
-  const deleteOnPress = () => {
-    console.log('Delete Follow Up')
-    deleteFollowUp(followUp.id)
+  const confirmDeleteOnPress = () => {
+    modalDispatch.confirmDeleteFollowUp(followUp.id, Number(followUp.pennyChat))
   }
 
   return (
@@ -76,7 +76,7 @@ const FollowUpCard = ({
             editMode={editMode}
             saveOnPress={saveFollowUp}
             editOnPress={editOnPress}
-            deleteOnPress={deleteOnPress}
+            confirmDeleteOnPress={confirmDeleteOnPress}
           />
         ) : null}
       </div>

@@ -81,19 +81,21 @@ const errorReducer = (state = { status: NaN, body: null }, action: AnyAction): E
 const pagination = combineReducers({
   chatsByFilter: paginate({
     mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.userID || 'all',
-    types: [
-      [ChatActions.CHATS_LIST_REQUEST],
-      [ChatActions.CHATS_LIST_SUCCESS],
-      [ChatActions.CHATS_LIST_FAILURE],
-    ],
+    types: {
+      requestTypes: [ChatActions.CHATS_LIST_REQUEST],
+      successTypes: [ChatActions.CHATS_LIST_SUCCESS],
+      failureTypes: [ChatActions.CHATS_LIST_FAILURE],
+      deleteTypes: [],
+    },
   }),
   followUpsByChat: paginate({
     mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.chatID,
-    types: [
-      [ChatActions.FOLLOW_UPS_REQUEST],
-      [ChatActions.FOLLOW_UPS_SUCCESS, ChatActions.CREATE_FOLLOW_UP_SUCCESS],
-      [ChatActions.FOLLOW_UPS_FAILURE],
-    ],
+    types: {
+      requestTypes: [ChatActions.FOLLOW_UPS_REQUEST],
+      successTypes: [ChatActions.FOLLOW_UPS_SUCCESS, ChatActions.CREATE_FOLLOW_UP_SUCCESS],
+      failureTypes: [ChatActions.FOLLOW_UPS_FAILURE],
+      deleteTypes: [ChatActions.DELETE_FOLLOW_UP_SUCCESS],
+    },
   }),
 })
 
