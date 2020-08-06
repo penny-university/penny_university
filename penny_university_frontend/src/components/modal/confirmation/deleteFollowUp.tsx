@@ -1,12 +1,12 @@
 import React from 'react'
-import {connect} from 'react-redux'
-import {ThunkDispatch} from 'redux-thunk'
-import {AnyAction} from 'redux'
+import { connect } from 'react-redux'
+import { ThunkDispatch } from 'redux-thunk'
+import { AnyAction } from 'redux'
 import {
   ModalHeader, ModalBody, Button, ModalFooter,
 } from 'reactstrap'
 import modalDispatch from '../dispatch'
-import {deleteFollowUp} from '../../../actions/chat';
+import { deleteFollowUp } from '../../../actions/chat';
 
 type DeleteFollowUpModalProps = {
   deleteFollowUp: (followUpID: number, chatID: number) => AnyAction,
@@ -14,7 +14,7 @@ type DeleteFollowUpModalProps = {
   chatID: number,
 }
 
-const DeleteFollowUpModal = ({deleteFollowUp, followUpID, chatID}: DeleteFollowUpModalProps) => {
+const DeleteFollowUpModal = ({ deleteFollowUp, followUpID, chatID }: DeleteFollowUpModalProps) => {
   const deleteOnPress = () => {
     deleteFollowUp(followUpID, chatID)
     modalDispatch.close()

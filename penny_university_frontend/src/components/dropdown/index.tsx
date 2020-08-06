@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap'
-import {MoreOptions} from '../buttons'
+import {
+  Dropdown, DropdownItem, DropdownMenu, DropdownToggle,
+} from 'reactstrap'
+import { MoreOptions } from '../buttons'
 
 interface DropdownProps {
   header: string,
@@ -9,17 +11,19 @@ interface DropdownProps {
   testID: string,
 }
 
-const CustomDropdown = ({ header, options, id, testID, }: DropdownProps) => {
+const CustomDropdown = ({
+  header, options, id, testID,
+}: DropdownProps) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const toggle = () => {
-    setDropdownOpen(prevState => !prevState)
+    setDropdownOpen((prevState) => !prevState)
   }
 
   return (
     <Dropdown isOpen={dropdownOpen} toggle={toggle}>
       <DropdownToggle tag="span">
-        <MoreOptions id={id} testID={testID}/>
+        <MoreOptions id={id} testID={testID} />
       </DropdownToggle>
       <DropdownMenu>
         <DropdownItem header>{header}</DropdownItem>

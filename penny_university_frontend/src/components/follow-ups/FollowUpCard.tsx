@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
+import { DropdownItem } from 'reactstrap';
+import {
+  faTrash, faPen,
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FollowUp, User } from '../../models'
 import { FollowUpType } from '../../models/followUp'
 import { Dropdown } from '..'
 import { Content, EditContent } from '../content'
 import { SaveButton } from '../buttons'
-import { DropdownItem } from 'reactstrap';
-import {
-  faTrash, faPen,
-} from '@fortawesome/free-solid-svg-icons'
 import FollowUpUserInfo from './FollowUpUserInfo'
 import modalDispatch from '../modal/dispatch'
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 export const TestIDs = {
   subMenu: 'followup-submenu',
@@ -28,32 +28,34 @@ const FollowUpButtons = ({
   confirmDeleteOnPress, editOnPress, saveOnPress, editMode, id,
 }: {
   confirmDeleteOnPress: () => void, editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number
-}) => {
-  return editMode ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
-    : (
-      <Dropdown
-        id={`followup-dropdown-${id}`}
-        header="Options"
-        testID={TestIDs.subMenu}
-        options={[
-          <DropdownItem
-            className="btn btn-link"
-            onClick={editOnPress}
-            key={`edit-followup-${id}`}
-          >
-            <FontAwesomeIcon icon={faPen} /> Edit
-          </DropdownItem>,
-          <DropdownItem
-            className="btn btn-link"
-            onClick={confirmDeleteOnPress}
-            key={`delete-followup-${id}`}
-          >
-            <FontAwesomeIcon icon={faTrash} /> Delete
-          </DropdownItem>,
-        ]}
-      />
-    )
-}
+}) => (editMode ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
+  : (
+    <Dropdown
+      id={`followup-dropdown-${id}`}
+      header="Options"
+      testID={TestIDs.subMenu}
+      options={[
+        <DropdownItem
+          className="btn btn-link"
+          onClick={editOnPress}
+          key={`edit-followup-${id}`}
+        >
+          <FontAwesomeIcon icon={faPen} />
+          {' '}
+          Edit
+        </DropdownItem>,
+        <DropdownItem
+          className="btn btn-link"
+          onClick={confirmDeleteOnPress}
+          key={`delete-followup-${id}`}
+        >
+          <FontAwesomeIcon icon={faTrash} />
+          {' '}
+          Delete
+        </DropdownItem>,
+      ]}
+    />
+  ))
 
 const FollowUpCard = ({
   followUp, updateFollowUp, canEdit, user, role,
