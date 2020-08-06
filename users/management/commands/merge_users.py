@@ -22,7 +22,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--from-email',
             dest='from_email',
-            help='The email of the user you want to merge into the other',
+            help='The email of the user you want to merge into the other. This user will be deleted',
             required=True,
         )
         parser.add_argument(
