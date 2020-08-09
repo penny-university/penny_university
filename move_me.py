@@ -1,6 +1,7 @@
-from django.db.models import F
 import datetime
 import pytz
+
+from users.models import User
 
 #TODO! make this real
 range_start = pytz.utc.localize(datetime.datetime(2020, 7, 1))
@@ -14,9 +15,10 @@ def notify_about(**kwargs):
             print(f'\t{chat["penny_chat_id"]}: {chat["penny_chat_title"]}')
         print()
 
-from users.models import User
 
-notification_data = User.objects.filter(
+
+#TODO! test that this works and excludes self-followups
+followup_queryset = User.objects.filter(
     # find all users who
     #  were participants (user_chats)
     #  in a penny_chat
@@ -25,10 +27,6 @@ notification_data = User.objects.filter(
     # falls in the date range
     user_chats__penny_chat__follow_ups__date__gte=range_start,
     user_chats__penny_chat__follow_ups__date__lt=range_end,
-).exclude(
-    # remove row from above corresponding to followups created by the user themselves
-    # (`id` below is the user id)
-    user_chats__penny_chat__follow_ups__user_id=F('id'),
 ).values(
     # user data
     'id',
@@ -39,47 +37,90 @@ notification_data = User.objects.filter(
     'user_chats__penny_chat__id',
     'user_chats__penny_chat__date',
     'user_chats__penny_chat__title',
+    # followup data
+    'user_chats__penny_chat__follow_ups__user_id',
+    'user_chats__penny_chat__follow_ups__user__first_name',
 ).distinct().order_by(
+    # Note - the order is important because the for loop can scan the list rather than
+    # pull everything into memory
     'social_profiles__slack_team_id',
     'social_profiles__slack_id',
+    'user_chats__penny_chat__id',
+    'user_chats__penny_chat__follow_ups__user_id',
 )
 # Note: because we are joining in the social_profile, the user will be notified in
 # every social profile that they have. Eventually we might want to start the social profile
 # in the participation object and only ping them on the profile they used for that chat
 
-# note, I decided not to initialize these variables with notification_data[0] because I
-# think that will trigger a sql execution, and then the for loop will trigger another one
-slack_team_id = None
-slack_user_id = None
-slack_user_name = None
-per_user_chats = []
-#TODO! test that we notify all users and no non-expected users
-for item in notification_data:
-    if not (
-        item['social_profiles__slack_team_id'] == slack_team_id
-        and item['social_profiles__slack_id'] == slack_user_id
-    ):
-        notify_about(
-            slack_user_name=slack_user_name,
-            slack_team_id=slack_team_id,
-            slack_user_id=slack_user_id,
-            per_user_chats=per_user_chats,
+
+class CompoundKey:
+    #TODO! doc
+    def __init__(self, fields, val_dict):
+        self.fields = fields
+        self.compound_key = {field: val_dict[field] for field in fields}
+        pass
+
+    def __assert_dict(self, other):
+        assert isinstance(other, dict), (
+            f"CompoundKey should only be compared with dict. Found type {other.__class__.__name__}: {other}"
         )
-        per_user_chats = []
-    slack_team_id = item['social_profiles__slack_team_id']
-    slack_user_id = item['social_profiles__slack_id']
-    slack_user_name = item['first_name']
-    per_user_chats.append({
-        'penny_chat_id': item['user_chats__penny_chat__id'],
-        'penny_chat_date': item['user_chats__penny_chat__date'],
-        'penny_chat_title': item['user_chats__penny_chat__title'],
-    })
 
-# notify last user
-notify_about(
-    slack_user_name=slack_user_name,
-    slack_team_id=slack_team_id,
-    slack_user_id=slack_user_id,
-    per_user_chats=per_user_chats,
-)
+    def __eq__(self, other):
+        self.__assert_dict(other)
+        for field in self.fields:
+            if other[field] != self.compound_key[field]:
+                return False
+        return True
 
+    def __lt__(self, other):
+        self.__assert_dict(other)
+        for field in self.fields:
+            if other[field] == self.compound_key[field]:
+                # this isn't the field that changed
+                continue
+            if other[field] > self.compound_key[field]:
+                # the field that changed is correctly ordered
+                return True
+        return False
+
+    def __str__(self):
+        return str(self.compound_key)
+
+    def __iter__(self):
+        return iter(self.compound_key.items())
+
+
+class UnorderedDataError(RuntimeError):
+    pass
+
+def grouped(iterable, fields):
+    """given ordered iterable of dictionaries and field, iteratively yields the field value and the set of associated items
+
+    raises an error if items are not ordered according to field
+    """
+    key = None
+    vals = []
+    for i, item in enumerate(iterable):
+        if not key == item:
+            if key is not None:
+                # compare compound key with next item to make sure the ordering is correct
+                if key < item:
+                    yield dict(key, items=vals)
+                else:
+                    raise UnorderedDataError(
+                        f'Expected all items to be ordered. Item {item} was less than key {key}'
+                    )
+            key = CompoundKey(fields, {field:item[field] for field in fields})
+            vals = []
+        item = item.copy()
+        for field in fields:
+            del item[field]
+        vals.append(item)
+    yield dict(key, items=vals)  # last set
+
+for item in grouped(followup_queryset, [
+    'social_profiles__slack_team_id',
+    'social_profiles__slack_id',
+    'user_chats__penny_chat__id',
+    'user_chats__penny_chat__follow_ups__user_id']):
+    print(item)
