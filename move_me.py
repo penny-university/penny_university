@@ -7,18 +7,8 @@ from users.models import User
 range_start = pytz.utc.localize(datetime.datetime(2020, 7, 1))
 range_end = pytz.utc.localize(datetime.datetime(2020, 8, 1))
 
-#TODO! make this real
-def notify_about(**kwargs):
-    if kwargs['slack_user_id']:
-        print(kwargs['slack_user_name'])
-        for chat in kwargs['per_user_chats']:
-            print(f'\t{chat["penny_chat_id"]}: {chat["penny_chat_title"]}')
-        print()
-
-
-
 #TODO! test that this works and excludes self-followups
-followup_queryset = User.objects.filter(
+recent_followup_queryset = User.objects.filter(
     # find all users who
     #  were participants (user_chats)
     #  in a penny_chat
@@ -43,6 +33,7 @@ followup_queryset = User.objects.filter(
 ).distinct().order_by(
     # Note - the order is important because the for loop can scan the list rather than
     # pull everything into memory
+    'id', # user id
     'social_profiles__slack_team_id',
     'social_profiles__slack_id',
     'user_chats__penny_chat__id',
@@ -58,20 +49,16 @@ class CompoundKey:
     def __init__(self, fields, val_dict):
         self.fields = fields
         self.compound_key = {field: val_dict[field] for field in fields}
-        pass
-
     def __assert_dict(self, other):
         assert isinstance(other, dict), (
             f"CompoundKey should only be compared with dict. Found type {other.__class__.__name__}: {other}"
         )
-
     def __eq__(self, other):
         self.__assert_dict(other)
         for field in self.fields:
             if other[field] != self.compound_key[field]:
                 return False
         return True
-
     def __lt__(self, other):
         self.__assert_dict(other)
         for field in self.fields:
@@ -82,10 +69,8 @@ class CompoundKey:
                 # the field that changed is correctly ordered
                 return True
         return False
-
     def __str__(self):
         return str(self.compound_key)
-
     def __iter__(self):
         return iter(self.compound_key.items())
 
@@ -118,9 +103,53 @@ def grouped(iterable, fields):
         vals.append(item)
     yield dict(key, items=vals)  # last set
 
-for item in grouped(followup_queryset, [
+
+#TODO! make this real
+def notify_about(user_data):
+    print(f'{user_data["user_id"]} {user_data["first_name"]}')
+    for penny_chat in user_data['penny_chats']:
+        print(f'\t{penny_chat["id"]} {penny_chat["title"]}')
+        for followup in penny_chat["followups"]:
+            print(f'\t\t{followup["user_id"]} {followup["first_name"]}')
+    print()
+
+
+# Test users that have only followed up on their on chats - in this case they will appear in this data set but they will have no penny chat update to report
+for user in grouped(recent_followup_queryset, [
+    'id',
+    'first_name',
     'social_profiles__slack_team_id',
     'social_profiles__slack_id',
-    'user_chats__penny_chat__id',
-    'user_chats__penny_chat__follow_ups__user_id']):
-    print(item)
+]):
+    user_data = {
+        'user_id': user['id'],
+        'first_name': user['first_name'],
+    }
+    penny_chats = []
+    for penny_chat in grouped(user['items'], [
+        'user_chats__penny_chat__id',
+        'user_chats__penny_chat__title',
+        'user_chats__penny_chat__date',
+    ]):
+        penny_chat_data = {
+            'id': penny_chat['user_chats__penny_chat__id'],
+            'title': penny_chat['user_chats__penny_chat__title'],
+            'date': penny_chat['user_chats__penny_chat__date'],
+        }
+        followups = []
+        for followup in penny_chat['items']:
+            if user['id'] == followup['user_chats__penny_chat__follow_ups__user_id']:
+                # ignore followups that were created by the user
+                continue
+            followup_data = {
+                'user_id': followup['user_chats__penny_chat__follow_ups__user_id'],
+                'first_name': followup['user_chats__penny_chat__follow_ups__user__first_name'],
+            }
+            followups.append(followup_data)
+        if followups:
+            penny_chat_data['followups'] = followups
+            penny_chats.append(penny_chat_data)
+    if penny_chats:
+        user_data['penny_chats'] = penny_chats
+        notify_about(user_data)
+
