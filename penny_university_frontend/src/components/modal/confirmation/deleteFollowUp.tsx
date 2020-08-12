@@ -7,6 +7,7 @@ import {
 } from 'reactstrap'
 import modalDispatch from '../dispatch'
 import { deleteFollowUp } from '../../../actions/chat';
+import { Strings } from '../../../constants';
 
 type DeleteFollowUpModalProps = {
   deleteFollowUp: (followUpID: number, chatID: number) => AnyAction,
@@ -21,9 +22,9 @@ const DeleteFollowUpModal = ({ deleteFollowUp, followUpID, chatID }: DeleteFollo
   }
   return (
     <>
-      <ModalHeader toggle={modalDispatch.close}>Delete Follow Up</ModalHeader>
+      <ModalHeader toggle={modalDispatch.close}>{Strings.ModalHeaders.deleteFollowUp}</ModalHeader>
       <ModalBody>
-        Are you sure you want to delete this Follow Up? This action cannot be undone.
+        {Strings.Confirmation.deleteFollowUp}
       </ModalBody>
       <ModalFooter>
         <Button color="danger" onClick={deleteOnPress}>

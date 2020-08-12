@@ -30,10 +30,6 @@ const paginate = ({ types, mapActionToKey }:
     },
     mapActionToKey: (action: AnyAction) => string | undefined
   }) => {
-  if (typeof mapActionToKey !== 'function') {
-    throw new Error('Expected mapActionToKey to be a function.')
-  }
-
   const {
     requestTypes, successTypes, failureTypes, deleteTypes,
   } = types

@@ -40,8 +40,7 @@ const FollowUpButtons = ({
           onClick={editOnPress}
           key={`edit-followup-${id}`}
         >
-          <FontAwesomeIcon icon={faPen} />
-          {' '}
+          <FontAwesomeIcon icon={faPen} className="mr-2" />
           Edit
         </DropdownItem>,
         <DropdownItem
@@ -49,8 +48,7 @@ const FollowUpButtons = ({
           onClick={confirmDeleteOnPress}
           key={`delete-followup-${id}`}
         >
-          <FontAwesomeIcon icon={faTrash} />
-          {' '}
+          <FontAwesomeIcon icon={faTrash} className="mr-2" />
           Delete
         </DropdownItem>,
       ]}
