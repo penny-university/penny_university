@@ -33,8 +33,7 @@ const VerifyPage = ({ verify, location, error }: VerifyPageProps) => {
       <h1 className="text-center">{message}</h1>
       <h4 className="mt-4 text-center">
         <Link to="/chats">
-          <FontAwesomeIcon icon={faChevronLeft} />
-          {' '}
+          <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
           Go Back to Chats
         </Link>
       </h4>
