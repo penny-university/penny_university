@@ -13,14 +13,11 @@ import { Input } from '../../fields'
 
 type AuthPasswordModalProps = {
   email: string,
-  followUp?: { chatId: number, content: string } | undefined,
-  login: (payload: {email: string, password: string, followUp: { chatId: number, content: string } | undefined }) => void,
+  login: (payload: {email: string, password: string}) => void,
   requestPasswordReset: (payload: {email: string}) => void,
 }
 
-const AuthPasswordModal = ({
-  email, login, followUp, requestPasswordReset,
-}: AuthPasswordModalProps) => {
+const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
   const [password, setPassword] = useState('')
   return (
     <>
@@ -28,7 +25,7 @@ const AuthPasswordModal = ({
       <ModalBody>
         <Form onSubmit={(e) => {
           e.preventDefault()
-          login({ email, password, followUp })
+          login({ email, password })
         }}
         >
           <Input
@@ -53,18 +50,12 @@ const AuthPasswordModal = ({
   )
 }
 
-AuthPasswordModal.defaultProps = {
-  followUp: undefined,
-}
 
 const mapStateToProps = () => ({
 })
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  login:
-  (payload:
-    {email: string, password: string, followUp:
-      { chatId: number, content: string } | undefined }) => dispatch(dispatchLogin(payload)),
+  login: (payload: {email: string, password: string}) => dispatch(dispatchLogin(payload)),
   requestPasswordReset: (payload: {email: string}) => dispatch(requestPasswordReset(payload)),
 })
 

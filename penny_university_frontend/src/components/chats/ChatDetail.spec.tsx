@@ -57,7 +57,7 @@ test('users can only create follow ups when authenticated', () => {
   expect(markdownButton).toBeTruthy()
 })
 
-test('users can create follow ups when unauthenticated', () => {
+test('users can start a follow up whithout authentication', () => {
   render(
     <Router history={history}>
       <ChatDetail
