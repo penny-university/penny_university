@@ -15,22 +15,20 @@ type AuthEmailModalProps = {
   resendVerifyEmail: (email: string) => AnyAction
 }
 
-const AuthEmailModal = ({ email, resendVerifyEmail }: AuthEmailModalProps) => {
-  return (
-    <>
-      <ModalHeader toggle={modalDispatch.close}>Sign up or log in</ModalHeader>
-      <ModalBody>
-          <div className="text-center">
-            <p>{email} needs to be verified.</p>
-            <p>Check your email for a verification link.</p>
-            <Button onClick={() => resendVerifyEmail(email)}>
-              Resend Verification email
-            </Button>
-          </div>
-      </ModalBody>
-    </>
-  )
-}
+const AuthEmailModal = ({ email, resendVerifyEmail }: AuthEmailModalProps) => (
+  <>
+    <ModalHeader toggle={modalDispatch.close}>Sign up or log in</ModalHeader>
+    <ModalBody>
+        <div className="text-center">
+          <p>{email} needs to be verified.</p>
+          <p>Check your email for a verification link.</p>
+          <Button onClick={() => resendVerifyEmail(email)}>
+            Resend Verification email
+          </Button>
+        </div>
+    </ModalBody>
+  </>
+)
 
 const mapStateToProps = () => ({
 })

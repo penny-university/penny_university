@@ -58,6 +58,11 @@ const modalDispatch = () => {
     props: { email },
   })
 
+  const confirmDeleteFollowUp = (followUpID: number, chatID: number) => open({
+    name: ModalNames.CONFIRM_DELETE_FOLLOW_UP,
+    props: { followUpID, chatID },
+  })
+
   return {
     mount,
     unmount,
@@ -67,6 +72,7 @@ const modalDispatch = () => {
     authPasswordReset,
     settings,
     verifyEmail,
+    confirmDeleteFollowUp,
     close,
   }
 }

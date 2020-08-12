@@ -9,6 +9,7 @@ import {
   AuthEmail, AuthPassword, AuthPasswordReset, AuthSignup, VerifyEmail,
 } from './auth'
 import Settings from './settings'
+import { DeleteFollowUpModal } from './confirmation';
 
 type State = { name: string | null, open: boolean, props: { email?: string | undefined } }
 
@@ -38,6 +39,7 @@ const Modals = {
   [ModalNames.AUTH_SIGNUP]: AuthSignup,
   [ModalNames.SETTINGS]: Settings,
   [ModalNames.VERIFY_EMAIL]: VerifyEmail,
+  [ModalNames.CONFIRM_DELETE_FOLLOW_UP]: DeleteFollowUpModal,
 }
 
 export const Modal = () => {

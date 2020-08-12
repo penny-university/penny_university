@@ -34,8 +34,8 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       store.dispatch(loadChatsList(ApiRoutes.chats))
       break
     case Actions.SIGNUP_SUCCESS:
-        modalDispatch.verifyEmail(action.payload.meta.email)
-      break    
+      modalDispatch.verifyEmail(action.payload.meta.email)
+      break
     case Actions.LOGIN_SUCCESS:
       CookieHelper.setToken(action.payload.result.key)
       store.dispatch(setToken(action.payload.result.key))

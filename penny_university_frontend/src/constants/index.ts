@@ -1,3 +1,5 @@
+import { Confirmation, ModalHeaders } from './strings';
+
 const ApiRoutes = {
   user: 'auth/user/',
   userProfile: 'users/profile/',
@@ -23,5 +25,7 @@ export const Routes = {
   ResetPassword: '/reset-password',
   VerifyEmail: '/verify',
 }
+
+export const Strings = { Confirmation, ModalHeaders }
 
 export default ApiRoutes

@@ -1,5 +1,6 @@
 import { normalize } from 'normalizr'
 import { AnyAction } from 'redux'
+import { ChatActions } from '../actions';
 
 export const paginationInitialState = {
   chatsByFilter: {
@@ -23,27 +24,25 @@ const union = (a: Iterable<any>, b: Iterable<any>) => (
 // Requires three types (request, success, and failure),
 // and a function to map the pagination to a key, e.g. (action) => action.filterName.
 const paginate = ({ types, mapActionToKey }:
-  { types: [Array<string>, Array<string>, Array<string>], mapActionToKey:
-    (action: AnyAction) => string | undefined }) => {
-  if (!Array.isArray(types) || types.length !== 3) {
-    throw new Error('Expected types to be an array of three elements.')
-  }
-  if (!types.every((t) => Array.isArray(t))) {
-    throw new Error('Expected types to be strings.')
-  }
-  if (typeof mapActionToKey !== 'function') {
-    throw new Error('Expected mapActionToKey to be a function.')
-  }
+  {
+    types: {
+      requestTypes: Array<string>, successTypes: Array<string>, failureTypes: Array<string>, deleteTypes: Array<string>
+    },
+    mapActionToKey: (action: AnyAction) => string | undefined
+  }) => {
+  const {
+    requestTypes, successTypes, failureTypes, deleteTypes,
+  } = types
 
-  const [requestTypes, successTypes, failureTypes] = types
-
-  const updatePagination = (state = {
-    isFetching: false,
-    next: undefined,
-    previous: undefined,
-    count: 0,
-    ids: [],
-  }, action: AnyAction) => {
+  const updatePagination = (
+    state: {isFetching: boolean, next: string | undefined, previous: string | undefined, count: number, ids: any[]} = {
+      isFetching: false,
+      next: undefined,
+      previous: undefined,
+      count: 0,
+      ids: [],
+    }, action: AnyAction,
+  ) => {
     const { result, responseSchema } = action.payload || {}
     if (requestTypes.includes(action.type)) {
       return {
@@ -70,6 +69,16 @@ const paginate = ({ types, mapActionToKey }:
       return {
         ...state,
         isFetching: false,
+      }
+    } else if (deleteTypes.includes(action.type)) {
+      if (action.type === ChatActions.DELETE_FOLLOW_UP_SUCCESS) {
+        const index = state.ids.indexOf(action.payload?.meta?.followUpID.toString())
+        const newState = { ...state }
+        newState.ids.splice(index, 1)
+        return {
+          ...newState,
+          isFetching: false,
+        }
       }
     }
     return state
