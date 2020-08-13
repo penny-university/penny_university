@@ -49,7 +49,7 @@ class PennyChatViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(Q(participants__user=user) | Q(visibility=PennyChat.PUBLIC))
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset(request)
         queryset = self.filter_queryset(queryset)
         page = self.paginate_queryset(queryset)
         if page is not None:
