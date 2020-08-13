@@ -48,7 +48,7 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     def get_queryset(self, request):
         if User.is_authenticated:
             user = self.request.user
-            return self.queryset.filter(Q(participants__user=user) | Q(visibility=PennyChat.PUBLIC))
+            return self.queryset.filter(Q(participants__user=user.id) | Q(visibility=PennyChat.PUBLIC))
         else:
             return self.queryset.filter(Q(visibility=PennyChat.PUBLIC))
 
