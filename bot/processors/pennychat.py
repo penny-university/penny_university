@@ -146,6 +146,24 @@ def penny_chat_details_modal(penny_chat_invitation):
                 'type': 'section',
                 'text': {
                     'type': 'mrkdwn',
+                    'text': '*Should this chat be private?*'
+                },
+                'accessory': {
+                    'type': 'checkboxes',
+                    'options': [{
+                        'value': 'A1',
+                        'text': {
+                            'type': 'plain_text',
+                            'text': 'Private Chat'
+                        }
+                    }],
+                    'action_id': PENNY_CHAT_PRIVATE_SELECT,
+                }
+            },
+            {
+                'type': 'section',
+                'text': {
+                    'type': 'mrkdwn',
                     'text': '*Who do you want to invite?*'
                 },
                 'accessory': {

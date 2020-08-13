@@ -44,6 +44,10 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = PennyChatFilter
 
+    def get_queryset(self, request)
+        user = self.request.user
+        return self.queryset.filter(Q(participants__user=user) | Q(visibility=PennyChat.PUBLIC))
+
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         queryset = self.filter_queryset(queryset)
