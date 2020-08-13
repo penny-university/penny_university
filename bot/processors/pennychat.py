@@ -36,6 +36,7 @@ PENNY_CHAT_CAN_ATTEND = 'penny_chat_can_attend'
 PENNY_CHAT_CAN_NOT_ATTEND = 'penny_chat_can_not_attend'
 
 PENNY_CHAT_ID = 'penny_chat_id'
+PENNY_CHAT_PRIVATE_SELECT = 'penny_chat_private_select'
 
 
 def datetime_range(start, end, delta):
