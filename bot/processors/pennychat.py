@@ -162,7 +162,7 @@ def penny_chat_details_modal(penny_chat_invitation):
                                 "type": "plain_text",
                                 "text": "public chat?",
                             },
-                            "value": "public?",
+                            "value": "public",
                         },
                     ]
                 },
