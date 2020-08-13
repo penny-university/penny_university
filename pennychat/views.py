@@ -46,7 +46,10 @@ class PennyChatViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self, request):
         user = self.request.user
-        return self.queryset.filter(Q(participants__user=user) | Q(visibility=PennyChat.PUBLIC))
+        if user:
+            return self.queryset.filter(Q(participants__user=user) | Q(visibility=PennyChat.PUBLIC))
+        else:
+            return self.queryset.filter(Q(visibility=PennyChat.PUBLIC))
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset(request)
