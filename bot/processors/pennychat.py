@@ -144,22 +144,32 @@ def penny_chat_details_modal(penny_chat_invitation):
                 ]
             },
             {
-                'type': 'section',
-                'text': {
-                    'type': 'mrkdwn',
-                    'text': '*Should this chat be private?*'
-                },
-                'accessory': {
+                'block_id': 'penny_chat_visibility',
+                'type': 'input',
+                'element': {
                     'type': 'checkboxes',
-                    'options': [{
-                        'value': 'A1',
-                        'text': {
-                            'type': 'plain_text',
-                            'text': 'Private Chat'
-                        }
-                    }],
-                    'action_id': PENNY_CHAT_PRIVATE_SELECT,
-                }
+                    'action_id': 'private_chat_select',
+                    'options': [
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "private chat?",
+                            },
+                            "value": "private",
+                        },
+                        {
+                            "text": {
+                                "type": "plain_text",
+                                "text": "public chat?",
+                            },
+                            "value": "public?",
+                        },
+                    ]
+                },
+                'label': {
+                    'type':'plain_text',
+                    'text':'Chat Visibility',
+                },
             },
             {
                 'type': 'section',
@@ -318,6 +328,12 @@ class PennyChatBotModule(BotModule):
 
         penny_chat_invitation.title = state['penny_chat_title']['penny_chat_title']['value']
         penny_chat_invitation.description = state['penny_chat_description']['penny_chat_description']['value']
+
+        visibility_checkbox = state['penny_chat_visibility']['private_chat_select']['selected_options'][0].get('value')       
+        if visibility_checkbox == 'private':
+            penny_chat_invitation.visibility=20
+        if visibility_checkbox == 'public':
+            penny_chat_invitation.visibility=10
 
         if len(penny_chat_invitation.invitees.strip()) == 0 and len(penny_chat_invitation.channels.strip()) == 0:
             penny_chat_invitation.save()
