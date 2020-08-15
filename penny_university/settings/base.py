@@ -169,6 +169,8 @@ sentry_sdk.init(
 # Put product specific configuration below this.
 ############################################
 
+PENNYU_DOMAIN = 'pennyuniversity.org'
+
 # Slack
 SLACK_API_KEY = os.environ.get('SLACK_API_KEY')
 if SLACK_API_KEY is None:

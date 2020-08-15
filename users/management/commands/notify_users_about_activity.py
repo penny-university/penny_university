@@ -1,8 +1,12 @@
 import datetime
 import pytz
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
+from sentry_sdk import capture_message
+
+from common.utils import get_slack_client
 from users.models import User
 
 NASHVILLE_TZ = pytz.timezone('America/Chicago')
@@ -72,6 +76,7 @@ range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
         recent_followup_queryset = get_recent_followup_queryset(range_start, range_end)
         # TODO! Test users that have only followed up on their on chats - in this case they will appear in this data set
         # but they will have no penny chat update to report
+        # TODO! write a comment for what's happening here with the grouping
         for user in grouped(recent_followup_queryset, [
             'id',
             'first_name',
@@ -81,6 +86,8 @@ range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
             user_data = {
                 'user_id': user['id'],
                 'first_name': user['first_name'],
+                'slack_team_id': user['social_profiles__slack_team_id'],
+                'slack_id': user['social_profiles__slack_id'],
             }
             penny_chats = []
             for penny_chat in grouped(user['items'], [
@@ -108,7 +115,7 @@ range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
                     penny_chats.append(penny_chat_data)
             if penny_chats:
                 user_data['penny_chats'] = penny_chats
-                notify_about(user_data)
+                notify_about_activity(user_data)
 
 
 def get_recent_followup_queryset(range_start, range_end):
@@ -215,14 +222,77 @@ def grouped(iterable, fields):
         for field in fields:
             del item[field]
         vals.append(item)
-    yield dict(key, items=vals)  # last set
+    if key:  # if there are no items at all, then this will remain None
+        yield dict(key, items=vals)  # last set
 
 
-# TODO! make this real
-def notify_about(user_data):
-    print(f'{user_data["user_id"]} {user_data["first_name"]}')
+def notify_about_activity(user_data):
+    """Notifies users in slack about recent activity in Penny Chat's they've participated in.
+
+    :param user_data: expected form is
+        {
+            'user_id': ...,
+            'first_name': ...,
+            'slack_team_id': ...,
+            'slack_id': ...,
+            'penny_chats': [{
+               'id': ...,
+               'title': ...,
+               'date': ...,
+               'followups': [{
+                   'user_id': ...,
+                   'first_name': ...,
+                }, ...],
+            }, ...],
+        }
+
+    :return: Nothing. Notifies users as side effect.
+    """
+    chat_lines = []
     for penny_chat in user_data['penny_chats']:
-        print(f'\t{penny_chat["id"]} {penny_chat["title"]}')
-        for followup in penny_chat["followups"]:
-            print(f'\t\t{followup["user_id"]} {followup["first_name"]}')
+        people = {followup["first_name"]: followup["user_id"] for followup in penny_chat["followups"]}
+        people_string = get_people_string(people)
+        date_string = (
+            f'<!date^{int(penny_chat["date"].timestamp())}^{{date_short}}|{penny_chat["date"].strftime("%b %d, %Y")}>'
+        )
+        chat_lines.append(
+            f'Your {date_string} chat _"{penny_chat["title"]}"_ has follow-ups from {people_string}. '
+            f'*<http://{settings.PENNYU_DOMAIN}/chats/{penny_chat["id"]}|Read them here!>*'
+        )
+
+    if len(chat_lines) == 1:
+        notification_text = f'Hey {user_data["first_name"]}! {chat_lines[0]}'
+    else:
+        notification_text = f'Hey {user_data["first_name"]}! You have had several Penny Chat updates:\n'
+        for chat_line in chat_lines:
+            notification_text += f'- {chat_line}\n'
+
+    print(notification_text)
     print()
+    slack_client = get_slack_client(team_id=user_data['slack_team_id'])
+    # TODO! make channel not GENERAL!
+    slack_client.chat_postMessage(channel='#general', text=notification_text)
+
+
+def get_people_string(people):
+    """Returns a pretty printed string for the list of people.
+
+    :param people: Assumes a dictionary of first_name-to-user_id
+    :return: String combining all the users
+    """
+    people_strings = []
+    for first_name, user_id in people.items():
+        people_strings.append(f'<http://{settings.PENNYU_DOMAIN}/profile/{user_id}|{first_name}>')
+    if len(people_strings) == 1:
+        return people_strings[0]
+    if len(people_strings) == 2:
+        return f'{people_strings[0]} and {people_strings[1]}'
+    if len(people_strings) > 2:
+        first = ', '.join(people_strings[:-1])
+        return f'{first}, and {people_strings[-1]}'
+    capture_message(
+        '0 people for get_people_string',
+        extras={
+            'people': people,
+        }
+    )
