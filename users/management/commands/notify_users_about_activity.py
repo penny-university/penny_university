@@ -19,6 +19,7 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
+        # TODO! test each of these
         parser.add_argument(
             '--live_run',
             dest='live_run',
@@ -43,6 +44,12 @@ class Command(BaseCommand):
             dest='yesterday',
             action='store_true',
             help='runs from start of yesterday to end of yesterday',
+            required=False,
+        )
+        parser.add_argument(
+            '--filter_emails',
+            dest='filter_emails',
+            help='CSV list of emails to send to (if they have any updates)',
             required=False,
         )
 
@@ -73,10 +80,13 @@ class Command(BaseCommand):
 range_start Nashville = {range_start_nash}\trange_start UTC = {range_start_utc}
 range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
 """)
-        recent_followup_queryset = get_recent_followup_queryset(range_start, range_end)
+        filter_emails = options['filter_emails'].split(',') if options['filter_emails'] else None
+
+        recent_followup_queryset = get_recent_followup_queryset(range_start, range_end, filter_emails)
         # TODO! Test users that have only followed up on their on chats - in this case they will appear in this data set
         # but they will have no penny chat update to report
         # TODO! write a comment for what's happening here with the grouping
+        # TODO! consider sticking this in another function (as well as the daterange stuff above)
         for user in grouped(recent_followup_queryset, [
             'id',
             'first_name',
@@ -115,10 +125,11 @@ range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
                     penny_chats.append(penny_chat_data)
             if penny_chats:
                 user_data['penny_chats'] = penny_chats
-                notify_about_activity(user_data)
+                # TODO! test live run safety switch
+                notify_about_activity(user_data, options['live_run'])
 
 
-def get_recent_followup_queryset(range_start, range_end):
+def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
     # TODO! test that this works and excludes self-followups
 
     # Note: because we are joining in the social_profile, the user will be notified in
@@ -133,7 +144,14 @@ def get_recent_followup_queryset(range_start, range_end):
         # falls in the date range
         user_chats__penny_chat__follow_ups__date__gte=range_start,
         user_chats__penny_chat__follow_ups__date__lt=range_end,
-    ).values(
+    )
+
+    if filter_emails:
+        recent_followup_queryset = recent_followup_queryset.filter(
+            email__in=filter_emails,
+        )
+
+    recent_followup_queryset = recent_followup_queryset.values(
         # user data
         'id',
         'first_name',
@@ -226,7 +244,7 @@ def grouped(iterable, fields):
         yield dict(key, items=vals)  # last set
 
 
-def notify_about_activity(user_data):
+def notify_about_activity(user_data, live_run=False):
     """Notifies users in slack about recent activity in Penny Chat's they've participated in.
 
     :param user_data: expected form is
@@ -267,11 +285,10 @@ def notify_about_activity(user_data):
         for chat_line in chat_lines:
             notification_text += f'- {chat_line}\n'
 
-    print(notification_text)
-    print()
-    slack_client = get_slack_client(team_id=user_data['slack_team_id'])
-    # TODO! make channel not GENERAL!
-    slack_client.chat_postMessage(channel='#general', text=notification_text)
+    print(f'{notification_text}To be sent to {user_data["slack_team_id"]}@{user_data["slack_id"]}\n\n')
+    if live_run:
+        slack_client = get_slack_client(team_id=user_data['slack_team_id'])
+        slack_client.chat_postMessage(channel=user_data['slack_id'], text=notification_text)
 
 
 def get_people_string(people):
