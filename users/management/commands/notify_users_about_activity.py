@@ -59,7 +59,6 @@ class Command(BaseCommand):
         live_run = options['live_run']
 
         recent_followup_queryset = get_recent_followup_queryset(range_start, range_end, filter_emails)
-
         for user_data in self.group_by_user(recent_followup_queryset):
             # TODO! test live run safety switch
             notify_about_activity(user_data, live_run)
