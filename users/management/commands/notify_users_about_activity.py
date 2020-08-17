@@ -54,13 +54,23 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        range_end, range_start = self.get_range(options)
+        filter_emails = options['filter_emails'].split(',') if options['filter_emails'] else None
+        live_run = options['live_run']
+
+        recent_followup_queryset = get_recent_followup_queryset(range_start, range_end, filter_emails)
+
+        for user_data in self.group_by_user(recent_followup_queryset):
+            # TODO! test live run safety switch
+            notify_about_activity(user_data, live_run)
+
+    def get_range(self, options):
         # test that we're using one of the allowable configurations of parameters
         if not (
-            (options.get('yesterday') and not (options.get('range_start') or options.get('range_end')))
-            or ((options.get('range_start') and options.get('range_end')) and not options.get('yesterday'))  # noqa
+                (options.get('yesterday') and not (options.get('range_start') or options.get('range_end')))
+                or ((options.get('range_start') and options.get('range_end')) and not options.get('yesterday'))  # noqa
         ):
             raise CommandError('either `yesterday` or (`range_start` and `range_end`) must be defined, and not both')
-
         if options['yesterday']:
             # TODO! test that this is the right time - we want the Nashville yesterday
             range_end = datetime.datetime.now(NASHVILLE_TZ).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -68,10 +78,8 @@ class Command(BaseCommand):
         else:
             range_end = datetime.datetime.strptime(options['range_end'], "%Y-%m-%dT%H:%M:%S%z")
             range_start = datetime.datetime.strptime(options['range_start'], "%Y-%m-%dT%H:%M:%S%z")
-
         if not range_end > range_start:
             raise CommandError('range_end must be after range_start')
-
         range_start_utc = range_start.astimezone(UTC).replace(tzinfo=None).isoformat()
         range_start_nash = range_start.astimezone(NASHVILLE_TZ).replace(tzinfo=None).isoformat()
         range_end_utc = range_end.astimezone(UTC).replace(tzinfo=None).isoformat()
@@ -80,13 +88,12 @@ class Command(BaseCommand):
 range_start Nashville = {range_start_nash}\trange_start UTC = {range_start_utc}
 range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
 """)
-        filter_emails = options['filter_emails'].split(',') if options['filter_emails'] else None
+        return range_end, range_start
 
-        recent_followup_queryset = get_recent_followup_queryset(range_start, range_end, filter_emails)
-        # TODO! Test users that have only followed up on their on chats - in this case they will appear in this data set
+    def group_by_user(self, recent_followup_queryset):
+        # TODO! Test users that have only followed up on their own chats - in this case they will appear in this data set
         # but they will have no penny chat update to report
         # TODO! write a comment for what's happening here with the grouping
-        # TODO! consider sticking this in another function (as well as the daterange stuff above)
         for user in grouped(recent_followup_queryset, [
             'id',
             'first_name',
@@ -125,8 +132,7 @@ range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
                     penny_chats.append(penny_chat_data)
             if penny_chats:
                 user_data['penny_chats'] = penny_chats
-                # TODO! test live run safety switch
-                notify_about_activity(user_data, options['live_run'])
+                yield user_data
 
 
 def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
@@ -174,74 +180,6 @@ def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
         'user_chats__penny_chat__follow_ups__user_id',
     )
     return recent_followup_queryset
-
-
-class CompoundKey:
-    # TODO! doc
-    def __init__(self, fields, val_dict):
-        self.fields = fields
-        self.compound_key = {field: val_dict[field] for field in fields}
-
-    def __assert_dict(self, other):
-        assert isinstance(other, dict), (
-            f"CompoundKey should only be compared with dict. Found type {other.__class__.__name__}: {other}"
-        )
-
-    def __eq__(self, other):
-        self.__assert_dict(other)
-        for field in self.fields:
-            if other[field] != self.compound_key[field]:
-                return False
-        return True
-
-    def __lt__(self, other):
-        self.__assert_dict(other)
-        for field in self.fields:
-            if other[field] == self.compound_key[field]:
-                # this isn't the field that changed
-                continue
-            if other[field] > self.compound_key[field]:
-                # the field that changed is correctly ordered
-                return True
-        return False
-
-    def __str__(self):
-        return str(self.compound_key)
-
-    def __iter__(self):
-        return iter(self.compound_key.items())
-
-
-class UnorderedDataError(RuntimeError):
-    pass
-
-
-def grouped(iterable, fields):
-    """given ordered iterable of dictionaries, group them according to a compound key in the list of fields
-
-    Raises an error if items are not ordered according to fields.
-    """
-    # TODO! update docs with examples and test references
-    key = None
-    vals = []
-    for i, item in enumerate(iterable):
-        if not key == item:
-            if key is not None:
-                # compare compound key with next item to make sure the ordering is correct
-                if key < item:
-                    yield dict(key, items=vals)
-                else:
-                    raise UnorderedDataError(
-                        f'Expected all items to be ordered. Item {item} was less than key {key}'
-                    )
-            key = CompoundKey(fields, {field: item[field] for field in fields})
-            vals = []
-        item = item.copy()
-        for field in fields:
-            del item[field]
-        vals.append(item)
-    if key:  # if there are no items at all, then this will remain None
-        yield dict(key, items=vals)  # last set
 
 
 def notify_about_activity(user_data, live_run=False):
@@ -313,3 +251,71 @@ def get_people_string(people):
             'people': people,
         }
     )
+
+
+class CompoundKey:
+    # TODO! doc
+    def __init__(self, fields, val_dict):
+        self.fields = fields
+        self.compound_key = {field: val_dict[field] for field in fields}
+
+    def __assert_dict(self, other):
+        assert isinstance(other, dict), (
+            f"CompoundKey should only be compared with dict. Found type {other.__class__.__name__}: {other}"
+        )
+
+    def __eq__(self, other):
+        self.__assert_dict(other)
+        for field in self.fields:
+            if other[field] != self.compound_key[field]:
+                return False
+        return True
+
+    def __lt__(self, other):
+        self.__assert_dict(other)
+        for field in self.fields:
+            if other[field] == self.compound_key[field]:
+                # this isn't the field that changed
+                continue
+            if other[field] > self.compound_key[field]:
+                # the field that changed is correctly ordered
+                return True
+        return False
+
+    def __str__(self):
+        return str(self.compound_key)
+
+    def __iter__(self):
+        return iter(self.compound_key.items())
+
+
+class UnorderedDataError(RuntimeError):
+    pass
+
+
+def grouped(iterable, fields):
+    """given ordered iterable of dictionaries, group them according to a compound key in the list of fields
+
+    Raises an error if items are not ordered according to fields.
+    """
+    # TODO! update docs with examples and test references
+    key = None
+    vals = []
+    for i, item in enumerate(iterable):
+        if not key == item:
+            if key is not None:
+                # compare compound key with next item to make sure the ordering is correct
+                if key < item:
+                    yield dict(key, items=vals)
+                else:
+                    raise UnorderedDataError(
+                        f'Expected all items to be ordered. Item {item} was less than key {key}'
+                    )
+            key = CompoundKey(fields, {field: item[field] for field in fields})
+            vals = []
+        item = item.copy()
+        for field in fields:
+            del item[field]
+        vals.append(item)
+    if key:  # if there are no items at all, then this will remain None
+        yield dict(key, items=vals)  # last set
