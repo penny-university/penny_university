@@ -38,7 +38,7 @@ const failureTypes = [
 
 const entities = (state: EntityState = { chats: {}, followUps: {}, users: {} }, action: AnyAction): EntityState => {
   const { result, responseSchema } = action.payload || {}
-  if (result && responseSchema) {
+  if (result && Object.keys(result).length > 0 && responseSchema) {
     const { entities: { chats = {}, users = {}, followUps = {} } = {} } = normalize(result, responseSchema)
     return {
       chats: {
@@ -60,6 +60,11 @@ const entities = (state: EntityState = { chats: {}, followUps: {}, users: {} }, 
     newState.users[action.payload.result.id] = { ...newState.users[action.payload.result.id], ...action.payload.result }
     return newState
   }
+  if (action.type === ChatActions.DELETE_FOLLOW_UP_SUCCESS) {
+    const newState = { ...state }
+    delete newState.followUps[action.payload.meta.followUpID]
+    return newState
+  }
   return state
 }
 
@@ -76,19 +81,21 @@ const errorReducer = (state = { status: NaN, body: null }, action: AnyAction): E
 const pagination = combineReducers({
   chatsByFilter: paginate({
     mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.userID || 'all',
-    types: [
-      [ChatActions.CHATS_LIST_REQUEST],
-      [ChatActions.CHATS_LIST_SUCCESS],
-      [ChatActions.CHATS_LIST_FAILURE],
-    ],
+    types: {
+      requestTypes: [ChatActions.CHATS_LIST_REQUEST],
+      successTypes: [ChatActions.CHATS_LIST_SUCCESS],
+      failureTypes: [ChatActions.CHATS_LIST_FAILURE],
+      deleteTypes: [],
+    },
   }),
   followUpsByChat: paginate({
     mapActionToKey: (action?: AnyAction) => action?.payload?.meta?.chatID,
-    types: [
-      [ChatActions.FOLLOW_UPS_REQUEST],
-      [ChatActions.FOLLOW_UPS_SUCCESS, ChatActions.CREATE_FOLLOW_UP_SUCCESS],
-      [ChatActions.FOLLOW_UPS_FAILURE],
-    ],
+    types: {
+      requestTypes: [ChatActions.FOLLOW_UPS_REQUEST],
+      successTypes: [ChatActions.FOLLOW_UPS_SUCCESS, ChatActions.CREATE_FOLLOW_UP_SUCCESS],
+      failureTypes: [ChatActions.FOLLOW_UPS_FAILURE],
+      deleteTypes: [ChatActions.DELETE_FOLLOW_UP_SUCCESS],
+    },
   }),
 })
 

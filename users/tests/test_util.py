@@ -1,21 +1,23 @@
 from copy import deepcopy
-from urllib.parse import (
-    urlparse,
-    urlencode,
-)
 
 from django.db import IntegrityError
+from django.utils import timezone
 import pytest
 from slack.errors import SlackApiError
 
-from users.tokens import verification_token_generator
+from pennychat.models import (
+    PennyChat,
+    FollowUp,
+    Participant,
+)
 from users.models import (
+    User,
     SocialProfile,
     update_social_profile_from_slack,
     update_social_profile_from_slack_user,
     get_or_create_social_profile_from_slack_ids,
 )
-
+from users.utils import merge_users
 
 bill_user_id = 'U4102EFU1'
 slack_user = {
@@ -92,7 +94,6 @@ def test_update_social_profile_from_slack_user__creates_new_profile():
 
 @pytest.mark.django_db
 def test_update_social_profile_from_slack_user__safely_updates_existing_profile():
-
     SocialProfile.objects.create(
         email=slack_user['profile']['email'],
         slack_id=slack_user['id'],
@@ -109,7 +110,6 @@ def test_update_social_profile_from_slack_user__safely_updates_existing_profile(
 
 @pytest.mark.django_db
 def test_update_social_profile_from_slack_user__updates_profile_that_only_has_email():
-
     SocialProfile.objects.create(
         email=slack_user['profile']['email'],
         slack_team_id=slack_user['profile']['team'],
@@ -193,3 +193,49 @@ def test_get_or_create_by_slack_ids(mock_slack_client):
     bill_user = SocialProfile.objects.get(slack_id=bill_user_id)
 
     assert resp == {bill_user_id: bill_user}
+
+
+@pytest.mark.django_db
+def test_merge_users():
+    test_user_1 = User.objects.create_user(
+        username='test@profile.com',
+        email='test@profile.com',
+        password='password',
+        first_name='test',
+        last_name='user',
+    )
+    test_user_2 = User.objects.create_user(
+        username='test2@profile.com',
+        email='test2@profile.com',
+        password='password',
+        first_name='second',
+        last_name='user',
+    )
+    test_profile_2 = SocialProfile.objects.create(
+        real_name='Second Profile',
+        email='test2@profile.com',
+        slack_id='required',
+        user=test_user_2,
+    )
+    penny_chat = PennyChat.objects.create(
+        title='Chat 1',
+        description='The test chat',
+        date=timezone.now(),
+    )
+    Participant.objects.create(user=test_user_2, penny_chat=penny_chat, role=Participant.ORGANIZER)
+    follow_up = FollowUp.objects.create(
+        penny_chat=penny_chat,
+        content='The follow up',
+        user=test_user_2,
+    )
+    merge_users(test_user_2, test_user_1)
+    follow_up.refresh_from_db()
+    penny_chat.refresh_from_db()
+    test_profile_2.refresh_from_db()
+
+    participants = [p.user for p in penny_chat.participants.all()]
+
+    assert follow_up.user == test_user_1
+    assert test_user_1 in participants
+    assert test_user_2 not in participants
+    assert test_profile_2.user == test_user_1
