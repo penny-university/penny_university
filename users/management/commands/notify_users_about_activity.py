@@ -97,7 +97,13 @@ range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
 
 
 def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
-    # TODO! document
+    """Retrieves ordered and filtered set of {user,profile,chat,follow} data corresponding to recent updates.
+
+    :param range_start: Range start for new followups.
+    :param range_end: Range end  for new followups.
+    :param filter_emails: emails to include in list. If omitted, then retrieves all.
+    :return: queryset
+    """
     # Note: because we are joining in the social_profile, the user will be notified in
     # every social profile that they have. Eventually we might want to start the social profile
     # in the participation object and only ping them on the profile they used for that chat
@@ -143,7 +149,11 @@ def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
 
 
 def group_by_user(recent_followup_queryset):
-    # TODO! write a comment for what's happening here with the grouping
+    """Groups the recent_followup_queryset by user, then within that by chat, then within that by followup.
+
+    :param recent_followup_queryset
+    :return: per-user data
+    """
     for user in grouped(recent_followup_queryset, [
         'id',
         'first_name',
@@ -263,7 +273,7 @@ def get_people_string(people):
 
 
 class CompoundKey:
-    # TODO! doc
+    """Represents an ordered lists of keys that can be compared with othered ordered lists."""
     def __init__(self, fields, val_dict):
         self.fields = fields
         self.compound_key = {field: val_dict[field] for field in fields}
