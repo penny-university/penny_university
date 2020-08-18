@@ -15,7 +15,15 @@ UTC = pytz.utc
 
 class Command(BaseCommand):
     help = (
-        "temp"  # TODO! update
+        """
+        Notifies users of recent activity (currently this is just followups on Penny Chats that they participated in).
+
+        Example dry run:
+        ./manage.py notify_users_about_activity \
+            --range_start=2002-01-14T00:00:00Z \
+            --range_end=2020-08-14T00:00:00Z \
+            --filter_emails=meg@berryman.com,bo@berryman.com
+        """
     )
 
     def add_arguments(self, parser):
@@ -54,84 +62,41 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        range_end, range_start = self.get_range(options)
+        range_end, range_start = get_range(options)
         filter_emails = options['filter_emails'].split(',') if options['filter_emails'] else None
         live_run = options['live_run']
 
         recent_followup_queryset = get_recent_followup_queryset(range_start, range_end, filter_emails)
-        for user_data in self.group_by_user(recent_followup_queryset):
+        for user_data in group_by_user(recent_followup_queryset):
             # TODO! test live run safety switch
             notify_about_activity(user_data, live_run)
 
-    def get_range(self, options):
-        # test that we're using one of the allowable configurations of parameters
-        if not (
-                (options.get('yesterday') and not (options.get('range_start') or options.get('range_end')))
-                or ((options.get('range_start') and options.get('range_end')) and not options.get('yesterday'))  # noqa
-        ):
-            raise CommandError('either `yesterday` or (`range_start` and `range_end`) must be defined, and not both')
-        if options['yesterday']:
-            # TODO! test that this is the right time - we want the Nashville yesterday
-            range_end = datetime.datetime.now(NASHVILLE_TZ).replace(hour=0, minute=0, second=0, microsecond=0)
-            range_start = range_end - datetime.timedelta(days=1)
-        else:
-            range_end = datetime.datetime.strptime(options['range_end'], "%Y-%m-%dT%H:%M:%S%z")
-            range_start = datetime.datetime.strptime(options['range_start'], "%Y-%m-%dT%H:%M:%S%z")
-        if not range_end > range_start:
-            raise CommandError('range_end must be after range_start')
-        range_start_utc = range_start.astimezone(UTC).replace(tzinfo=None).isoformat()
-        range_start_nash = range_start.astimezone(NASHVILLE_TZ).replace(tzinfo=None).isoformat()
-        range_end_utc = range_end.astimezone(UTC).replace(tzinfo=None).isoformat()
-        range_end_nash = range_end.astimezone(NASHVILLE_TZ).replace(tzinfo=None).isoformat()
-        print(f"""Running notification of followups with:
+
+def get_range(options):
+    # test that we're using one of the allowable configurations of parameters
+    if not (
+            (options.get('yesterday') and not (options.get('range_start') or options.get('range_end')))
+            or ((options.get('range_start') and options.get('range_end')) and not options.get('yesterday'))  # noqa
+    ):
+        raise CommandError('either `yesterday` or (`range_start` and `range_end`) must be defined, and not both')
+    if options['yesterday']:
+        # TODO! test that this is the right time - we want the Nashville yesterday
+        range_end = datetime.datetime.now(NASHVILLE_TZ).replace(hour=0, minute=0, second=0, microsecond=0)
+        range_start = range_end - datetime.timedelta(days=1)
+    else:
+        range_end = datetime.datetime.strptime(options['range_end'], "%Y-%m-%dT%H:%M:%S%z")
+        range_start = datetime.datetime.strptime(options['range_start'], "%Y-%m-%dT%H:%M:%S%z")
+    if not range_end > range_start:
+        raise CommandError('range_end must be after range_start')
+    range_start_utc = range_start.astimezone(UTC).replace(tzinfo=None).isoformat()
+    range_start_nash = range_start.astimezone(NASHVILLE_TZ).replace(tzinfo=None).isoformat()
+    range_end_utc = range_end.astimezone(UTC).replace(tzinfo=None).isoformat()
+    range_end_nash = range_end.astimezone(NASHVILLE_TZ).replace(tzinfo=None).isoformat()
+    print(f"""Running notification of followups with:
 range_start Nashville = {range_start_nash}\trange_start UTC = {range_start_utc}
 range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
 """)
-        return range_end, range_start
-
-    def group_by_user(self, recent_followup_queryset):
-        # TODO! Test users that have only followed up on their own chats - in this case they will appear in this data set
-        # but they will have no penny chat update to report
-        # TODO! write a comment for what's happening here with the grouping
-        for user in grouped(recent_followup_queryset, [
-            'id',
-            'first_name',
-            'social_profiles__slack_team_id',
-            'social_profiles__slack_id',
-        ]):
-            user_data = {
-                'user_id': user['id'],
-                'first_name': user['first_name'],
-                'slack_team_id': user['social_profiles__slack_team_id'],
-                'slack_id': user['social_profiles__slack_id'],
-            }
-            penny_chats = []
-            for penny_chat in grouped(user['items'], [
-                'user_chats__penny_chat__id',
-                'user_chats__penny_chat__title',
-                'user_chats__penny_chat__date',
-            ]):
-                penny_chat_data = {
-                    'id': penny_chat['user_chats__penny_chat__id'],
-                    'title': penny_chat['user_chats__penny_chat__title'],
-                    'date': penny_chat['user_chats__penny_chat__date'],
-                }
-                followups = []
-                for followup in penny_chat['items']:
-                    if user['id'] == followup['user_chats__penny_chat__follow_ups__user_id']:
-                        # ignore followups that were created by the user
-                        continue
-                    followup_data = {
-                        'user_id': followup['user_chats__penny_chat__follow_ups__user_id'],
-                        'first_name': followup['user_chats__penny_chat__follow_ups__user__first_name'],
-                    }
-                    followups.append(followup_data)
-                if followups:
-                    penny_chat_data['followups'] = followups
-                    penny_chats.append(penny_chat_data)
-            if penny_chats:
-                user_data['penny_chats'] = penny_chats
-                yield user_data
+    return range_end, range_start
 
 
 def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
@@ -179,6 +144,51 @@ def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
         'user_chats__penny_chat__follow_ups__user_id',
     )
     return recent_followup_queryset
+
+
+def group_by_user(recent_followup_queryset):
+    # TODO! Test users that have only followed up on their own chats - in this case they will appear in this data set
+    # but they will have no penny chat update to report
+    # TODO! write a comment for what's happening here with the grouping
+    for user in grouped(recent_followup_queryset, [
+        'id',
+        'first_name',
+        'social_profiles__slack_team_id',
+        'social_profiles__slack_id',
+    ]):
+        user_data = {
+            'user_id': user['id'],
+            'first_name': user['first_name'],
+            'slack_team_id': user['social_profiles__slack_team_id'],
+            'slack_id': user['social_profiles__slack_id'],
+        }
+        penny_chats = []
+        for penny_chat in grouped(user['items'], [
+            'user_chats__penny_chat__id',
+            'user_chats__penny_chat__title',
+            'user_chats__penny_chat__date',
+        ]):
+            penny_chat_data = {
+                'id': penny_chat['user_chats__penny_chat__id'],
+                'title': penny_chat['user_chats__penny_chat__title'],
+                'date': penny_chat['user_chats__penny_chat__date'],
+            }
+            followups = []
+            for followup in penny_chat['items']:
+                if user['id'] == followup['user_chats__penny_chat__follow_ups__user_id']:
+                    # ignore followups that were created by the user
+                    continue
+                followup_data = {
+                    'user_id': followup['user_chats__penny_chat__follow_ups__user_id'],
+                    'first_name': followup['user_chats__penny_chat__follow_ups__user__first_name'],
+                }
+                followups.append(followup_data)
+            if followups:
+                penny_chat_data['followups'] = followups
+                penny_chats.append(penny_chat_data)
+        if penny_chats:
+            user_data['penny_chats'] = penny_chats
+            yield user_data
 
 
 def notify_about_activity(user_data, live_run=False):
