@@ -2,13 +2,16 @@ from datetime import datetime, timezone
 import pytz
 from unittest.mock import call
 
+from freezegun import freeze_time
 import pytest
 
 from common.tests.fakes import UserFactory, PennyChatFactory, FollowUpFactory, SocialProfileFactory
 from pennychat.models import Participant
-from users.management.commands.notify_users_about_activity import Command, get_recent_followup_queryset
+from users.management.commands.notify_users_about_activity import Command, get_recent_followup_queryset, get_range, \
+    notify_about_activity, grouped, UnorderedDataError
 
 UTC = pytz.utc
+NASHVILLE_TZ = pytz.timezone('America/Chicago')
 
 range_start = datetime(2020, 1, 1, 0, 0, tzinfo=timezone.utc)
 range_end = datetime(2020, 1, 8, 0, 0, tzinfo=timezone.utc)
@@ -124,3 +127,107 @@ def test_handle(mocker):
         ),
     ]
     assert actual == expected
+
+
+@freeze_time("2012-01-14 10:02:03", tz_offset=0)
+def test_get_range(mocker):
+    range_start, range_end = get_range({'yesterday': True})
+    assert range_start == NASHVILLE_TZ.localize(datetime(2012, 1, 13, 0, 0))
+    assert range_end == NASHVILLE_TZ.localize(datetime(2012, 1, 14, 0, 0))
+
+
+def test_notify_about_activity(mocker):
+    some_date = NASHVILLE_TZ.localize(datetime(2012, 1, 13, 0, 0))
+    mock_get_slack_client = mocker.patch('users.management.commands.notify_users_about_activity.get_slack_client')
+    mock_slack_client = mocker.Mock()
+    mock_get_slack_client.return_value = mock_slack_client
+
+    args = {
+        'user_id': 1, 'first_name': 'Steve', 'slack_team_id': 'T234567', 'slack_id': 'U98765432',
+        'penny_chats': [
+            {
+                'id': 2, 'title': 'something', 'date': some_date,
+                'followups': [
+                    {'user_id': 1, 'first_name': 'Steve'},  # shouldn't notify of this one b/c it's them
+                    {'user_id': 2, 'first_name': 'Margret'},
+                    {'user_id': 3, 'first_name': 'Jimi'},
+                ]
+            },
+            {
+                'id': 3, 'title': 'whatever', 'date': some_date,
+                'followups': [
+                    # shouldn't notify of this entire chat because they only have their own followup
+                    {'user_id': 1, 'first_name': 'Steve'},
+                ]
+            }
+        ],
+    }
+    live_run = False
+    notify_about_activity(args, live_run)
+    assert mock_slack_client.chat_postMessage.called is False, 'safety live_run value not honored!!'
+
+    live_run = True
+    notify_about_activity(args, live_run)
+    actual = mock_slack_client.chat_postMessage.call_args
+    assert actual[1]['channel'] == 'U98765432'
+    text = actual[1]['text']
+
+    assert 'something' in text, 'we should notify user of chat that has follow-ups by others'
+
+    # NOTE that the pattern `Steve>` is used when linking out to the users
+    assert 'Steve>' not in text, 'we should not notify a user of their own followup'
+    assert 'Margret>' in text, 'we should notify user that Margret followed up'
+    assert 'Jimi>' in text, 'we should notify user that Margret followed up'
+
+    assert 'whatever' not in text, 'we should NOT notify user of chat that have only their follow-ups'
+
+
+class TestGrouped:
+    def test_basic_grouping(self):
+        items = [
+            {'a': 1, 'b': 10, 'c': 100},
+            {'a': 1, 'b': 10, 'c': 200},
+            {'a': 1, 'b': 20, 'c': 300},
+            {'a': 1, 'b': 20, 'c': 400},
+            {'a': 2, 'b': 30, 'c': 500},
+        ]
+
+        assert list(grouped(items, ['a', 'b'])) == [
+            {'a': 1, 'b': 10, 'items': [{'c': 100}, {'c': 200}]},
+            {'a': 1, 'b': 20, 'items': [{'c': 300}, {'c': 400}]},
+            {'a': 2, 'b': 30, 'items': [{'c': 500}]},
+        ]
+
+        assert list(grouped(items, ['a'])) == [
+            {'a': 1, 'items': [{'b': 10, 'c': 100}, {'b': 10, 'c': 200}, {'b': 20, 'c': 300}, {'b': 20, 'c': 400}]},
+            {'a': 2, 'items': [{'b': 30, 'c': 500}]},
+        ]
+
+    def test_order_error(self):
+        # insert item that is ordered incorrectly
+        items = [
+            {'a': 2, 'b': 10, 'c': 100},
+            {'a': 2, 'b': 10, 'c': 200},
+            {'a': 1, 'b': 10, 'c': 200},
+        ]
+        with pytest.raises(UnorderedDataError):
+            list(grouped(items, ['a', 'b']))
+
+    def test_lazy_iteration(self):
+        class DumbIterator:
+            i = 0
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                self.i += 1
+                return {'a': 1, 'b': self.i}
+
+        iterator = DumbIterator()
+        gen = grouped(iterator, ['a', 'b'])
+        assert iterator.i == 0
+        next(gen)  # must call 2 in order to make sure that it has the whole set
+        assert iterator.i == 2
+        next(gen)
+        assert iterator.i == 3

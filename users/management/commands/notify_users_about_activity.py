@@ -27,7 +27,6 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        # TODO! test each of these
         parser.add_argument(
             '--live_run',
             dest='live_run',
@@ -62,13 +61,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        range_end, range_start = get_range(options)
+        range_start, range_end = get_range(options)
         filter_emails = options['filter_emails'].split(',') if options['filter_emails'] else None
         live_run = options['live_run']
 
         recent_followup_queryset = get_recent_followup_queryset(range_start, range_end, filter_emails)
         for user_data in group_by_user(recent_followup_queryset):
-            # TODO! test live run safety switch
             notify_about_activity(user_data, live_run)
 
 
@@ -80,7 +78,6 @@ def get_range(options):
     ):
         raise CommandError('either `yesterday` or (`range_start` and `range_end`) must be defined, and not both')
     if options['yesterday']:
-        # TODO! test that this is the right time - we want the Nashville yesterday
         range_end = datetime.datetime.now(NASHVILLE_TZ).replace(hour=0, minute=0, second=0, microsecond=0)
         range_start = range_end - datetime.timedelta(days=1)
     else:
@@ -96,12 +93,11 @@ def get_range(options):
 range_start Nashville = {range_start_nash}\trange_start UTC = {range_start_utc}
 range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
 """)
-    return range_end, range_start
+    return range_start, range_end
 
 
 def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
-    # TODO! test that this works and excludes self-followups
-
+    # TODO! document
     # Note: because we are joining in the social_profile, the user will be notified in
     # every social profile that they have. Eventually we might want to start the social profile
     # in the participation object and only ping them on the profile they used for that chat
@@ -147,8 +143,6 @@ def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
 
 
 def group_by_user(recent_followup_queryset):
-    # TODO! Test users that have only followed up on their own chats - in this case they will appear in this data set
-    # but they will have no penny chat update to report
     # TODO! write a comment for what's happening here with the grouping
     for user in grouped(recent_followup_queryset, [
         'id',
@@ -215,7 +209,13 @@ def notify_about_activity(user_data, live_run=False):
     """
     chat_lines = []
     for penny_chat in user_data['penny_chats']:
-        people = {followup["first_name"]: followup["user_id"] for followup in penny_chat["followups"]}
+        people = {
+            followup['first_name']: followup['user_id']
+            for followup in penny_chat['followups']
+            if followup['user_id'] != user_data['user_id']
+        }
+        if not people:
+            continue
         people_string = get_people_string(people)
         date_string = (
             f'<!date^{int(penny_chat["date"].timestamp())}^{{date_short}}|{penny_chat["date"].strftime("%b %d, %Y")}>'
@@ -307,7 +307,6 @@ def grouped(iterable, fields):
 
     Raises an error if items are not ordered according to fields.
     """
-    # TODO! update docs with examples and test references
     key = None
     vals = []
     for i, item in enumerate(iterable):
