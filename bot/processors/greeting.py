@@ -23,52 +23,15 @@ def greeting_blocks(user_id):
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'*Welcome to Penny University, <@{user_id}>*',
+                'text': f'*Hey, <@{user_id}>*!',
             }
         },
         {
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': (
-                    'Penny University is a self-organizing, peer-to-peer learning community. In Penny U there are no '
-                    '"mentors" or "mentees" but rather peers that enjoy learning together, socially. '
-                )
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': (
-                    '• If you have something you can teach, then let it be known. \n • If you have something you want '
-                    'to learn, then reach out to the community or to an individual and ask for help - buy them a coffee'
-                    ' or lunch, or jump on a Google Hangout. (This is called a _Penny Chat_.) \n • And when your Penny '
-                    'Chat is complete, show your appreciation by posting a Penny Chat review in our '
-                    '<http://pennyuniversity.org|forum>. Teach us a little of what you have learned.'
-                ),
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': (
-                    'Penny U is on the move. If all goes well then I, your trusty robot sidekick, will gain super '
-                    'powers in the coming months. I will help you find the answers you\'re looking for. I will also '
-                    'replace our lowly <http://pennyuniversity.org|Google Groups home page> with something a little '
-                    'more... appealing. If you want to help use out then let <@U42HCBFEF> and <@UES202FV5> know.'
-                ),
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': (
-                    'Next steps - let us know a little more about yourself. (_Note: survey response will be publicly '
-                    'viewable._)'
-                )
+                'text': 'Penny University connects people with similar interests in order for them to learn together. '
+                        'Add your interests so we can do the same for you.',
             }
         },
         {
@@ -78,7 +41,7 @@ def greeting_blocks(user_id):
                     'type': 'button',
                     'text': {
                         'type': 'plain_text',
-                        'text': 'What would you like to learn?',
+                        'text': 'Add My Interests',
                     },
                     'action_id': 'open_interests_dialog'
                 }
@@ -105,7 +68,7 @@ def welcome_room_blocks(user_id):
 def onboarding_blocks(profile=None):
     template = {
         'callback_id': 'interests',
-        'title': 'Let\'s get to know you',
+        'title': 'Help us get to know you',
         'submit_label': 'Submit',
         'notify_on_cancel': True,
         'state': 'arbitrary data',
@@ -113,7 +76,7 @@ def onboarding_blocks(profile=None):
             {
                 'name': 'topics_to_learn',
                 'type': 'textarea',
-                'label': 'What do you want to learn?',
+                'label': 'What do you want to learn about?',
                 'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
                 'optional': 'true',
                 'value': profile.topics_to_learn if profile else ''
@@ -121,27 +84,11 @@ def onboarding_blocks(profile=None):
             {
                 'name': 'topics_to_share',
                 'type': 'textarea',
-                'label': 'What do you able to share with others?',
-                'hint': 'Provide a comma separated list of subjects you would be interested in sharing.',
+                'label': 'What are you able to share with others?',
+                'hint': 'Provide a comma separated list of subjects you know a thing or two about.',
                 'optional': 'true',
                 'value': profile.topics_to_share if profile else ''
-            },
-            {
-                'name': 'metro_name',
-                'type': 'text',
-                'label': 'Where are you from?',
-                'hint': 'City and state (or country if not the U.S.).',
-                'optional': 'true',
-                'value': profile.metro_name if profile else ''
-            },
-            {
-                'name': 'how_you_learned_about_pennyu',
-                'type': 'text',
-                'label': 'How did you learn about Penny University?',
-                'hint': 'Who told you? Where did you hear about us?',
-                'optional': 'true',
-                'value': profile.how_you_learned_about_pennyu if profile else ''
-            },
+            }
         ]
     }
     return template
