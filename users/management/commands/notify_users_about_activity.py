@@ -232,7 +232,7 @@ def notify_about_activity(user_data, live_run=False):
         )
         chat_lines.append(
             f'Your {date_string} chat _"{penny_chat["title"]}"_ has follow-ups from {people_string}. '
-            f'*<http://{settings.PENNYU_DOMAIN}/chats/{penny_chat["id"]}|Read them here!>*'
+            f'*<{settings.FRONT_END_HOST}/chats/{penny_chat["id"]}|Read them here!>*'
         )
 
     if len(chat_lines) == 1:
@@ -256,7 +256,7 @@ def get_people_string(people):
     """
     people_strings = []
     for first_name, user_id in people.items():
-        people_strings.append(f'<http://{settings.PENNYU_DOMAIN}/profile/{user_id}|{first_name}>')
+        people_strings.append(f'<{settings.FRONT_END_HOST}/profile/{user_id}|{first_name}>')
     if len(people_strings) == 1:
         return people_strings[0]
     if len(people_strings) == 2:
