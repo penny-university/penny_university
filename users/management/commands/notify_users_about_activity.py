@@ -23,6 +23,9 @@ class Command(BaseCommand):
             --filter_emails=meg@berryman.com,bo@berryman.com
 
         If you _reeeeeeeely_ want to send the notifications, then add --live_run
+
+        You can also run as `--yesterday` rather than exact dates and it will calculate "yesterday" for Nashville TN
+        assuming that the server is running on accurate UTC time.
         """
     )
 
