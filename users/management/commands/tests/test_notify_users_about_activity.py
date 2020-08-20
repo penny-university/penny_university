@@ -170,16 +170,16 @@ def test_notify_about_activity(mocker):
     notify_about_activity(args, live_run)
     actual = mock_slack_client.chat_postMessage.call_args
     assert actual[1]['channel'] == 'U98765432'
-    text = actual[1]['text']
+    blocks = str(actual[1]['blocks'])
 
-    assert 'something' in text, 'we should notify user of chat that has follow-ups by others'
+    assert 'something' in blocks, 'we should notify user of chat that has follow-ups by others'
 
     # NOTE that the pattern `Steve>` is used when linking out to the users
-    assert 'Steve>' not in text, 'we should not notify a user of their own followup'
-    assert 'Margret>' in text, 'we should notify user that Margret followed up'
-    assert 'Jimi>' in text, 'we should notify user that Margret followed up'
+    assert 'Steve>' not in blocks, 'we should not notify a user of their own followup'
+    assert 'Margret>' in blocks, 'we should notify user that Margret followed up'
+    assert 'Jimi>' in blocks, 'we should notify user that Margret followed up'
 
-    assert 'whatever' not in text, 'we should NOT notify user of chat that have only their follow-ups'
+    assert 'whatever' not in blocks, 'we should NOT notify user of chat that have only their follow-ups'
 
 
 class TestGrouped:

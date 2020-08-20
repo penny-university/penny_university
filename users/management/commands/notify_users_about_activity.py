@@ -4,8 +4,6 @@ import pytz
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from sentry_sdk import capture_message
-
 from common.utils import get_slack_client
 from users.models import User
 
@@ -23,6 +21,8 @@ class Command(BaseCommand):
             --range_start=2002-01-14T00:00:00Z \
             --range_end=2020-08-14T00:00:00Z \
             --filter_emails=meg@berryman.com,bo@berryman.com
+
+        If you _reeeeeeeely_ want to send the notifications, then add --live_run
         """
     )
 
@@ -217,7 +217,7 @@ def notify_about_activity(user_data, live_run=False):
 
     :return: Nothing. Notifies users as side effect.
     """
-    chat_lines = []
+    chat_data = []  # each item will be a tuple of (explanatory text, penny_chat.id)
     for penny_chat in user_data['penny_chats']:
         people = {
             followup['first_name']: followup['user_id']
@@ -230,22 +230,24 @@ def notify_about_activity(user_data, live_run=False):
         date_string = (
             f'<!date^{int(penny_chat["date"].timestamp())}^{{date_short}}|{penny_chat["date"].strftime("%b %d, %Y")}>'
         )
-        chat_lines.append(
-            f'Your {date_string} chat _"{penny_chat["title"]}"_ has follow-ups from {people_string}. '
-            f'*<{settings.FRONT_END_HOST}/chats/{penny_chat["id"]}|Read them here!>*'
-        )
+        if people_string:
+            chat_data.append([
+                f'Your {date_string} chat _"{penny_chat["title"]}"_ has follow-ups from {people_string}.',
+                penny_chat["id"],
+            ])
+        else:
+            chat_data.append([f'Your {date_string} chat _"{penny_chat["title"]}"_ has follow-ups.', penny_chat["id"]])
 
-    if len(chat_lines) == 1:
-        notification_text = f'Hey {user_data["first_name"]}! {chat_lines[0]}'
-    else:
-        notification_text = f'Hey {user_data["first_name"]}! You have had several Penny Chat updates:\n'
-        for chat_line in chat_lines:
-            notification_text += f'- {chat_line}\n'
-
-    print(f'{notification_text}To be sent to {user_data["slack_team_id"]}@{user_data["slack_id"]}\n\n')
-    if live_run:
+    print(
+        f'\n\nTo be sent to {user_data["first_name"]} '
+        f'({user_data["slack_team_id"]} @{user_data["slack_id"]}):\n{chat_data}'
+    )
+    if chat_data and live_run:
         slack_client = get_slack_client(team_id=user_data['slack_team_id'])
-        slack_client.chat_postMessage(channel=user_data['slack_id'], text=notification_text)
+        slack_client.chat_postMessage(
+            channel=user_data['slack_id'],
+            blocks=generate_blocks(user_data["first_name"], chat_data),
+        )
 
 
 def get_people_string(people):
@@ -256,7 +258,10 @@ def get_people_string(people):
     """
     people_strings = []
     for first_name, user_id in people.items():
-        people_strings.append(f'<{settings.FRONT_END_HOST}/profile/{user_id}|{first_name}>')
+        if first_name:  # some users don't have first names
+            people_strings.append(f'<{settings.FRONT_END_HOST}/profile/{user_id}|{first_name}>')
+    if len(people_strings) == 0:
+        return ""
     if len(people_strings) == 1:
         return people_strings[0]
     if len(people_strings) == 2:
@@ -264,12 +269,44 @@ def get_people_string(people):
     if len(people_strings) > 2:
         first = ', '.join(people_strings[:-1])
         return f'{first}, and {people_strings[-1]}'
-    capture_message(
-        '0 people for get_people_string',
-        extras={
-            'people': people,
-        }
-    )
+
+
+def generate_blocks(first_name, chat_data):
+    if len(chat_data) == 1:
+        chat_data[0][0] = f'Hey {first_name}! {chat_data[0][0]}'
+    else:
+        for chat in chat_data:
+            chat[0] = f'• {chat[0]}'
+
+    blocks = []
+    for chat in chat_data:
+        penny_chat_text, penny_chat_id = chat
+        blocks.append({
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': penny_chat_text
+            },
+            'accessory': {
+                'type': 'button',
+                'text': {
+                    'type': 'plain_text',
+                    'text': 'Read them!',
+                    'emoji': True
+                },
+                'url': f'{settings.FRONT_END_HOST}/chats/{penny_chat_id}'
+            }
+        })
+
+    if len(chat_data) > 1:
+        blocks.insert(0, {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'Hey {first_name}! You have had several Penny Chat updates:'
+            }
+        })
+    return blocks
 
 
 class CompoundKey:
