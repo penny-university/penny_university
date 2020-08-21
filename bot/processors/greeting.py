@@ -76,6 +76,9 @@ def onboarding_blocks(profile=None):
             {
                 'name': 'topics_to_learn',
                 'type': 'input',
+                "element": {
+                    "type": "plain_text_input"
+                },
                 'label': 'What do you want to learn about?',
                 'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
                 'optional': 'true',
@@ -84,6 +87,9 @@ def onboarding_blocks(profile=None):
             {
                 'name': 'topics_to_share',
                 'type': 'input',
+                "element": {
+                    "type": "plain_text_input"
+                },
                 'label': 'What are you able to share with others?',
                 'hint': 'Provide a comma separated list of subjects you know a thing or two about.',
                 'optional': 'true',
