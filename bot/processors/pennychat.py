@@ -145,7 +145,11 @@ def penny_chat_details_modal(penny_chat_invitation):
             },
             {
                 'block_id': 'penny_chat_visibility',
-                'type': 'input',
+                'type': 'static_select',
+                "placeholder": {
+                    "type": "plain_text",
+                    "text": "Select visibility"
+                },
                 'element': {
                     'type': 'checkboxes',
                     'action_id': 'private_chat_select',
@@ -153,14 +157,14 @@ def penny_chat_details_modal(penny_chat_invitation):
                         {
                             "text": {
                                 "type": "plain_text",
-                                "text": "private chat?",
+                                "text": "Private Chat",
                             },
                             "value": "private",
                         },
                         {
                             "text": {
                                 "type": "plain_text",
-                                "text": "public chat?",
+                                "text": "Public Chat",
                             },
                             "value": "public",
                         },
