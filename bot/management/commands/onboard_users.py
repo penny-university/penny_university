@@ -34,8 +34,6 @@ class Command(BaseCommand):
         }
         slack_name__user_id = {v: k for k, v in user_id__slack_name.items()}
 
-        print(slack_name__user_id)
-
         not_found_users = set()
         user_ids = set()
         if slack_names:
