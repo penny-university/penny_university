@@ -3,12 +3,14 @@ import pytz
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from sentry_sdk import capture_exception
 
 from common.utils import get_slack_client
 from users.models import User
 
 NASHVILLE_TZ = pytz.timezone('America/Chicago')
 UTC = pytz.utc
+MAX_NUM_BLOCKS = 25  # the max number of blocks that can be sent through slack is 50, we're being over cautious
 
 
 class Command(BaseCommand):
@@ -68,9 +70,12 @@ class Command(BaseCommand):
         filter_emails = options['filter_emails'].split(',') if options['filter_emails'] else None
         live_run = options['live_run']
 
-        recent_followup_queryset = get_recent_followup_queryset(range_start, range_end, filter_emails)
-        for user_data in group_by_user(recent_followup_queryset):
-            notify_about_activity(user_data, live_run)
+        recent_followup_dataset = get_recent_followup_dataset(range_start, range_end, filter_emails)
+        for user_data in group_by_user(recent_followup_dataset):
+            try:
+                notify_about_activity(user_data, live_run)
+            except Exception as e:
+                capture_exception(e)
 
 
 def get_range(options):
@@ -99,18 +104,20 @@ range_end Nashville = {range_end_nash}\trange_end UTC = {range_end_utc}
     return range_start, range_end
 
 
-def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
+def get_recent_followup_dataset(range_start, range_end, filter_emails=None):
     """Retrieves ordered and filtered set of {user,profile,chat,follow} data corresponding to recent updates.
 
     :param range_start: Range start for new followups.
     :param range_end: Range end  for new followups.
     :param filter_emails: emails to include in list. If omitted, then retrieves all.
-    :return: queryset
+    :return: dataset that contains rows of {user_data,chat_data,followup_user_data} for every followup that occurred
+        in the time range for every user in the filter_emails list (or all users if no filter was provided). Followups
+        belonging to the original user will be filtered out.
     """
     # Note: because we are joining in the social_profile, the user will be notified in
     # every social profile that they have. Eventually we might want to start the social profile
     # in the participation object and only ping them on the profile they used for that chat
-    recent_followup_queryset = User.objects.filter(
+    recent_followup_dataset = User.objects.filter(
         # find all users who
         #  were participants (user_chats)
         #  in a penny_chat
@@ -122,11 +129,11 @@ def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
     )
 
     if filter_emails:
-        recent_followup_queryset = recent_followup_queryset.filter(
+        recent_followup_dataset = recent_followup_dataset.filter(
             email__in=filter_emails,
         )
 
-    recent_followup_queryset = recent_followup_queryset.values(
+    recent_followup_dataset = recent_followup_dataset.values(
         # user data
         'id',
         'first_name',
@@ -148,16 +155,25 @@ def get_recent_followup_queryset(range_start, range_end, filter_emails=None):
         'user_chats__penny_chat__id',
         'user_chats__penny_chat__follow_ups__user_id',
     )
-    return recent_followup_queryset
+
+    # filter out followups that are from the user that we're sending notifications to
+    # and filter out rows where their is not slack id
+    # (I tried to figure out how to do this with a orm filter and I failed!)
+    recent_followup_dataset = (
+        item for item in recent_followup_dataset
+        if item['id'] != item['user_chats__penny_chat__follow_ups__user_id'] and item['social_profiles__slack_team_id'] and item['social_profiles__slack_id']  # noqa
+    )
+
+    return recent_followup_dataset
 
 
-def group_by_user(recent_followup_queryset):
-    """Groups the recent_followup_queryset by user, then within that by chat, then within that by followup.
+def group_by_user(recent_followup_dataset):
+    """Groups the recent_followup_dataset by user, then within that by chat, then within that by followup.
 
-    :param recent_followup_queryset
+    :param recent_followup_dataset
     :return: per-user data
     """
-    for user in grouped(recent_followup_queryset, [
+    for user in grouped(recent_followup_dataset, [
         'id',
         'first_name',
         'social_profiles__slack_team_id',
@@ -182,9 +198,6 @@ def group_by_user(recent_followup_queryset):
             }
             followups = []
             for followup in penny_chat['items']:
-                if user['id'] == followup['user_chats__penny_chat__follow_ups__user_id']:
-                    # ignore followups that were created by the user
-                    continue
                 followup_data = {
                     'user_id': followup['user_chats__penny_chat__follow_ups__user_id'],
                     'first_name': followup['user_chats__penny_chat__follow_ups__user__first_name'],
@@ -300,6 +313,10 @@ def generate_blocks(first_name, chat_data):
                 'url': f'{settings.FRONT_END_HOST}/chats/{penny_chat_id}'
             }
         })
+
+    # if we're returning too many blocks then get only the most recent ones
+    if len(blocks) > MAX_NUM_BLOCKS:
+        blocks = blocks[-MAX_NUM_BLOCKS:]
 
     if len(chat_data) > 1:
         blocks.insert(0, {
