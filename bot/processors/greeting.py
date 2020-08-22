@@ -43,7 +43,7 @@ def greeting_blocks(user_id):
                         'type': 'plain_text',
                         'text': 'Add My Interests',
                     },
-                    'action_id': 'open_interests_dialog'
+                    'action_id': 'open_interests_modal'
                 }
             ]
         },
@@ -67,33 +67,52 @@ def welcome_room_blocks(user_id):
 
 def onboarding_blocks(profile=None):
     template = {
+        'type': 'modal',
         'callback_id': 'interests',
-        'title': 'Help us get to know you',
-        'submit_label': 'Submit',
-        'notify_on_cancel': True,
-        'state': 'arbitrary data',
-        'elements': [
+        'title': {
+            'type': 'plain_text',
+            'text': 'Help us get to know you'
+        },
+        'submit': {
+            'type': 'plain_text',
+            'text': 'Submit'
+        },
+        'blocks': [
             {
-                'name': 'topics_to_learn',
+                'block_id': 'topics_to_learn',
                 'type': 'input',
-                "element": {
-                    "type": "plain_text_input"
+                'element': {
+                    'action_id': 'topics_to_learn',
+                    'type': 'plain_text_input',
+                    'initial_value': profile.topics_to_learn if profile else ''
                 },
-                'label': 'What do you want to learn about?',
-                'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
-                'optional': 'true',
-                'value': profile.topics_to_learn if profile else ''
+                'label': {
+                    'type': 'plain_text',
+                    'text': 'What do you want to learn about?',
+                },
+                'hint': {
+                    'type': 'plain_text',
+                    'text': 'Provide a comma separated list of subjects you would be interested in learning.',
+                },
+                'optional': True
             },
             {
-                'name': 'topics_to_share',
+                'block_id': 'topics_to_share',
                 'type': 'input',
-                "element": {
-                    "type": "plain_text_input"
+                'element': {
+                    'action_id': 'topics_to_share',
+                    'type': 'plain_text_input',
+                    'initial_value': profile.topics_to_share if profile else ''
                 },
-                'label': 'What are you able to share with others?',
-                'hint': 'Provide a comma separated list of subjects you know a thing or two about.',
-                'optional': 'true',
-                'value': profile.topics_to_share if profile else ''
+                'label': {
+                    'type': 'plain_text',
+                    'text': 'What are you able to share with others?'
+                },
+                'hint': {
+                    'type': 'plain_text',
+                    'text': 'Provide a comma separated list of subjects you know a thing or two about.'
+                },
+                'optional': True
             }
         ]
     }
@@ -103,7 +122,7 @@ def onboarding_blocks(profile=None):
 class GreetingBotModule(BotModule):
     processors = [
         'welcome_user',
-        'show_interests_dialog',
+        'show_interests_modal',
         'submit_interests',
     ]
 
@@ -119,31 +138,31 @@ class GreetingBotModule(BotModule):
         notify_admins(self.slack, f'<@{event["user"]}> just received a greeting message.')
 
     @is_block_interaction_event
-    @has_action_id('open_interests_dialog')
-    def show_interests_dialog(self, event):
+    @has_action_id('open_interests_modal')
+    def show_interests_modal(self, event):
         slack_id = event['user']['id']
         profile = SocialProfile.objects.filter(slack_id=slack_id).first()
         template = onboarding_blocks(profile)
-        self.slack.dialog_open(dialog=template, trigger_id=event['trigger_id'])
+        self.slack.views_open(view=template, trigger_id=event['trigger_id'])
 
-    @has_event_type('dialog_submission')
+    @has_event_type('view_submission')
     @has_callback_id('interests')
     def submit_interests(self, event):
         slack_id = event['user']['id']
         user_data = self.slack.users_info(user=slack_id).data['user']
+        topics_to_learn = event['view']['state']['values']['topics_to_learn']['topics_to_learn']['value']
+        topics_to_share = event['view']['state']['values']['topics_to_share']['topics_to_share']['value']
         kwargs = dict(
             email=user_data['profile']['email'],
             slack_team_id=settings.SLACK_TEAM_ID,
             display_name=user_data['name'],
             real_name=user_data['real_name'],
-            metro_name=event['submission']['metro_name'] or '',
-            topics_to_learn=event['submission']['topics_to_learn'] or '',
-            topics_to_share=event['submission']['topics_to_share'] or '',
-            how_you_learned_about_pennyu=event['submission']['how_you_learned_about_pennyu'] or '',
+            topics_to_learn=topics_to_learn or '',
+            topics_to_share=topics_to_share or '',
         )
         SocialProfile.objects.update_or_create(defaults=kwargs, slack_id=slack_id)
 
-        message = f"Welcome to Penny University {kwargs['real_name']}!"
+        message = f"Welcome to Penny University <@{slack_id}>!"
         if kwargs['topics_to_learn']:
             message += f"\n\n*This person is interested in learning these topics:*\n{kwargs['topics_to_learn']}"
         if kwargs['topics_to_share']:
