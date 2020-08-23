@@ -49,7 +49,7 @@ def test_penny_chat__upcoming_or_popular(test_chats_2):
     assert 'old_chat_with_followups' in titles
     chats = response.data['results']
     assert chats[0]['follow_ups_count'] == 0
-    assert chats[1]['follow_ups_count'] == 1
+    assert chats[1]['follow_ups_count'] == 2
 
 
 @pytest.mark.django_db
