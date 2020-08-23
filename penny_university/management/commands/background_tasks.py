@@ -14,7 +14,8 @@ class Command(ProcessTasks):
     to be executed in the normal request cycle.
 
     In production this is run periodically (every 10 minutes for a duration of 10 minutes) by the heroku scheduler.
-    See https://dashboard.heroku.com/apps/penny-university/scheduler
+    See https://dashboard.heroku.com/apps/penny-university/scheduler It's run as
+    `python manage.py background_tasks --duration 600`
 
     Note that this Command subclasses ProcessTasks (background_task/management/commands/process_tasks.py). See that file
     and the documentation for django-background-tasks for further information.
