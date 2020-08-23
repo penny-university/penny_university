@@ -23,6 +23,7 @@ def test_penny_chat_list(test_chats_1):
     assert response.data['results'][0]['participants'][0]['role'] == 'Organizer'
     assert response.data['results'][0]['participants'][0]['user']['id'] == most_recent_chat.get_organizer().id
     assert chats[0]['title'] == most_recent_chat.title
+    assert chats[0]['follow_ups_count'] == 2
 
 
 @pytest.mark.django_db
@@ -46,6 +47,9 @@ def test_penny_chat__upcoming_or_popular(test_chats_2):
     assert len(titles) == 2
     assert 'future_chat' in titles
     assert 'old_chat_with_followups' in titles
+    chats = response.data['results']
+    assert chats[0]['follow_ups_count'] == 0
+    assert chats[1]['follow_ups_count'] == 1
 
 
 @pytest.mark.django_db
