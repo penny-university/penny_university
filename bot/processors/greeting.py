@@ -23,52 +23,15 @@ def greeting_blocks(user_id):
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'*Welcome to Penny University, <@{user_id}>*',
+                'text': f'*Hey, <@{user_id}>*!',
             }
         },
         {
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': (
-                    'Penny University is a self-organizing, peer-to-peer learning community. In Penny U there are no '
-                    '"mentors" or "mentees" but rather peers that enjoy learning together, socially. '
-                )
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': (
-                    '• If you have something you can teach, then let it be known. \n • If you have something you want '
-                    'to learn, then reach out to the community or to an individual and ask for help - buy them a coffee'
-                    ' or lunch, or jump on a Google Hangout. (This is called a _Penny Chat_.) \n • And when your Penny '
-                    'Chat is complete, show your appreciation by posting a Penny Chat review in our '
-                    '<http://pennyuniversity.org|forum>. Teach us a little of what you have learned.'
-                ),
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': (
-                    'Penny U is on the move. If all goes well then I, your trusty robot sidekick, will gain super '
-                    'powers in the coming months. I will help you find the answers you\'re looking for. I will also '
-                    'replace our lowly <http://pennyuniversity.org|Google Groups home page> with something a little '
-                    'more... appealing. If you want to help use out then let <@U42HCBFEF> and <@UES202FV5> know.'
-                ),
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': (
-                    'Next steps - let us know a little more about yourself. (_Note: survey response will be publicly '
-                    'viewable._)'
-                )
+                'text': 'Penny University connects people with similar interests in order for them to learn together. '
+                        'Add your interests so we can do the same for you.',
             }
         },
         {
@@ -78,9 +41,9 @@ def greeting_blocks(user_id):
                     'type': 'button',
                     'text': {
                         'type': 'plain_text',
-                        'text': 'What would you like to learn?',
+                        'text': 'Add My Interests',
                     },
-                    'action_id': 'open_interests_dialog'
+                    'action_id': 'open_interests_modal'
                 }
             ]
         },
@@ -104,53 +67,123 @@ def welcome_room_blocks(user_id):
 
 def onboarding_blocks(profile=None):
     template = {
+        'type': 'modal',
         'callback_id': 'interests',
-        'title': 'Let\'s get to know you',
-        'submit_label': 'Submit',
-        'notify_on_cancel': True,
-        'state': 'arbitrary data',
-        'elements': [
+        'title': {
+            'type': 'plain_text',
+            'text': 'Help us get to know you'
+        },
+        'submit': {
+            'type': 'plain_text',
+            'text': 'Submit'
+        },
+        'blocks': [
             {
-                'name': 'topics_to_learn',
-                'type': 'textarea',
-                'label': 'What do you want to learn?',
-                'hint': 'Provide a comma separated list of subjects you would be interested in learning.',
-                'optional': 'true',
-                'value': profile.topics_to_learn if profile else ''
+                'block_id': 'topics_to_learn',
+                'type': 'input',
+                'element': {
+                    'action_id': 'topics_to_learn',
+                    'type': 'plain_text_input',
+                    'initial_value': profile.topics_to_learn if profile else ''
+                },
+                'label': {
+                    'type': 'plain_text',
+                    'text': 'What do you want to learn about?',
+                },
+                'hint': {
+                    'type': 'plain_text',
+                    'text': 'Provide a comma separated list of subjects you would be interested in learning.',
+                },
+                'optional': True
             },
             {
-                'name': 'topics_to_share',
-                'type': 'textarea',
-                'label': 'What do you able to share with others?',
-                'hint': 'Provide a comma separated list of subjects you would be interested in sharing.',
-                'optional': 'true',
-                'value': profile.topics_to_share if profile else ''
-            },
-            {
-                'name': 'metro_name',
-                'type': 'text',
-                'label': 'Where are you from?',
-                'hint': 'City and state (or country if not the U.S.).',
-                'optional': 'true',
-                'value': profile.metro_name if profile else ''
-            },
-            {
-                'name': 'how_you_learned_about_pennyu',
-                'type': 'text',
-                'label': 'How did you learn about Penny University?',
-                'hint': 'Who told you? Where did you hear about us?',
-                'optional': 'true',
-                'value': profile.how_you_learned_about_pennyu if profile else ''
-            },
+                'block_id': 'topics_to_share',
+                'type': 'input',
+                'element': {
+                    'action_id': 'topics_to_share',
+                    'type': 'plain_text_input',
+                    'initial_value': profile.topics_to_share if profile else ''
+                },
+                'label': {
+                    'type': 'plain_text',
+                    'text': 'What are you able to share with others?'
+                },
+                'hint': {
+                    'type': 'plain_text',
+                    'text': 'Provide a comma separated list of subjects you know a thing or two about.'
+                },
+                'optional': True
+            }
         ]
     }
     return template
 
 
+def after_survey_blocks():
+    admins = settings.PENNY_ADMIN_USERS
+    blocks = [
+        {
+            'type': 'section',
+            'text': {
+                'type': 'plain_text',
+                'text': 'Thanks for filling out our interests survey!',
+                'emoji': True
+            }
+        },
+        {
+            'type': 'divider'
+        },
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Want a tour of our tools? Check out this quick tutorial:'
+            },
+            'accessory': {
+                'type': 'button',
+                'text': {
+                    'type': 'plain_text',
+                    'text': 'Watch Video',
+                    'emoji': True
+                },
+                'style': 'primary',
+                'url': 'https://www.youtube.com/watch?v=4ZUkckifPqE',
+                'action_id': 'watch_platform_tutorial'
+            }
+        },
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Want to review some recent Penny Chats?'
+            },
+            'accessory': {
+                'type': 'button',
+                'text': {
+                    'type': 'plain_text',
+                    'text': 'Go to Penny Chats',
+                    'emoji': True
+                },
+                'style': 'primary',
+                'url': 'https://pennyuniversity.org/chats',
+                'action_id': 'go_to_penny_chats'
+            }
+        },
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'Any questions? Feel free to reach out to <{admins[0]}> or <{admins[1]}>.'
+            }
+        }
+    ]
+    return blocks
+
+
 class GreetingBotModule(BotModule):
     processors = [
         'welcome_user',
-        'show_interests_dialog',
+        'show_interests_modal',
         'submit_interests',
     ]
 
@@ -166,31 +199,31 @@ class GreetingBotModule(BotModule):
         notify_admins(self.slack, f'<@{event["user"]}> just received a greeting message.')
 
     @is_block_interaction_event
-    @has_action_id('open_interests_dialog')
-    def show_interests_dialog(self, event):
+    @has_action_id('open_interests_modal')
+    def show_interests_modal(self, event):
         slack_id = event['user']['id']
         profile = SocialProfile.objects.filter(slack_id=slack_id).first()
         template = onboarding_blocks(profile)
-        self.slack.dialog_open(dialog=template, trigger_id=event['trigger_id'])
+        self.slack.views_open(view=template, trigger_id=event['trigger_id'])
 
-    @has_event_type('dialog_submission')
+    @has_event_type('view_submission')
     @has_callback_id('interests')
     def submit_interests(self, event):
         slack_id = event['user']['id']
         user_data = self.slack.users_info(user=slack_id).data['user']
+        topics_to_learn = event['view']['state']['values']['topics_to_learn']['topics_to_learn']['value']
+        topics_to_share = event['view']['state']['values']['topics_to_share']['topics_to_share']['value']
         kwargs = dict(
             email=user_data['profile']['email'],
             slack_team_id=settings.SLACK_TEAM_ID,
             display_name=user_data['name'],
             real_name=user_data['real_name'],
-            metro_name=event['submission']['metro_name'] or '',
-            topics_to_learn=event['submission']['topics_to_learn'] or '',
-            topics_to_share=event['submission']['topics_to_share'] or '',
-            how_you_learned_about_pennyu=event['submission']['how_you_learned_about_pennyu'] or '',
+            topics_to_learn=topics_to_learn or '',
+            topics_to_share=topics_to_share or '',
         )
         SocialProfile.objects.update_or_create(defaults=kwargs, slack_id=slack_id)
 
-        message = f"Welcome to Penny University {kwargs['real_name']}!"
+        message = f"Welcome to Penny University <@{slack_id}>!"
         if kwargs['topics_to_learn']:
             message += f"\n\n*This person is interested in learning these topics:*\n{kwargs['topics_to_learn']}"
         if kwargs['topics_to_share']:
@@ -198,3 +231,5 @@ class GreetingBotModule(BotModule):
 
         self.slack.chat_postMessage(channel=GREETING_CHANNEL, text=message)
         notify_admins(self.slack, f'User <@{slack_id}> just filled out the survey.')
+
+        self.slack.chat_postMessage(channel=slack_id, blocks=after_survey_blocks())
