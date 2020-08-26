@@ -119,6 +119,67 @@ def onboarding_blocks(profile=None):
     return template
 
 
+def after_survey_blocks():
+    admins = settings.PENNY_ADMIN_USERS
+    blocks = [
+        {
+            'type': 'section',
+            'text': {
+                'type': 'plain_text',
+                'text': 'Thanks for filling out our interests survey!',
+                'emoji': True
+            }
+        },
+        {
+            'type': 'divider'
+        },
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Want a tour of our tools? Check out this quick tutorial:'
+            },
+            'accessory': {
+                'type': 'button',
+                'text': {
+                    'type': 'plain_text',
+                    'text': 'Watch Video',
+                    'emoji': True
+                },
+                'style': 'primary',
+                'url': 'https://www.youtube.com/watch?v=4ZUkckifPqE',
+                'action_id': 'watch_platform_tutorial'
+            }
+        },
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Want to review some recent Penny Chats?'
+            },
+            'accessory': {
+                'type': 'button',
+                'text': {
+                    'type': 'plain_text',
+                    'text': 'Go to Penny Chats',
+                    'emoji': True
+                },
+                'style': 'primary',
+                'url': 'https://pennyuniversity.org/chats',
+                'action_id': 'go_to_penny_chats'
+            }
+        },
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'Any questions? Feel free to reach out to <{admins[0]}> or <{admins[1]}>.'
+            }
+        }
+    ]
+    return blocks
+
+
 class GreetingBotModule(BotModule):
     processors = [
         'welcome_user',
@@ -170,3 +231,5 @@ class GreetingBotModule(BotModule):
 
         self.slack.chat_postMessage(channel=GREETING_CHANNEL, text=message)
         notify_admins(self.slack, f'User <@{slack_id}> just filled out the survey.')
+
+        self.slack.chat_postMessage(channel=slack_id, blocks=after_survey_blocks())
