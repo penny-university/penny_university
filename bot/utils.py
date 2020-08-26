@@ -12,7 +12,7 @@ def channel_lookup(name):
     global _CHANNEL_NAME__ID
     if _CHANNEL_NAME__ID is None:
         slack_client = get_slack_client()
-        resp = slack_client.channels_list()
+        resp = slack_client.conversations_list()
         _CHANNEL_NAME__ID = {chan['name']: chan['id'] for chan in resp.data['channels']}
     return _CHANNEL_NAME__ID.get(name)
 

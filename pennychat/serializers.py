@@ -62,11 +62,7 @@ class UserChatSerializer(serializers.ModelSerializer):
         fields = ['penny_chat', 'role']
 
 
-class FollowUpSerializer(serializers.HyperlinkedModelSerializer):
-    penny_chat = serializers.HyperlinkedRelatedField(
-        queryset=PennyChat.objects.all(),
-        view_name='pennychat-detail'
-    )
+class FollowUpSerializer(serializers.ModelSerializer):
     user = UserDetailSerializer(read_only=True)
 
     class Meta:

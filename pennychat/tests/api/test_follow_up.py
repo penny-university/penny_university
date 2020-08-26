@@ -63,7 +63,7 @@ def test_update_follow_up(test_chats_1):
     chat_data = client.get(f'/api/chats/{first_penny_chat.id}/').data
     data = {
         'content': 'Update follow up',
-        'penny_chat': chat_data['url'],
+        'penny_chat': chat_data['id'],
     }
     follow_up = second_penny_chat.follow_ups.first()
     response = client.put(f'/api/follow-ups/{follow_up.id}/', data=data, format='json')
@@ -85,7 +85,7 @@ def test_update_follow_up_unauthorized(test_chats_1):
     chat_data = client.get(f'/api/chats/{penny_chat.id}/').data
     data = {
         'content': 'Update follow up',
-        'penny_chat': chat_data['url'],
+        'penny_chat': chat_data['id'],
     }
     follow_up = penny_chat.follow_ups.first()
     response = client.put(f'/api/follow-ups/{follow_up.id}/', data=data, format='json')
@@ -102,7 +102,7 @@ def test_update_follow_up_wrong_user(test_chats_1):
     chat_data = client.get(f'/api/chats/{first_penny_chat.id}/').data
     data = {
         'content': 'Update follow up',
-        'penny_chat': chat_data['url'],
+        'penny_chat': chat_data['id'],
     }
     follow_up = first_penny_chat.follow_ups.first()
     response = client.put(f'/api/follow-ups/{follow_up.id}/', data=data, format='json')
