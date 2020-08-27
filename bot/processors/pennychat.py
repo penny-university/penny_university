@@ -342,10 +342,10 @@ class PennyChatBotModule(BotModule):
         selected_visibility = event['actions'][0]['selected_option']['value']
         penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=event['view']['id'])
         if selected_visibility == '10':
-            penny_chat_invitation.visibility=10
+            penny_chat_invitation.visibility = 10
             penny_chat_invitation.save()
         if selected_visibility == '20':
-            penny_chat_invitation.visibility=20
+            penny_chat_invitation.visibility = 20
             penny_chat_invitation.save()
 
     @has_event_type([VIEW_SUBMISSION, VIEW_CLOSED])
