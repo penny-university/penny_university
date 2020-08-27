@@ -7,7 +7,12 @@ import slack
 from penny_university.middleware.integration_test_logging import IntegrationTestLoggingWrapper
 
 
-def get_slack_client():
+def get_slack_client(team_id=None):
+    """Return the cached slack client associated with the specified team id.
+
+    :param team_id: (this isn't being used quite yet, but will be soon)
+    :return:
+    """
     slack_client = slack.WebClient(token=settings.SLACK_API_KEY)
     slack_client = IntegrationTestLoggingWrapper(slack_client)
     return slack_client

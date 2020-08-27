@@ -1,5 +1,7 @@
-import React from 'react'
-import { UncontrolledPopover, PopoverHeader } from 'reactstrap'
+import React, { useState } from 'react'
+import {
+  Dropdown, DropdownItem, DropdownMenu, DropdownToggle,
+} from 'reactstrap'
 import { MoreOptions } from '../buttons'
 
 interface DropdownProps {
@@ -9,16 +11,27 @@ interface DropdownProps {
   testID: string,
 }
 
-const Dropdown = ({
+const CustomDropdown = ({
   header, options, id, testID,
-}: DropdownProps) => (
-  <>
-    <MoreOptions id={id} testID={testID} />
-    <UncontrolledPopover trigger="legacy" placement="bottom" target={id}>
-      <PopoverHeader>{header}</PopoverHeader>
-      {options}
-    </UncontrolledPopover>
-  </>
-)
+}: DropdownProps) => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-export default Dropdown
+  const toggle = () => {
+    setDropdownOpen((prevState) => !prevState)
+  }
+
+  return (
+    <Dropdown isOpen={dropdownOpen} toggle={toggle}>
+      <DropdownToggle tag="span">
+        <MoreOptions id={id} testID={testID} />
+      </DropdownToggle>
+      <DropdownMenu>
+        <DropdownItem header>{header}</DropdownItem>
+        <DropdownItem divider />
+        {options}
+      </DropdownMenu>
+    </Dropdown>
+  )
+}
+
+export default CustomDropdown

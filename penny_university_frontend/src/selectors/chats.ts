@@ -19,7 +19,6 @@ const getChatByID = (state: RootState, id: number) => {
 const getFollowupsForChatID = (state: RootState, id: number) => {
   const followUps = selectEntities.getFollowUps(state)
   const followUpsPagination = state.pagination.followUpsByChat[id] || { ids: [] }
-  // @ts-ignore
   const followUpsList = followUpsPagination.ids.map((id: number) => {
     const followUp = followUps[id]
     return followUp

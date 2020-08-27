@@ -1,7 +1,7 @@
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faPlus, faTimes, faPen, faSave, faHeart, IconDefinition, faCog, faEllipsisH,
+  faPlus, faTimes, faTrash, faPen, faSave, faHeart, IconDefinition, faCog, faEllipsisH,
 } from '@fortawesome/free-solid-svg-icons'
 import classNames from 'classnames/dedupe'
 import { Button } from 'reactstrap'
@@ -81,6 +81,17 @@ EditButton.defaultProps = {
   color: 'primary',
 }
 
+const DeleteButton = ({
+  className, onClick, type: detail, color,
+}: { className: string, type: string, onClick: () => void, color?: string }) => (
+  <IconButton detail={detail} title="Delete" className={className} onClick={onClick} icon={faTrash} color={color} />
+)
+
+DeleteButton.defaultProps = {
+  className: '',
+  color: 'danger',
+}
+
 const HeartButton = ({ className, count: detail }: { className: string, count: number }) => (
   <IconButton color="red" className={className} detail={detail.toString()} icon={faHeart} />
 )
@@ -121,7 +132,7 @@ SettingsButton.defaultProps = {
 }
 
 export {
-  HeartButton, CreateButton, EditButton, SaveButton, CancelButton, MoreOptions, SettingsButton,
+  HeartButton, CreateButton, DeleteButton, EditButton, SaveButton, CancelButton, MoreOptions, SettingsButton,
 }
 
 export default IconButton
