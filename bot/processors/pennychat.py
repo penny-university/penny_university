@@ -38,7 +38,6 @@ PENNY_CHAT_VISIBILITY = 'penny_chat_visibility'
 
 PENNY_CHAT_ID = 'penny_chat_id'
 
-global penny_chat_visibility_name
 
 def datetime_range(start, end, delta):
     current = start
@@ -71,7 +70,7 @@ def penny_chat_details_modal(penny_chat_invitation):
     if penny_chat_invitation.visibility == 10:
         penny_chat_visibility_name = "Public Chat"
     if penny_chat_invitation.visibility == 20:
-        penny_chat_visibility_name = "Private Chat" 
+        penny_chat_visibility_name = "Private Chat"
 
     # look into `private_metadata` for storing penny_chat_id (https://api.slack.com/reference/surfaces/views)
     template = {
@@ -161,7 +160,7 @@ def penny_chat_details_modal(penny_chat_invitation):
                     'text': '*Chat Visibility*',
                 },
                 'accessory': {
-                    'action_id': 'penny_chat_visibility',
+                    'action_id': PENNY_CHAT_VISIBILITY,
                     'type': 'static_select',
                     'placeholder': {
                         'type': 'plain_text',
@@ -226,7 +225,7 @@ def penny_chat_details_modal(penny_chat_invitation):
             },
         ]
     }
-    
+
     return template
 
 
@@ -257,6 +256,7 @@ class PennyChatBotModule(BotModule):
         'submit_details_and_share',
         'edit_chat',
         'attendance_selection',
+        'visibility_select',
     ]
 
     def __init__(self, slack_client):
@@ -347,7 +347,6 @@ class PennyChatBotModule(BotModule):
         if selected_visibility == '20':
             penny_chat_invitation.visibility=20
             penny_chat_invitation.save()
-        import ipdb;ipdb.set_trace()
 
     @has_event_type([VIEW_SUBMISSION, VIEW_CLOSED])
     @has_callback_id(PENNY_CHAT_DETAILS)
