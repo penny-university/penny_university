@@ -138,16 +138,6 @@ def test_PennyChatBotModule_share(mocker):
                         'penny_chat_description': {
                             'value': 'new_description',
                         }
-                    },
-                    'penny_chat_visibility': {
-                        'private_chat_select': {
-                            'type': 'checkboxes',
-                            'selected_options': [
-                                {
-                                    'value': 'public'
-                                }
-                            ]
-                        }
                     }
                 }
             },

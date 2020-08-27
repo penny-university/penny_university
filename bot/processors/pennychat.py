@@ -172,14 +172,14 @@ def penny_chat_details_modal(penny_chat_invitation):
                                 'type': 'plain_text',
                                 'text': 'Private Chat',
                             },
-                            'value': '20',
+                            'value': str(PennyChat.PRIVATE),
                         },
                         {
                             'text': {
                                 'type': 'plain_text',
                                 'text': 'Public Chat',
                             },
-                            'value': '10',
+                            'value': str(PennyChat.PUBLIC),
                         },
                     ],
                     'initial_option': {
@@ -341,12 +341,8 @@ class PennyChatBotModule(BotModule):
     def visibility_select(self, event):
         selected_visibility = event['actions'][0]['selected_option']['value']
         penny_chat_invitation = PennyChatSlackInvitation.objects.get(view=event['view']['id'])
-        if selected_visibility == '10':
-            penny_chat_invitation.visibility = 10
-            penny_chat_invitation.save()
-        if selected_visibility == '20':
-            penny_chat_invitation.visibility = 20
-            penny_chat_invitation.save()
+        penny_chat_invitation.visibility = int(selected_visibility)
+        penny_chat_invitation.save()
 
     @has_event_type([VIEW_SUBMISSION, VIEW_CLOSED])
     @has_callback_id(PENNY_CHAT_DETAILS)
