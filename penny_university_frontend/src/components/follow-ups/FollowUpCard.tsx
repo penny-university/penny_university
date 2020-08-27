@@ -1,10 +1,16 @@
 import React, { useState } from 'react'
+import { DropdownItem } from 'reactstrap';
+import {
+  faTrash, faPen,
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FollowUp, User } from '../../models'
 import { FollowUpType } from '../../models/followUp'
 import { Dropdown } from '..'
 import { Content, EditContent } from '../content'
-import { EditButton, SaveButton } from '../buttons'
+import { SaveButton } from '../buttons'
 import FollowUpUserInfo from './FollowUpUserInfo'
+import modalDispatch from '../modal/dispatch'
 
 export const TestIDs = {
   subMenu: 'followup-submenu',
@@ -19,22 +25,32 @@ type FollowUpCard = {
 }
 
 const FollowUpButtons = ({
-  editOnPress, saveOnPress, editMode, id,
-}: { editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number }) => (editMode
-  ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
+  confirmDeleteOnPress, editOnPress, saveOnPress, editMode, id,
+}: {
+  confirmDeleteOnPress: () => void, editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number
+}) => (editMode ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
   : (
     <Dropdown
       id={`followup-dropdown-${id}`}
       header="Options"
       testID={TestIDs.subMenu}
       options={[
-        <EditButton
-          className="align-self-start"
-          type="Follow Up"
+        <DropdownItem
+          className="btn btn-link"
           onClick={editOnPress}
           key={`edit-followup-${id}`}
-          color="link"
-        />,
+        >
+          <FontAwesomeIcon icon={faPen} className="mr-2" />
+          Edit
+        </DropdownItem>,
+        <DropdownItem
+          className="btn btn-link"
+          onClick={confirmDeleteOnPress}
+          key={`delete-followup-${id}`}
+        >
+          <FontAwesomeIcon icon={faTrash} className="mr-2" />
+          Delete
+        </DropdownItem>,
       ]}
     />
   ))
@@ -53,6 +69,10 @@ const FollowUpCard = ({
   }
 
   const editOnPress = () => toggleEditMode(true)
+  const confirmDeleteOnPress = () => {
+    modalDispatch.confirmDeleteFollowUp(followUp.id, Number(followUp.pennyChat))
+  }
+
   return (
     <div className="pt-2">
       <div className="d-flex justify-content-between">
@@ -63,6 +83,7 @@ const FollowUpCard = ({
             editMode={editMode}
             saveOnPress={saveFollowUp}
             editOnPress={editOnPress}
+            confirmDeleteOnPress={confirmDeleteOnPress}
           />
         ) : null}
       </div>

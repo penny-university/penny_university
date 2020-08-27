@@ -77,7 +77,7 @@ def test_show_interests_dialog(mocker):
         'trigger_id': 'whatevs',
         'actions': [
             {
-                'action_id': 'open_interests_dialog'
+                'action_id': 'open_interests_modal'
             }
         ],
         'user': {
@@ -87,7 +87,7 @@ def test_show_interests_dialog(mocker):
 
     with mocker.patch('bot.processors.greeting.onboarding_blocks', return_value='welcome'):
         bot_module(event)
-    assert slack.dialog_open.call_args == mocker.call(dialog='welcome', trigger_id='whatevs')
+    assert slack.views_open.call_args == mocker.call(view='welcome', trigger_id='whatevs')
 
 
 @pytest.mark.django_db
@@ -102,7 +102,7 @@ def test_show_interests_dialog_existing_user(mocker):
         'trigger_id': 'whatevs',
         'actions': [
             {
-                'action_id': 'open_interests_dialog'
+                'action_id': 'open_interests_modal'
             }
         ],
         'user': {
@@ -111,10 +111,10 @@ def test_show_interests_dialog_existing_user(mocker):
     }
 
     bot_module(event)
-    assert slack.dialog_open.call_args[1]['dialog']['elements'][0]['name'] == 'topics_to_learn'
-    assert slack.dialog_open.call_args[1]['dialog']['elements'][0]['value'] == 'django'
-    assert slack.dialog_open.call_args[1]['dialog']['elements'][1]['name'] == 'topics_to_share'
-    assert slack.dialog_open.call_args[1]['dialog']['elements'][1]['value'] == ''
+    assert slack.views_open.call_args[1]['view']['blocks'][0]['block_id'] == 'topics_to_learn'
+    assert slack.views_open.call_args[1]['view']['blocks'][0]['element']['initial_value'] == 'django'
+    assert slack.views_open.call_args[1]['view']['blocks'][1]['block_id'] == 'topics_to_share'
+    assert slack.views_open.call_args[1]['view']['blocks'][1]['element']['initial_value'] == ''
 
 
 @pytest.mark.django_db
@@ -124,14 +124,24 @@ def test_submit_interests(mocker):
 
     # Create initial response
     event = {
-        'type': 'dialog_submission',
+        'type': 'view_submission',
         'callback_id': 'interests',
         'user': {'id': 'SOME_USER_ID'},
-        'submission': {
-            'metro_name': 'SOME_METRO',
-            'topics_to_learn': 'SOME_LEARNINGS',
-            'topics_to_share': '',  # user omitted answer
-            'how_you_learned_about_pennyu': 'SOME_REFERER',
+        'view': {
+            'state': {
+                'values': {
+                    'topics_to_learn': {
+                        'topics_to_learn': {
+                            'value': 'SOME_LEARNINGS'
+                        }
+                    },
+                    'topics_to_share': {
+                        'topics_to_share': {
+                            'value': ''  # user omitted answer
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -155,10 +165,8 @@ def test_submit_interests(mocker):
     assert profile.slack_id == 'SOME_USER_ID'
     assert profile.display_name == 'SOME_SLACK_NAME'
     assert profile.real_name == 'SOME_REAL_NAME'
-    assert profile.metro_name == 'SOME_METRO'
     assert profile.topics_to_learn == 'SOME_LEARNINGS'
     assert profile.topics_to_share == ''
-    assert profile.how_you_learned_about_pennyu == 'SOME_REFERER'
     assert profile.created
     assert profile.updated
 
@@ -168,28 +176,36 @@ def test_submit_interests(mocker):
 
     # create updated response
     event = {
-        'type': 'dialog_submission',
+        'type': 'view_submission',
         'callback_id': 'interests',
         'user': {'id': 'SOME_USER_ID'},
-        'submission': {
-            'metro_name': 'SOME_OTHER_METRO',
-            'topics_to_learn': 'SOME_OTHER_LEARNINGS',
-            'topics_to_share': 'SOME_OTHER_TEACHINGS',
-            'how_you_learned_about_pennyu': 'SOME_OTHER_REFERER',
+        'view': {
+            'state': {
+                'values': {
+                    'topics_to_learn': {
+                        'topics_to_learn': {
+                            'value': 'SOME_OTHER_LEARNINGS'
+                        }
+                    },
+                    'topics_to_share': {
+                        'topics_to_share': {
+                            'value': 'SOME_OTHER_TEACHINGS'
+                        }
+                    }
+                }
+            }
         }
     }
 
     bot_module(event)
 
-    profile = SocialProfile.objects.get(slack_id='SOME_USER_ID')
+    profile.refresh_from_db()
 
     assert profile.email == 'SOME_EMAIL'
     assert profile.slack_id == 'SOME_USER_ID'
     assert profile.display_name == 'SOME_SLACK_NAME'
     assert profile.real_name == 'SOME_REAL_NAME'
-    assert profile.metro_name == 'SOME_OTHER_METRO'
     assert profile.topics_to_learn == 'SOME_OTHER_LEARNINGS'
     assert profile.topics_to_share == 'SOME_OTHER_TEACHINGS'
-    assert profile.how_you_learned_about_pennyu == 'SOME_OTHER_REFERER'
     assert profile.created == initial_created
     assert profile.updated > initial_updated

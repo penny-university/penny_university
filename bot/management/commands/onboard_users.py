@@ -35,24 +35,24 @@ class Command(BaseCommand):
         slack_name__user_id = {v: k for k, v in user_id__slack_name.items()}
 
         not_found_users = set()
-        non_responded_user_ids = set()
+        user_ids = set()
         if slack_names:
             for slack_name in slack_names:
+                print(slack_name)
                 user_id = slack_name__user_id.get(slack_name)
                 if user_id:
-                    non_responded_user_ids.add(user_id)
+                    user_ids.add(user_id)
                 else:
                     not_found_users.add(slack_name)
         else:
-            responded_user_ids = [user.slack_id for user in SocialProfile.objects.all() if user.slack_id]
-            non_responded_user_ids = set(user_id__slack_name).difference(responded_user_ids)
+            user_ids = set(user_id__slack_name)
 
         # notify developer of send status
         if not_found_users:
             print(f'WARNING: These users not found: {", ".join(not_found_users)}\n')
         print(
             'Preparing to send messages to: '
-            f'{", ".join([user_id__slack_name[uid] for uid in non_responded_user_ids])}.'
+            f'{", ".join([user_id__slack_name[uid] for uid in user_ids])}.'
         )
         print()
 
@@ -74,7 +74,7 @@ class Command(BaseCommand):
         # send
         print('Sending:')
 
-        for user_id in non_responded_user_ids:
+        for user_id in user_ids:
             slack_client.chat_postMessage(channel=user_id, blocks=greeting_blocks(user_id))
             print(user_id)
             time.sleep(1.0)  # attempting to avoid rate limiting
