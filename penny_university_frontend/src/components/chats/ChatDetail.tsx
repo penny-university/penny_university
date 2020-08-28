@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Card } from 'reactstrap'
 import {
-  CreateButton, SaveButton, CancelButton,
+  CreateButton,
 } from '../buttons'
 import Date from '../Date'
-import { Content, EditContent } from '../content'
+import Content from '../content'
 import { FollowUpCard } from '../follow-ups'
 import modalDispatch from '../modal/dispatch'
 import { Chat, FollowUp, User } from '../../models'
@@ -26,10 +26,29 @@ const ChatDetail = ({
   chat, followUps, createFollowUp, updateFollowUp, user, getUserByID,
 }: ChatDetailProps) => {
   const [addFollowUpMode, toggleAddFollowUpMode] = useState(false)
-  const [followUpContent, updateFollowUpContent] = useState('')
 
-  const saveNewFollowUp = () => {
-    createFollowUp(chat.id, { content: followUpContent })
+  const newFollowUpKey = `new-followup:${chat.id}`
+
+  useEffect(() => {
+    if (newFollowUpKey) {
+      const saved = sessionStorage.getItem(newFollowUpKey)
+      if (saved !== null) {
+        toggleAddFollowUpMode(true)
+      }
+    }
+  }, [toggleAddFollowUpMode, newFollowUpKey])
+
+  const saveNewFollowUp = (text: string) => {
+    if (user.valid) {
+      createFollowUp(chat.id, { content: text })
+      toggleAddFollowUpMode(false)
+    } else {
+      modalDispatch.auth()
+    }
+  }
+
+  const cancelOnPress = () => {
+    sessionStorage.removeItem(newFollowUpKey)
     toggleAddFollowUpMode(false)
   }
 
@@ -90,11 +109,7 @@ const ChatDetail = ({
           ? (
             <div>
               <h5>Add New Follow Up:</h5>
-              <EditContent content={followUpContent} onChange={updateFollowUpContent} />
-              <div className="mt-2">
-                <SaveButton type="Follow Up" onClick={saveNewFollowUp} />
-                <CancelButton className="ml-2" onClick={() => toggleAddFollowUpMode(false)} />
-              </div>
+              <Content edit content={''} saveFollowUp={saveNewFollowUp} cancelFollowUp={cancelOnPress} storageKey={newFollowUpKey} />
             </div>
           )
           : <CreateButton type="Follow Up" onClick={createOnPress} />}

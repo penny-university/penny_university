@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from 'reactstrap'
 import Date from '../Date'
-import { Content } from '../content'
+import Content from '../content'
 import ParticipantList from './ParticipantList'
 import { Chat, User } from '../../models'
 

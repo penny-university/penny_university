@@ -5,6 +5,7 @@ import Navigation from './nav'
 import Alert from './alerts'
 import { ChatList } from './chats'
 import PrivateRoute from './private-route'
+import Content from './content'
 
 export {
   Alert,
@@ -14,4 +15,5 @@ export {
   Dropdown,
   Navigation,
   PrivateRoute,
+  Content,
 }
