@@ -47,7 +47,10 @@ def users():
 
 @pytest.fixture
 def test_chats_1(users):
-    chat_1 = PennyChatFactory()
+    # This solves a bug causing one assert to fail in test_penny_chat_list.
+    chat_1_date = timezone.now() - timedelta(weeks=4)
+
+    chat_1 = PennyChatFactory(date=chat_1_date)
     chat_2 = PennyChatFactory()
     chat_3 = PennyChatFactory()
     chat_4 = PennyChatFactory(visibility=PennyChat.PRIVATE)
