@@ -76,27 +76,3 @@ def test_chats_1(users):
     for chat in chats:
         generate_follow_ups(chat, [users[0], users[1]])
     return chats
-
-
-@pytest.fixture
-def test_chats_2(users):
-    # I'm dying to replace this with factory_boy, but not for this PR
-    old_chat_date = timezone.now() - timedelta(weeks=4)
-    future_chat_date = timezone.now() + timedelta(days=1)
-
-    old_chat_with_no_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_no_followups')
-    old_chat_with_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_followups')
-    future_chat_with_no_followups = PennyChatFactory(date=future_chat_date, title='future_chat')
-
-    Participant.objects.create(user=users[0], penny_chat=old_chat_with_no_followups, role=Participant.ORGANIZER)
-    Participant.objects.create(user=users[1], penny_chat=old_chat_with_no_followups, role=Participant.ATTENDEE)
-
-    Participant.objects.create(user=users[1], penny_chat=old_chat_with_followups, role=Participant.ORGANIZER)
-    Participant.objects.create(user=users[2], penny_chat=old_chat_with_followups, role=Participant.ATTENDEE)
-
-    Participant.objects.create(user=users[2], penny_chat=future_chat_with_no_followups, role=Participant.ORGANIZER)
-    Participant.objects.create(user=users[0], penny_chat=future_chat_with_no_followups, role=Participant.ATTENDEE)
-
-    generate_follow_ups(old_chat_with_followups, [users[0], users[1]])
-
-    return [old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups]

@@ -26,8 +26,6 @@ def setup_test_chats():
     chat_private_3 = PennyChatFactory(visibility=PennyChat.PRIVATE)
     chat_public = PennyChatFactory(visibility=PennyChat.PUBLIC)
 
-    chats = [chat_private_1, chat_private_2, chat_private_3, chat_public]
-
     user1 = UserFactory()
     user2 = UserFactory()
     user3 = UserFactory()
@@ -58,7 +56,18 @@ def setup_test_chats():
     old_chat_with_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_followups')
     future_chat_with_no_followups = PennyChatFactory(date=future_chat_date, title='future_chat')
 
+    Participant.objects.create(user=user1, penny_chat=old_chat_with_no_followups, role=Participant.ORGANIZER)
+    Participant.objects.create(user=user2, penny_chat=old_chat_with_no_followups, role=Participant.ATTENDEE)
+
+    Participant.objects.create(user=user2, penny_chat=old_chat_with_followups, role=Participant.ORGANIZER)
+    Participant.objects.create(user=user3, penny_chat=old_chat_with_followups, role=Participant.ATTENDEE)
+
+    Participant.objects.create(user=user3, penny_chat=future_chat_with_no_followups, role=Participant.ORGANIZER)
+    Participant.objects.create(user=user1, penny_chat=future_chat_with_no_followups, role=Participant.ATTENDEE)
+
     FollowUpFactory(penny_chat=old_chat_with_followups, user=user1, date=within_range_date)
+
+    chats = [chat_private_1, chat_private_2, chat_private_3, chat_public, old_chat_with_followups, future_chat_with_no_followups]  # noqa
 
     for chat in chats:
         FollowUpFactory(penny_chat=chat, user=user1, date=within_range_date)
@@ -95,7 +104,7 @@ def test_penny_chat_participants_list__own_content():
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     response = client.get(f'/api/chats/?participants__user_id={user3.id}')
     assert response.status_code == 200
-    assert response.data['count'] == 2
+    assert response.data['count'] == 4
     chats = response.data['results']
     returned_chat_ids = set([chat['id'] for chat in chats])
     assert chat_private_2.id in returned_chat_ids, 'user organized this chat but it was not returned'
@@ -112,14 +121,14 @@ def test_penny_chat_participants_list__other_content():
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     response = client.get(f'/api/chats/?participants__user_id={user1.id}')
     assert response.status_code == 200
-    assert response.data['count'] == 2
+    assert response.data['count'] == 4
     chats = response.data['results']
     for chat in chats:
         assert int(user1.id) in [participant['user']['id'] for participant in chat['participants']]
 
 
 @pytest.mark.django_db
-def test_penny_chat__upcoming_or_popular(test_chats_2):
+def test_penny_chat__upcoming_or_popular():
     objects = setup_test_chats()
     chat_private_1, chat_private_2, chat_private_3, chat_public = objects['penny_chats']
     old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups = objects['upcoming_or_popular']
