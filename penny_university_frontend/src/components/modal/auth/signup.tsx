@@ -95,7 +95,7 @@ const AuthSignupModal = ({ signup, email: orignalEmail }: AuthSignupModalProps) 
 const mapStateToProps = () => ({
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   signup: (payload: {
     firstName: string,
     lastName: string,

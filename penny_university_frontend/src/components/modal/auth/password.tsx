@@ -54,7 +54,7 @@ const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
 const mapStateToProps = () => ({
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   login: (payload: {email: string, password: string}) => dispatch(dispatchLogin(payload)),
   requestPasswordReset: (payload: {email: string}) => dispatch(requestPasswordReset(payload)),
 })

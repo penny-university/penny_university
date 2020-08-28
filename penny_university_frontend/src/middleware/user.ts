@@ -11,12 +11,12 @@ import CookieHelper from '../helpers/cookie'
 import modalDispatch from '../components/modal/dispatch'
 import ApiRoutes, { Routes } from '../constants'
 
-const logout = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+const logout = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
   CookieHelper.clearCookies()
   dispatch(logoutRequest())
 }
 
-const checkAuth = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+const checkAuth = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
   const token = CookieHelper.getToken()
   if (token) {
     dispatch(setToken(token))
@@ -25,6 +25,7 @@ const checkAuth = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
 }
 
 const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyAction) => void) => (action: AnyAction) => {
+  const { status } = action?.payload || { status: undefined }
   switch (action.type) {
     case Actions.LOGOUT_USER:
       logout(store.dispatch)
@@ -51,7 +52,6 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       modalDispatch.authPassword(action.payload.meta.email)
       break
     case Actions.USER_EXISTS_FAILURE:
-      const { status } = action.payload
       if (status === 403) {
         modalDispatch.verifyEmail(action.payload.meta.email)
       } else {

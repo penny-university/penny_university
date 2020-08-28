@@ -34,7 +34,7 @@ const mapStateToProps = (state: RootState) => ({
   error: state?.error?.body,
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   dismiss: () => dispatch({ type: ChatActions.CLEAR_ERROR_MESSAGE }),
 })
 

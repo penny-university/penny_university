@@ -46,7 +46,7 @@ const mapStateToProps = (state: RootState) => {
   return { error: error?.body }
 }
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   verify: (payload: { token: string, email: string }) => dispatch(verifyEmail(payload)),
 })
 

@@ -52,7 +52,7 @@ const AuthEmailModal = ({ userExists }: AuthEmailModalProps) => {
 const mapStateToProps = () => ({
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   userExists: (email: string) => dispatch(userExists(email)),
 })
 export default connect(mapStateToProps, mapDispatchToProps)(AuthEmailModal)

@@ -69,7 +69,7 @@ const SettingsModal = ({ update, user }: SettingsModalProps) => {
 const mapStateToProps = () => ({
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   update: (payload: {
     firstName: string,
     lastName: string,

@@ -124,10 +124,10 @@ export const verifyEmail = (payload: { token: string, email: string }): AnyActio
   },
 })
 
-export const dispatchLogin = (payload: { email: string, password: string }) => async (dispatch: ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(login(payload))
+export const dispatchLogin = (payload: { email: string, password: string }) => login(payload)
 
 export const dispatchLogout = () => async (dispatch:
-  ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
+  ThunkDispatch<unknown, unknown, StandardAction<APIPayload<any>>>) => dispatch(logout())
 
 export const updateUser = (payload: {firstName: string, lastName: string}, id: string) => ({
   type: CALL_API,
