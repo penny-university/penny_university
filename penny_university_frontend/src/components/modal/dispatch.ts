@@ -29,7 +29,7 @@ const modalDispatch = () => {
     payload: null,
   }))
 
-  const authUsername = () => open({
+  const authEmail = () => open({
     name: ModalNames.AUTH_EMAIL,
   })
 
@@ -66,7 +66,7 @@ const modalDispatch = () => {
   return {
     mount,
     unmount,
-    auth: authUsername,
+    auth: authEmail,
     authSignup,
     authPassword,
     authPasswordReset,
