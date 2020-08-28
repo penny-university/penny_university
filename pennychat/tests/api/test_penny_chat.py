@@ -130,7 +130,7 @@ def test_penny_chat__upcoming_or_popular(test_chats_2):
     response = client.get('/api/chats/?upcoming_or_popular=true')
     assert response.status_code == 200
     titles = {result['title'] for result in response.data['results']}
-    assert len(titles) == 4
+    assert len(titles) == 5
     assert 'future_chat' in titles
     assert 'old_chat_with_followups' in titles
     chats = response.data['results']
