@@ -27,12 +27,13 @@ def test_penny_chat_list(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_penny_chat_participants_list__own_content(test_chats_1):
+def test_penny_chat_participants_list__own_content(setup_test_chats):
+    test_chats = setup_test_chats
     client = APIClient()
-    private_chat_org = test_chats_1[3].get_organizer()
+    private_chat_org = test_chats[3].get_organizer()
     token = Token.objects.create(user=private_chat_org)
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-    user_id = test_chats_1[0].participants.all()[0].user_id
+    user_id = test_chats[0].participants.all()[0].user_id
     response = client.get(f'/api/chats/?participants__user_id={user_id}')
     assert response.status_code == 200
     assert response.data['count'] == 3
@@ -42,12 +43,13 @@ def test_penny_chat_participants_list__own_content(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_penny_chat_participants_list__other_content(test_chats_1):
+def test_penny_chat_participants_list__other_content(setup_test_chats):
+    test_chats = setup_test_chats
     client = APIClient()
-    private_chat_org = test_chats_1[3].get_organizer()
+    private_chat_org = test_chats[3].get_organizer()
     token = Token.objects.create(user=private_chat_org)
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-    user_id = test_chats_1[0].participants.all()[1].user_id
+    user_id = test_chats[0].participants.all()[1].user_id
     response = client.get(f'/api/chats/?participants__user_id={user_id}')
     assert response.status_code == 200
     assert response.data['count'] == 2
