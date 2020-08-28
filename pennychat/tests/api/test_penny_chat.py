@@ -26,7 +26,7 @@ def setup_test_chats():
     chat_private_3 = PennyChatFactory(visibility=PennyChat.PRIVATE)
     chat_public = PennyChatFactory(visibility=PennyChat.PUBLIC)
 
-    chats = [chat_private_1, chat_private_2, chat_public]
+    chats = [chat_private_1, chat_private_2, chat_private_3, chat_public]
 
     user1 = UserFactory()
     user2 = UserFactory()
