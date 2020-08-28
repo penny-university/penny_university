@@ -31,6 +31,50 @@ def create_penny_chat():
     )
     return chat.id
 
+def create_penny_chat__private():
+    date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=utc)
+    chat = PennyChatSlackInvitation.objects.create(
+        status=PennyChatSlackInvitation.DRAFT,
+        organizer_tz='America/Chicago',
+        date=date,
+        view='view',
+        created_from_slack_team_id=SLACK_TEAM_ID,
+        visibility=PennyChat.PUBLIC
+    )
+    return chat.id
+
+@pytest.mark.django_db
+def test_visibility_select(mocker):
+    slack_client = mocker.Mock()
+    bot_module = PennyChatBotModule(slack_client)
+
+    chat_id = create_penny_chat__private()
+
+    event = {
+        'type': 'block_actions',
+        'trigger_id': 'trigger',
+        'view': {
+            'id': 'view'
+        },
+        'actions': [
+            {
+                'action_id': penny_chat_constants.PENNY_CHAT_VISIBILITY,
+                'selected_option': {
+                    'value': str(PennyChat.PRIVATE)
+                }
+            }
+        ],
+        'user': {
+            'id': 'user'
+        }
+    }
+
+    bot_module(event)
+
+    penny_chat = PennyChatSlackInvitation.objects.get(id=chat_id)
+    assert penny_chat.visibility == PennyChat.PRIVATE
+
+
 
 @pytest.mark.django_db
 def test_date_select(mocker):
