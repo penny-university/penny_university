@@ -31,6 +31,7 @@ def create_penny_chat():
     )
     return chat.id
 
+
 def create_penny_chat__private():
     date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=utc)
     chat = PennyChatSlackInvitation.objects.create(
@@ -42,6 +43,7 @@ def create_penny_chat__private():
         visibility=PennyChat.PUBLIC
     )
     return chat.id
+
 
 @pytest.mark.django_db
 def test_visibility_select(mocker):
@@ -73,7 +75,6 @@ def test_visibility_select(mocker):
 
     penny_chat = PennyChatSlackInvitation.objects.get(id=chat_id)
     assert penny_chat.visibility == PennyChat.PRIVATE
-
 
 
 @pytest.mark.django_db

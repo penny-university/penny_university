@@ -75,12 +75,13 @@ def test_chats_1(users):
         generate_follow_ups(chat, [users[0], users[1]])
     return chats
 
+
 @pytest.fixture
 def test_chats_2(users):
     # I'm dying to replace this with factory_boy, but not for this PR
     old_chat_date = timezone.now() - timedelta(weeks=4)
     future_chat_date = timezone.now() + timedelta(days=1)
-    
+
     old_chat_with_no_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_no_followups')
     old_chat_with_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_followups')
     future_chat_with_no_followups = PennyChatFactory(date=future_chat_date, title='future_chat')
@@ -102,4 +103,4 @@ def test_chats_2(users):
     generate_follow_ups(old_chat_with_followups, [users[0], users[1]])
     generate_follow_ups(private_involved_with_followups, [users[2]])
     generate_follow_ups(private_not_involved_with_followups, [users[1]])
-    return [old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups, private_involved_with_followups, private_not_involved_with_followups]
+    return [old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups, private_involved_with_followups, private_not_involved_with_followups] # noqa

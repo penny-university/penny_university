@@ -40,6 +40,7 @@ def test_penny_chat_participants_list__own_content(test_chats_1):
     for chat in chats:
         assert int(user_id) in [participant['user']['id'] for participant in chat['participants']]
 
+
 @pytest.mark.django_db
 def test_penny_chat_participants_list__other_content(test_chats_1):
     client = APIClient()
