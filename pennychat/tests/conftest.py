@@ -58,27 +58,17 @@ def test_chats_1(users):
 
     chats = [chat_1, chat_2, chat_3, chat_4, chat_5]
 
-    # Chat 1 Participants
-
     Participant.objects.create(user=users[0], penny_chat=chat_1, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[1], penny_chat=chat_1, role=Participant.ATTENDEE)
-
-    # Chat 2 Participants
 
     Participant.objects.create(user=users[1], penny_chat=chat_2, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[2], penny_chat=chat_2, role=Participant.ATTENDEE)
 
-    # Chat 3 Participants
-
     Participant.objects.create(user=users[2], penny_chat=chat_3, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[0], penny_chat=chat_3, role=Participant.ATTENDEE)
 
-    # Chat 4 Participants
-
     Participant.objects.create(user=users[0], penny_chat=chat_4, role=Participant.ORGANIZER)
 
-    # Chat 5 Participants
-    
     Participant.objects.create(user=users[1], penny_chat=chat_5, role=Participant.ORGANIZER)
 
     for chat in chats:
