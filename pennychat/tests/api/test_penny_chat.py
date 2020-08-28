@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 within_range_date = datetime(2020, 1, 2, 0, 0, tzinfo=timezone.utc)
 
-# Setup test private chats for test_penny_chat_participants_list__
 
 def setup_test_chats():
 
@@ -22,8 +21,6 @@ def setup_test_chats():
 
     chats = [chat_private_1, chat_private_2]
 
-    # Create 3 new users here rather than an arg
-
     user1 = UserFactory()
     soc_prof1 = SocialProfileFactory(user=user1)
     user2 = UserFactory()
@@ -31,24 +28,8 @@ def setup_test_chats():
     user3 = UserFactory()
     soc_prof3 = SocialProfileFactory(user=user3)
 
-    # Assign participants to each chat
-
-    # Chat 1 
-    # user1 = organizer
-    # user2 = participant
-    # user3 = shouldn't see this
-
-    # Test as user1's page as user1 to make sure it appears
-
     Participant.objects.create(user=user1, penny_chat=chat_private_1, role=Participant.ORGANIZER)
     Participant.objects.create(user=user2, penny_chat=chat_private_1, role=Participant.ATTENDEE)
-
-    # Chat 2
-    # user3 = organizer
-    # user1 = participant
-    # user2 = shouldn't see this 
-
-    # Test on user3's page as user2 to see if it doesn't appear
 
     Participant.objects.create(user=user3, penny_chat=chat_private_2, role=Participant.ORGANIZER)
     Participant.objects.create(user=user1, penny_chat=chat_private_2, role=Participant.ATTENDEE)
@@ -60,7 +41,6 @@ def setup_test_chats():
         'users': [user1, user2, user3],
         'social_profiles': [soc_prof1, soc_prof2, soc_prof3]
     }
-
 
 
 @pytest.mark.django_db
