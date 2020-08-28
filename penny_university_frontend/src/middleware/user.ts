@@ -29,7 +29,7 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
   switch (action.type) {
     case Actions.LOGOUT_USER:
       logout(store.dispatch)
-      Sentry.configureScope(scope => {
+      Sentry.configureScope((scope) => {
         scope.clear()
       })
       break
@@ -50,7 +50,7 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       // Load data
       const pk = action.payload.result.pk.toString() // eslint-disable-line no-case-declarations
       store.dispatch(loadChatsList(ApiRoutes.userChats(pk), pk))
-      Sentry.configureScope(scope => {
+      Sentry.configureScope((scope) => {
         scope.setUser({ id: pk })
       })
       break

@@ -20,6 +20,7 @@ import { Routes } from './constants'
 import { User } from './models'
 import PasswordResetPage from './pages/PasswordReset';
 import config from './config'
+
 type StateProps = {
   user: User,
 }
@@ -37,7 +38,7 @@ const App = (props: Props) => {
     dispatchBootstrap()
   }, [dispatchBootstrap])
   if (process.env.NODE_ENV !== 'development') {
-    Sentry.init({dsn: config.sentry})
+    Sentry.init({ dsn: config.sentry })
   }
   return (
     <>
