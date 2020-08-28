@@ -2,6 +2,7 @@ import pytest
 from datetime import timedelta
 from django.utils import timezone
 from users.models import SocialProfile, User
+from pennychat.models import PennyChat
 
 
 @pytest.fixture
@@ -24,11 +25,12 @@ def test_user():
         last_name='user',
     )
 
-@pytest.fixture()	
-def test_chat_2():	
-    chat_1 = PennyChat.objects.create(	
-        title='Chat 1',	
-        description='The very first test chat',	
-        date=timezone.now() - timedelta(weeks=4),	
-    )	
+
+@pytest.fixture()
+def test_chat_2():
+    chat_1 = PennyChat.objects.create(
+        title='Chat 1',
+        description='The very first test chat',
+        date=timezone.now() - timedelta(weeks=4),
+    )
     return chat_1
