@@ -1,13 +1,66 @@
 import pytest
 import logging
-
+from datetime import datetime, timezone
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
-from pennychat.models import PennyChat
+from pennychat.models import PennyChat, Participant
 from users.models import User
 
+from common.tests.fakes import UserFactory, PennyChatFactory, FollowUpFactory, SocialProfileFactory
+
 logger = logging.getLogger(__name__)
+
+within_range_date = datetime(2020, 1, 2, 0, 0, tzinfo=timezone.utc)
+
+# Setup test private chats for test_penny_chat_participants_list__
+
+def setup_test_chats():
+
+    chat_private_1 = PennyChatFactory(visibility=PennyChat.PRIVATE)
+    chat_private_2 = PennyChatFactory(visibility=PennyChat.PRIVATE)
+
+    chats = [chat_private_1, chat_private_2]
+
+    # Create 3 new users here rather than an arg
+
+    user1 = UserFactory()
+    soc_prof1 = SocialProfileFactory(user=user1)
+    user2 = UserFactory()
+    soc_prof2 = SocialProfileFactory(user=user2)
+    user3 = UserFactory()
+    soc_prof3 = SocialProfileFactory(user=user3)
+
+    # Assign participants to each chat
+
+    # Chat 1 
+    # user1 = organizer
+    # user2 = participant
+    # user3 = shouldn't see this
+
+    # Test as user1's page as user1 to make sure it appears
+
+    Participant.objects.create(user=user1, penny_chat=chat_private_1, role=Participant.ORGANIZER)
+    Participant.objects.create(user=user2, penny_chat=chat_private_1, role=Participant.ATTENDEE)
+
+    # Chat 2
+    # user3 = organizer
+    # user1 = participant
+    # user2 = shouldn't see this 
+
+    # Test on user3's page as user2 to see if it doesn't appear
+
+    Participant.objects.create(user=user3, penny_chat=chat_private_2, role=Participant.ORGANIZER)
+    Participant.objects.create(user=user1, penny_chat=chat_private_2, role=Participant.ATTENDEE)
+
+    for chat in chats:
+        FollowUpFactory(penny_chat=chat, user=user1, date=within_range_date)
+    return {
+        'penny_chats': [chat_private_1, chat_private_2],
+        'users': [user1, user2, user3],
+        'social_profiles': [soc_prof1, soc_prof2, soc_prof3]
+    }
+
 
 
 @pytest.mark.django_db
@@ -27,32 +80,36 @@ def test_penny_chat_list(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_penny_chat_participants_list__own_content(setup_test_chats):
-    test_chats = setup_test_chats
+def test_penny_chat_participants_list__own_content():
+    objects = setup_test_chats()
+    chat_private_1, chat_private_2 = objects['penny_chats']
+    user1, user2, user3 = objects['users']
+    soc_prof1, soc_prof2, soc_prof3 = objects['social_profiles']
     client = APIClient()
-    private_chat_org = test_chats[3].get_organizer()
-    token = Token.objects.create(user=private_chat_org)
+    token = Token.objects.create(user=user1)
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-    user_id = test_chats[0].participants.all()[0].user_id
+    user_id = user1.id
     response = client.get(f'/api/chats/?participants__user_id={user_id}')
     assert response.status_code == 200
-    assert response.data['count'] == 3
+    assert response.data['count'] == 2
     chats = response.data['results']
     for chat in chats:
         assert int(user_id) in [participant['user']['id'] for participant in chat['participants']]
 
 
 @pytest.mark.django_db
-def test_penny_chat_participants_list__other_content(setup_test_chats):
-    test_chats = setup_test_chats
+def test_penny_chat_participants_list__other_content():
+    objects = setup_test_chats()
+    chat_private_1, chat_private_2 = objects['penny_chats']
+    user1, user2, user3 = objects['users']
+    soc_prof1, soc_prof2, soc_prof3 = objects['social_profiles']
     client = APIClient()
-    private_chat_org = test_chats[3].get_organizer()
-    token = Token.objects.create(user=private_chat_org)
+    token = Token.objects.create(user=user3)
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-    user_id = test_chats[0].participants.all()[1].user_id
+    user_id = user2.id
     response = client.get(f'/api/chats/?participants__user_id={user_id}')
     assert response.status_code == 200
-    assert response.data['count'] == 2
+    assert response.data['count'] == 0
     chats = response.data['results']
     for chat in chats:
         assert int(user_id) in [participant['user']['id'] for participant in chat['participants']]

@@ -79,36 +79,6 @@ def test_chats_1(users):
 
 
 @pytest.fixture
-def setup_test_chats(users):
-    # This solves a bug causing one assert to fail in test_penny_chat_list.
-    chat_1_date = timezone.now() - timedelta(weeks=4)
-
-    chat_1 = PennyChatFactory(date=chat_1_date)
-    chat_2 = PennyChatFactory()
-    chat_3 = PennyChatFactory()
-    chat_4 = PennyChatFactory(visibility=PennyChat.PRIVATE)
-    chat_5 = PennyChatFactory(visibility=PennyChat.PRIVATE)
-
-    chats = [chat_1, chat_2, chat_3, chat_4, chat_5]
-
-    Participant.objects.create(user=users[0], penny_chat=chat_1, role=Participant.ORGANIZER)
-    Participant.objects.create(user=users[1], penny_chat=chat_1, role=Participant.ATTENDEE)
-
-    Participant.objects.create(user=users[1], penny_chat=chat_2, role=Participant.ORGANIZER)
-    Participant.objects.create(user=users[2], penny_chat=chat_2, role=Participant.ATTENDEE)
-
-    Participant.objects.create(user=users[2], penny_chat=chat_3, role=Participant.ORGANIZER)
-    Participant.objects.create(user=users[0], penny_chat=chat_3, role=Participant.ATTENDEE)
-
-    Participant.objects.create(user=users[0], penny_chat=chat_4, role=Participant.ORGANIZER)
-
-    Participant.objects.create(user=users[1], penny_chat=chat_5, role=Participant.ORGANIZER)
-
-    for chat in chats:
-        generate_follow_ups(chat, [users[0], users[1]])
-    return chats
-
-@pytest.fixture
 def test_chats_2(users):
     # I'm dying to replace this with factory_boy, but not for this PR
     old_chat_date = timezone.now() - timedelta(weeks=4)
