@@ -67,9 +67,9 @@ def penny_chat_details_modal(penny_chat_invitation):
         channels = comma_split(penny_chat_invitation.channels)
 
     # giving a title to the visibility to make it dynamic
-    if penny_chat_invitation.visibility == 10:
+    if penny_chat_invitation.visibility == PennyChat.PUBLIC:
         penny_chat_visibility_name = "Public Chat"
-    if penny_chat_invitation.visibility == 20:
+    if penny_chat_invitation.visibility == PennyChat.PRIVATE:
         penny_chat_visibility_name = "Private Chat"
 
     # look into `private_metadata` for storing penny_chat_id (https://api.slack.com/reference/surfaces/views)

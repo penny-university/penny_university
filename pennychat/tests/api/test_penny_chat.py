@@ -1,6 +1,7 @@
 import pytest
 import logging
-from datetime import datetime, timezone
+import django
+from datetime import datetime, timezone, timedelta
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
@@ -12,34 +13,59 @@ from common.tests.fakes import UserFactory, PennyChatFactory, FollowUpFactory, S
 logger = logging.getLogger(__name__)
 
 within_range_date = datetime(2020, 1, 2, 0, 0, tzinfo=timezone.utc)
+old_chat_date = django.utils.timezone.now() - timedelta(weeks=4)
+future_chat_date = django.utils.timezone.now() + timedelta(days=1)
 
 
 def setup_test_chats():
 
+    # Private Chat Testing
+
     chat_private_1 = PennyChatFactory(visibility=PennyChat.PRIVATE)
     chat_private_2 = PennyChatFactory(visibility=PennyChat.PRIVATE)
+    chat_private_3 = PennyChatFactory(visibility=PennyChat.PRIVATE)
+    chat_public = PennyChatFactory(visibility=PennyChat.PUBLIC)
 
-    chats = [chat_private_1, chat_private_2]
+    chats = [chat_private_1, chat_private_2, chat_public]
 
     user1 = UserFactory()
-    soc_prof1 = SocialProfileFactory(user=user1)
     user2 = UserFactory()
-    soc_prof2 = SocialProfileFactory(user=user2)
     user3 = UserFactory()
-    soc_prof3 = SocialProfileFactory(user=user3)
 
+    # chat_private_1
+    # user1 organized this - it should NOT appear to user3
     Participant.objects.create(user=user1, penny_chat=chat_private_1, role=Participant.ORGANIZER)
     Participant.objects.create(user=user2, penny_chat=chat_private_1, role=Participant.ATTENDEE)
 
+    # chat_private_2
+    # user3 organized this - it should appear to user3
     Participant.objects.create(user=user3, penny_chat=chat_private_2, role=Participant.ORGANIZER)
     Participant.objects.create(user=user1, penny_chat=chat_private_2, role=Participant.ATTENDEE)
+
+    # chat_private_3
+    # user3 attended this
+    Participant.objects.create(user=user2, penny_chat=chat_private_3, role=Participant.ORGANIZER)
+    Participant.objects.create(user=user3, penny_chat=chat_private_3, role=Participant.ATTENDEE)
+
+    # chat_public
+    # user1 organized this - it should appear to user3
+    Participant.objects.create(user=user1, penny_chat=chat_public, role=Participant.ORGANIZER)
+    Participant.objects.create(user=user2, penny_chat=chat_public, role=Participant.ATTENDEE)
+
+    # Upcoming or Popular Testing
+
+    old_chat_with_no_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_no_followups')
+    old_chat_with_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_followups')
+    future_chat_with_no_followups = PennyChatFactory(date=future_chat_date, title='future_chat')
+
+    FollowUpFactory(penny_chat=old_chat_with_followups, user=user1, date=within_range_date)
 
     for chat in chats:
         FollowUpFactory(penny_chat=chat, user=user1, date=within_range_date)
     return {
-        'penny_chats': [chat_private_1, chat_private_2],
+        'penny_chats': [chat_private_1, chat_private_2, chat_private_3, chat_public],
         'users': [user1, user2, user3],
-        'social_profiles': [soc_prof1, soc_prof2, soc_prof3]
+        'upcoming_or_popular': [old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups]
     }
 
 
@@ -62,54 +88,55 @@ def test_penny_chat_list(test_chats_1):
 @pytest.mark.django_db
 def test_penny_chat_participants_list__own_content():
     objects = setup_test_chats()
-    chat_private_1, chat_private_2 = objects['penny_chats']
+    chat_private_1, chat_private_2, chat_private_3, chat_public = objects['penny_chats']
     user1, user2, user3 = objects['users']
-    soc_prof1, soc_prof2, soc_prof3 = objects['social_profiles']
     client = APIClient()
-    token = Token.objects.create(user=user1)
+    token = Token.objects.create(user=user3)
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-    user_id = user1.id
-    response = client.get(f'/api/chats/?participants__user_id={user_id}')
+    response = client.get(f'/api/chats/?participants__user_id={user3.id}')
     assert response.status_code == 200
     assert response.data['count'] == 2
     chats = response.data['results']
-    for chat in chats:
-        assert int(user_id) in [participant['user']['id'] for participant in chat['participants']]
+    returned_chat_ids = set([chat['id'] for chat in chats])
+    assert chat_private_2.id in returned_chat_ids, 'user organized this chat but it was not returned'
+    assert chat_private_3.id in returned_chat_ids, 'user attended this chat but it was not returned'
 
 
 @pytest.mark.django_db
 def test_penny_chat_participants_list__other_content():
     objects = setup_test_chats()
-    chat_private_1, chat_private_2 = objects['penny_chats']
+    chat_private_1, chat_private_2, chat_private_3, chat_public = objects['penny_chats']
     user1, user2, user3 = objects['users']
-    soc_prof1, soc_prof2, soc_prof3 = objects['social_profiles']
     client = APIClient()
     token = Token.objects.create(user=user3)
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-    user_id = user2.id
-    response = client.get(f'/api/chats/?participants__user_id={user_id}')
+    response = client.get(f'/api/chats/?participants__user_id={user1.id}')
     assert response.status_code == 200
-    assert response.data['count'] == 0
+    assert response.data['count'] == 2
     chats = response.data['results']
     for chat in chats:
-        assert int(user_id) in [participant['user']['id'] for participant in chat['participants']]
+        assert int(user1.id) in [participant['user']['id'] for participant in chat['participants']]
 
 
 @pytest.mark.django_db
 def test_penny_chat__upcoming_or_popular(test_chats_2):
+    objects = setup_test_chats()
+    chat_private_1, chat_private_2, chat_private_3, chat_public = objects['penny_chats']
+    old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups = objects['upcoming_or_popular']
+    user1, user2, user3 = objects['users']
     client = APIClient()
-    private_chat_org = test_chats_2[3].get_organizer()
-    token = Token.objects.create(user=private_chat_org)
+    token = Token.objects.create(user=user3)
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     response = client.get('/api/chats/?upcoming_or_popular=true')
     assert response.status_code == 200
     titles = {result['title'] for result in response.data['results']}
-    assert len(titles) == 3
+    assert len(titles) == 4
     assert 'future_chat' in titles
     assert 'old_chat_with_followups' in titles
     chats = response.data['results']
     assert chats[0]['follow_ups_count'] == 0
-    assert chats[1]['follow_ups_count'] == 2
+    # chats[4] = old_chat_with_followups
+    assert chats[4]['follow_ups_count'] == 1
 
 
 @pytest.mark.django_db

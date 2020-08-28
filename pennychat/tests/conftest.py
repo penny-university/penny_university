@@ -87,8 +87,6 @@ def test_chats_2(users):
     old_chat_with_no_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_no_followups')
     old_chat_with_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_followups')
     future_chat_with_no_followups = PennyChatFactory(date=future_chat_date, title='future_chat')
-    private_involved_with_followups = PennyChatFactory(visibility=PennyChat.PRIVATE)
-    private_not_involved_with_followups = PennyChatFactory(visibility=PennyChat.PRIVATE)
 
     Participant.objects.create(user=users[0], penny_chat=old_chat_with_no_followups, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[1], penny_chat=old_chat_with_no_followups, role=Participant.ATTENDEE)
@@ -99,10 +97,6 @@ def test_chats_2(users):
     Participant.objects.create(user=users[2], penny_chat=future_chat_with_no_followups, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[0], penny_chat=future_chat_with_no_followups, role=Participant.ATTENDEE)
 
-    Participant.objects.create(user=users[2], penny_chat=private_involved_with_followups, role=Participant.ORGANIZER)
-    Participant.objects.create(user=users[1], penny_chat=private_not_involved_with_followups, role=Participant.ORGANIZER)
-
     generate_follow_ups(old_chat_with_followups, [users[0], users[1]])
-    generate_follow_ups(private_involved_with_followups, [users[2]])
-    generate_follow_ups(private_not_involved_with_followups, [users[1]])
-    return [old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups, private_involved_with_followups, private_not_involved_with_followups] # noqa
+
+    return [old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups]
