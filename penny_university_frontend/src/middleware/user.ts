@@ -3,6 +3,7 @@ import {
 } from 'redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { push } from 'connected-react-router'
+import * as Sentry from '@sentry/browser'
 import {
   setToken, fetchUser, Actions, logoutRequest,
 } from '../actions/user'
@@ -28,6 +29,9 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
   switch (action.type) {
     case Actions.LOGOUT_USER:
       logout(store.dispatch)
+      Sentry.configureScope(scope => {
+        scope.clear()
+      })
       break
     case Actions.BOOTSTRAP:
       checkAuth(store.dispatch)
@@ -46,6 +50,9 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       // Load data
       const pk = action.payload.result.pk.toString() // eslint-disable-line no-case-declarations
       store.dispatch(loadChatsList(ApiRoutes.userChats(pk), pk))
+      Sentry.configureScope(scope => {
+        scope.setUser({ id: pk })
+      })
       break
     case Actions.USER_EXISTS_SUCCESS:
       modalDispatch.authPassword(action.payload.meta.email, action.payload.meta.followUp)
