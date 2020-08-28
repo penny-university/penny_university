@@ -27,9 +27,26 @@ def test_penny_chat_list(test_chats_1):
 
 
 @pytest.mark.django_db
-def test_penny_chat_participants_list(test_chats_1):
+def test_penny_chat_participants_list__own_content(test_chats_1):
     client = APIClient()
+    private_chat_org = test_chats_1[3].get_organizer()
+    token = Token.objects.create(user=private_chat_org)
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     user_id = test_chats_1[0].participants.all()[0].user_id
+    response = client.get(f'/api/chats/?participants__user_id={user_id}')
+    assert response.status_code == 200
+    assert response.data['count'] == 3
+    chats = response.data['results']
+    for chat in chats:
+        assert int(user_id) in [participant['user']['id'] for participant in chat['participants']]
+
+@pytest.mark.django_db
+def test_penny_chat_participants_list__other_content(test_chats_1):
+    client = APIClient()
+    private_chat_org = test_chats_1[3].get_organizer()
+    token = Token.objects.create(user=private_chat_org)
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    user_id = test_chats_1[0].participants.all()[1].user_id
     response = client.get(f'/api/chats/?participants__user_id={user_id}')
     assert response.status_code == 200
     assert response.data['count'] == 2
@@ -41,10 +58,13 @@ def test_penny_chat_participants_list(test_chats_1):
 @pytest.mark.django_db
 def test_penny_chat__upcoming_or_popular(test_chats_2):
     client = APIClient()
+    private_chat_org = test_chats_2[3].get_organizer()
+    token = Token.objects.create(user=private_chat_org)
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
     response = client.get('/api/chats/?upcoming_or_popular=true')
     assert response.status_code == 200
     titles = {result['title'] for result in response.data['results']}
-    assert len(titles) == 2
+    assert len(titles) == 3
     assert 'future_chat' in titles
     assert 'old_chat_with_followups' in titles
     chats = response.data['results']

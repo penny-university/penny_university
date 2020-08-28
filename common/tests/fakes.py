@@ -29,6 +29,7 @@ class PennyChatFactory(DjangoModelFactory):
     title = Faker('sentence')
     description = Faker('text')
     date = Faker('date_time_between', start_date='-3y', end_date='+3M', tzinfo=UTC)
+    visibility = PennyChat.PUBLIC
 
 
 class EndedPennyChatFactory(PennyChatFactory):

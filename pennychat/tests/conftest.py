@@ -9,6 +9,7 @@ from pennychat.models import (
     Participant,
 )
 from users.models import User, SocialProfile
+from common.tests.fakes import PennyChatFactory
 
 
 def generate_users(name):
@@ -46,55 +47,52 @@ def users():
 
 @pytest.fixture
 def test_chats_1(users):
-    chat_1 = PennyChat.objects.create(
-        title='Chat 1',
-        description='The first test chat',
-        date=timezone.now() - timedelta(weeks=4),
-    )
-    chat_2 = PennyChat.objects.create(
-        title='Chat 2',
-        description='The second test chat',
-        date=timezone.now() - timedelta(days=1),
-    )
-    chat_3 = PennyChat.objects.create(
-        title='Chat 3',
-        description='The third test chat',
-        date=timezone.now(),
-    )
-    chats = [chat_1, chat_2, chat_3]
+    chat_1 = PennyChatFactory()
+    chat_2 = PennyChatFactory()
+    chat_3 = PennyChatFactory()
+    chat_4 = PennyChatFactory(visibility=PennyChat.PRIVATE)
+    chat_5 = PennyChatFactory(visibility=PennyChat.PRIVATE)
+
+    chats = [chat_1, chat_2, chat_3, chat_4, chat_5]
+
+    # Chat 1 Participants
 
     Participant.objects.create(user=users[0], penny_chat=chat_1, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[1], penny_chat=chat_1, role=Participant.ATTENDEE)
 
+    # Chat 2 Participants
+
     Participant.objects.create(user=users[1], penny_chat=chat_2, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[2], penny_chat=chat_2, role=Participant.ATTENDEE)
 
+    # Chat 3 Participants
+
     Participant.objects.create(user=users[2], penny_chat=chat_3, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[0], penny_chat=chat_3, role=Participant.ATTENDEE)
+
+    # Chat 4 Participants
+
+    Participant.objects.create(user=users[0], penny_chat=chat_4, role=Participant.ORGANIZER)
+
+    # Chat 5 Participants
+    
+    Participant.objects.create(user=users[1], penny_chat=chat_5, role=Participant.ORGANIZER)
 
     for chat in chats:
         generate_follow_ups(chat, [users[0], users[1]])
     return chats
 
-
 @pytest.fixture
 def test_chats_2(users):
     # I'm dying to replace this with factory_boy, but not for this PR
-    old_chat_with_no_followups = PennyChat.objects.create(
-        title='old_chat_with_no_followups',
-        description='The first test chat',
-        date=timezone.now() - timedelta(weeks=4),
-    )
-    old_chat_with_followups = PennyChat.objects.create(
-        title='old_chat_with_followups',
-        description='The second test chat',
-        date=timezone.now() - timedelta(weeks=4),
-    )
-    future_chat_with_no_followups = PennyChat.objects.create(
-        title='future_chat',
-        description='The third test chat',
-        date=timezone.now() + timedelta(days=1),
-    )
+    old_chat_date = timezone.now() - timedelta(weeks=4)
+    future_chat_date = timezone.now() + timedelta(days=1)
+    
+    old_chat_with_no_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_no_followups')
+    old_chat_with_followups = PennyChatFactory(date=old_chat_date, title='old_chat_with_followups')
+    future_chat_with_no_followups = PennyChatFactory(date=future_chat_date, title='future_chat')
+    private_involved_with_followups = PennyChatFactory(visibility=PennyChat.PRIVATE)
+    private_not_involved_with_followups = PennyChatFactory(visibility=PennyChat.PRIVATE)
 
     Participant.objects.create(user=users[0], penny_chat=old_chat_with_no_followups, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[1], penny_chat=old_chat_with_no_followups, role=Participant.ATTENDEE)
@@ -105,5 +103,10 @@ def test_chats_2(users):
     Participant.objects.create(user=users[2], penny_chat=future_chat_with_no_followups, role=Participant.ORGANIZER)
     Participant.objects.create(user=users[0], penny_chat=future_chat_with_no_followups, role=Participant.ATTENDEE)
 
+    Participant.objects.create(user=users[2], penny_chat=private_involved_with_followups, role=Participant.ORGANIZER)
+    Participant.objects.create(user=users[1], penny_chat=private_not_involved_with_followups, role=Participant.ORGANIZER)
+
     generate_follow_ups(old_chat_with_followups, [users[0], users[1]])
-    return [old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups]
+    generate_follow_ups(private_involved_with_followups, [users[2]])
+    generate_follow_ups(private_not_involved_with_followups, [users[1]])
+    return [old_chat_with_no_followups, old_chat_with_followups, future_chat_with_no_followups, private_involved_with_followups, private_not_involved_with_followups]
