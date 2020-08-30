@@ -28,30 +28,30 @@ const FollowUpButtons = ({
 }: {
   confirmDeleteOnPress: () => void, editOnPress: () => void, id: number
 }) => (
-    <Dropdown
-      id={`followup-dropdown-${id}`}
-      header="Options"
-      testID={TestIDs.subMenu}
-      options={[
-        <DropdownItem
-          className="btn btn-link"
-          onClick={editOnPress}
-          key={`edit-followup-${id}`}
-        >
-          <FontAwesomeIcon icon={faPen} className="mr-2" />
-          Edit
-        </DropdownItem>,
-        <DropdownItem
-          className="btn btn-link"
-          onClick={confirmDeleteOnPress}
-          key={`delete-followup-${id}`}
-        >
-          <FontAwesomeIcon icon={faTrash} className="mr-2" />
-          Delete
-        </DropdownItem>,
-      ]}
-    />
-  )
+  <Dropdown
+    id={`followup-dropdown-${id}`}
+    header="Options"
+    testID={TestIDs.subMenu}
+    options={[
+      <DropdownItem
+        className="btn btn-link"
+        onClick={editOnPress}
+        key={`edit-followup-${id}`}
+      >
+        <FontAwesomeIcon icon={faPen} className="mr-2" />
+        Edit
+      </DropdownItem>,
+      <DropdownItem
+        className="btn btn-link"
+        onClick={confirmDeleteOnPress}
+        key={`delete-followup-${id}`}
+      >
+        <FontAwesomeIcon icon={faTrash} className="mr-2" />
+        Delete
+      </DropdownItem>,
+    ]}
+  />
+)
 
 const FollowUpCard = ({
   followUp, updateFollowUp, canEdit, user, role,
@@ -83,7 +83,14 @@ const FollowUpCard = ({
           />
         ) : null}
       </div>
-      <Content saveFollowUp={saveFollowUp} cancelFollowUp={cancelOnPress} className="ml-4 border-left pl-3" content={followUp.content} edit={editMode} storageKey={storageKey} />
+      <Content
+        className="ml-4 border-left pl-3"
+        content={followUp.content} 
+        edit={editMode} 
+        storageKey={storageKey}
+        saveFollowUp={saveFollowUp}
+        cancelFollowUp={cancelOnPress}
+        />
     </div>
   )
 }

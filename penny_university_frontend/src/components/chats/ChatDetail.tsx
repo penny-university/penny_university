@@ -109,7 +109,13 @@ const ChatDetail = ({
           ? (
             <div>
               <h5>Add New Follow Up:</h5>
-              <Content edit content={''} saveFollowUp={saveNewFollowUp} cancelFollowUp={cancelOnPress} storageKey={newFollowUpKey} />
+              <Content 
+                edit
+                content=""
+                saveFollowUp={saveNewFollowUp}
+                cancelFollowUp={cancelOnPress}
+                storageKey={newFollowUpKey} 
+              />
             </div>
           )
           : <CreateButton type="Follow Up" onClick={createOnPress} />}
