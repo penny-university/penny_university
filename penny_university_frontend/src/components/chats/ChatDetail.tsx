@@ -109,12 +109,12 @@ const ChatDetail = ({
           ? (
             <div>
               <h5>Add New Follow Up:</h5>
-              <Content 
+              <Content
                 edit
                 content=""
                 saveFollowUp={saveNewFollowUp}
                 cancelFollowUp={cancelOnPress}
-                storageKey={newFollowUpKey} 
+                storageKey={newFollowUpKey}
               />
             </div>
           )

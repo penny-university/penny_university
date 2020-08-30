@@ -85,12 +85,12 @@ const FollowUpCard = ({
       </div>
       <Content
         className="ml-4 border-left pl-3"
-        content={followUp.content} 
-        edit={editMode} 
+        content={followUp.content}
+        edit={editMode}
         storageKey={storageKey}
         saveFollowUp={saveFollowUp}
         cancelFollowUp={cancelOnPress}
-        />
+      />
     </div>
   )
 }
