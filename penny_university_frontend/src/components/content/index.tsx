@@ -42,6 +42,14 @@ const Content = ({
       cancelOnPress()
     }
   }
+  const onSave = () => {
+    if (saveFollowUp) {
+      saveFollowUp(content)
+      if (storageKey) {
+        sessionStorage.removeItem(storageKey)
+      }
+    }
+  }
   if (edit || initialContent !== content) {
     return (
       <>
@@ -58,7 +66,7 @@ const Content = ({
           generateMarkdownPreview={(markdown) => Promise.resolve(<ReactMarkdown source={markdown} />)}
         />
         <div className="mt-2">
-          <SaveButton type="Follow Up" onClick={() => (saveFollowUp ? saveFollowUp(content) : null)} />
+          <SaveButton type="Follow Up" onClick={() => (saveFollowUp ? onSave() : null)} />
           <CancelButton className="ml-2" onClick={cancelFollowUp} />
         </div>
       </>
