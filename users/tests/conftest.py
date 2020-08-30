@@ -1,5 +1,5 @@
-from datetime import timedelta
 import pytest
+from datetime import timedelta
 from django.utils import timezone
 from users.models import SocialProfile, User
 from pennychat.models import PennyChat

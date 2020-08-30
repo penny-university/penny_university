@@ -28,27 +28,6 @@ def test_register_user(mocker):
 
 
 @pytest.mark.django_db
-def test_register_user_with_follow_up(mocker, test_chat_2):
-    client = APIClient()
-    content = 'follow up text'
-    data = {
-        'email': 'test@profile.com',
-        'password': 'SuperStrong1!',
-        'first_name': 'test',
-        'last_name': 'profile',
-        'follow_up': {
-            'chat_id': test_chat_2.id,
-            'content': content
-        }
-    }
-    with mocker.patch.object(User, 'send_verification_email'):
-        response = client.post('/api/auth/register/', data=data, format='json')
-    assert response.status_code == 204
-    follow_up = FollowUp.objects.filter(content=content)
-    assert follow_up.count() == 1
-
-
-@pytest.mark.django_db
 def test_register_user__exists_with_unusable_password(test_user, mocker):
     test_user.set_unusable_password()
     test_user.save()
@@ -94,20 +73,13 @@ def test_verify_email__invalid_token(test_user):
 
 
 @pytest.mark.django_db
-def test_send_verification_email(test_user, test_chat_2):
+def test_send_verification_email(test_user):
     client = APIClient()
-    content = 'send verification follow up text'
     data = {
-        'email': test_user.email,
-        'follow_up': {
-            'chat_id': test_chat_2.id,
-            'content': content
-        }
+        'email': test_user.email
     }
     response = client.post('/api/auth/verification-email/', data=data, format='json')
     assert response.status_code == 204
-    follow_up = FollowUp.objects.filter(content=content)
-    assert follow_up.count() == 1
 
 
 @pytest.mark.django_db
@@ -191,62 +163,6 @@ def test_user_log_in__not_verified(test_user):
     }
     response = client.post('/api/auth/login/', data=data, format='json')
     assert response.status_code == 400
-
-
-@pytest.mark.django_db
-def test_user_log_in__not_verified_with_follow_up(test_user, test_chat_2):
-    client = APIClient()
-    content = 'login follow up text'
-    data = {
-        'email': 'test@profile.com',
-        'password': 'password',
-        'follow_up': {
-            'chat_id': test_chat_2.id,
-            'content': content
-        }
-    }
-    response = client.post('/api/auth/login/', data=data, format='json')
-    assert response.status_code == 400
-    follow_up = FollowUp.objects.filter(content=content)
-    assert follow_up.count() == 1
-
-
-@pytest.mark.django_db
-def test_user_log_in__verified_with_follow_up(test_user, test_chat_2):
-    client = APIClient()
-    test_user.is_verified = True
-    test_user.save()
-    content = 'verified login follow up text'
-    data = {
-        'email': 'test@profile.com',
-        'password': 'password',
-        'follow_up': {
-            'chat_id': test_chat_2.id,
-            'content': content
-        }
-    }
-    response = client.post('/api/auth/login/', data=data, format='json')
-    assert response.status_code == 200
-    follow_up = FollowUp.objects.filter(content=content)
-    assert follow_up.count() == 1
-
-
-@pytest.mark.django_db
-def test_user_log_in__failure_with_follow_up(test_user):
-    client = APIClient()
-    content = 'failure login follow up text'
-    data = {
-        'email': 'test@profile.com',
-        'password': 'wrong-password',
-        'follow_up': {
-            'chat_id': 1,
-            'content': content
-        }
-    }
-    response = client.post('/api/auth/login/', data=data, format='json')
-    assert response.status_code == 400
-    follow_up = FollowUp.objects.filter(content=content)
-    assert follow_up.count() == 0
 
 
 @pytest.mark.django_db
