@@ -27,27 +27,6 @@ def test_register_user(mocker):
 
 
 @pytest.mark.django_db
-def test_register_user_with_follow_up(mocker, test_chat_2):
-    client = APIClient()
-    content = 'follow up text'
-    data = {
-        'email': 'test@profile.com',
-        'password': 'SuperStrong1!',
-        'first_name': 'test',
-        'last_name': 'profile',
-        'follow_up': {
-            'chat_id': test_chat_2.id,
-            'content': content
-        }
-    }
-    with mocker.patch.object(User, 'send_verification_email'):
-        response = client.post('/api/auth/register/', data=data, format='json')
-    assert response.status_code == 204
-    follow_up = FollowUp.objects.filter(content=content)
-    assert follow_up.count() == 1
-
-
-@pytest.mark.django_db
 def test_register_user__exists_with_unusable_password(test_user, mocker):
     test_user.set_unusable_password()
     test_user.save()
