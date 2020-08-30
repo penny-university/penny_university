@@ -12,12 +12,12 @@ import CookieHelper from '../helpers/cookie'
 import modalDispatch from '../components/modal/dispatch'
 import ApiRoutes, { Routes } from '../constants'
 
-const logout = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+const logout = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
   CookieHelper.clearCookies()
   dispatch(logoutRequest())
 }
 
-const checkAuth = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
+const checkAuth = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
   const token = CookieHelper.getToken()
   if (token) {
     dispatch(setToken(token))
@@ -26,6 +26,7 @@ const checkAuth = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => {
 }
 
 const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyAction) => void) => (action: AnyAction) => {
+  const { status } = action?.payload || { status: undefined }
   switch (action.type) {
     case Actions.LOGOUT_USER:
       logout(store.dispatch)
@@ -38,7 +39,7 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       store.dispatch(loadChatsList(ApiRoutes.chats))
       break
     case Actions.SIGNUP_SUCCESS:
-      modalDispatch.verifyEmail(action.payload.meta.email, action.payload.meta.followUp)
+      modalDispatch.verifyEmail(action.payload.meta.email)
       break
     case Actions.LOGIN_SUCCESS:
       CookieHelper.setToken(action.payload.result.key)
@@ -55,13 +56,13 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       })
       break
     case Actions.USER_EXISTS_SUCCESS:
-      modalDispatch.authPassword(action.payload.meta.email, action.payload.meta.followUp)
+      modalDispatch.authPassword(action.payload.meta.email)
       break
     case Actions.USER_EXISTS_FAILURE:
-      if (action.payload.status === 403) {
-        modalDispatch.verifyEmail(action.payload.meta.email, action.payload.meta.followUp)
+      if (status === 403) {
+        modalDispatch.verifyEmail(action.payload.meta.email)
       } else {
-        modalDispatch.authSignup(action.payload.meta.email, action.payload.meta.followUp)
+        modalDispatch.authSignup(action.payload.meta.email)
       }
       break
     case Actions.VERIFY_EMAIL_SUCCESS:

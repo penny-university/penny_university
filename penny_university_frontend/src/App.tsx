@@ -65,7 +65,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
   user: selectors.user.getUser(state),
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>): DispatchProps => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>): DispatchProps => ({
   dispatchBootstrap: () => dispatch(bootstrap()),
   dispatchLogout: () => dispatch(logout()),
 })

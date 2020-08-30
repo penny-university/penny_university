@@ -12,11 +12,10 @@ import modalDispatch from '../dispatch'
 import { userExists } from '../../../actions/user'
 
 type AuthEmailModalProps = {
-  userExists: (email: string, followUp: { chatId: number, content: string } | undefined) => AnyAction
-  followUp?: { chatId: number, content: string } | undefined,
+  userExists: (email: string) => AnyAction
 }
 
-const AuthEmailModal = ({ userExists, followUp }: AuthEmailModalProps) => {
+const AuthEmailModal = ({ userExists }: AuthEmailModalProps) => {
   const [email, setEmail] = useState('')
   return (
     <>
@@ -24,7 +23,7 @@ const AuthEmailModal = ({ userExists, followUp }: AuthEmailModalProps) => {
       <ModalBody>
         <Form onSubmit={(e) => {
           e.preventDefault()
-          userExists(email, followUp)
+          userExists(email)
           return false
         }}
         >
@@ -49,15 +48,11 @@ const AuthEmailModal = ({ userExists, followUp }: AuthEmailModalProps) => {
   )
 }
 
-AuthEmailModal.defaultProps = {
-  followUp: undefined,
-}
 
 const mapStateToProps = () => ({
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
-  userExists:
-    (email: string, followUp: { chatId: number, content: string } | undefined) => dispatch(userExists(email, followUp)),
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
+  userExists: (email: string) => dispatch(userExists(email)),
 })
 export default connect(mapStateToProps, mapDispatchToProps)(AuthEmailModal)

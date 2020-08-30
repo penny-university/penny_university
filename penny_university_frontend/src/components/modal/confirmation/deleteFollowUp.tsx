@@ -40,7 +40,7 @@ const DeleteFollowUpModal = ({ deleteFollowUp, followUpID, chatID }: DeleteFollo
 
 const mapStateToProps = () => ({})
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   deleteFollowUp: (followUpID: number, chatID: number) => dispatch(deleteFollowUp(followUpID, chatID)),
 })
 

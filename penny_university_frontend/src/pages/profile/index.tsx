@@ -56,7 +56,7 @@ const mapStateToProps = (state: RootState, ownProps: ProfilePageProps) => ({
   user: selectors.entities.getUserByID(state, ownProps.match.params.id),
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   loadChatsList: (nextPageUrl: string, userID: string) => dispatch(loadChatsList(nextPageUrl, userID)),
 })
 
