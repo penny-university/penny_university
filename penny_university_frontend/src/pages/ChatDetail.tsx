@@ -63,7 +63,7 @@ const mapStateToProps = (state: RootState, ownProps: ChatDetailPageProps) => {
   }
 }
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   loadChatDetail: (id: number) => dispatch(loadChatDetail(id)),
   loadFollowUps: (chatID: number, nextPageUrl?: string) => dispatch(loadFollowUps(chatID, nextPageUrl)),
   createFollowUp: (chatID: number, content: { content: string }) => dispatch(createFollowUp(chatID, content)),

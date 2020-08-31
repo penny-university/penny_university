@@ -58,8 +58,7 @@ export const fetchUser = (): AnyAction => ({
   },
 })
 
-const login = (payload:
-  { email: string, password: string, followUp: { chatId: number, content: string } | undefined }): AnyAction => ({
+const login = (payload: { email: string, password: string }): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.LOGIN_REQUEST, Actions.LOGIN_SUCCESS, Actions.LOGIN_FAILURE],
@@ -69,26 +68,26 @@ const login = (payload:
   },
 })
 
-export const signup = (payload:
-  { email: string, password: string, followUp: { chatId: number, content: string } | undefined, }): AnyAction => ({
+export const signup = (payload: { email: string, password: string }): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.SIGNUP_REQUEST, Actions.SIGNUP_SUCCESS, Actions.SIGNUP_FAILURE],
     endpoint: ApiRoutes.register,
     method: 'POST',
     payload,
-    meta: { email: payload.email, followUp: !!payload.followUp },
+    meta: { email: payload.email },
   },
 })
 
-export const userExists = (email: string, followUp?: { chatId: number, content: string }) : AnyAction => ({
+
+export const userExists = (email: string): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.USER_EXISTS_REQUEST, Actions.USER_EXISTS_SUCCESS, Actions.USER_EXISTS_FAILURE],
     endpoint: ApiRoutes.exists,
     method: 'POST',
     payload: { email },
-    meta: { email, followUp },
+    meta: { email },
   },
 })
 
@@ -105,12 +104,12 @@ export const logoutRequest = (): AnyAction => ({
   },
 })
 
-export const resendVerifyEmail = (email: string, followUp: { chatId: number, content: string } | undefined): AnyAction => ({
+export const resendVerifyEmail = (email: string): AnyAction => ({
   type: CALL_API,
   payload: {
     types: [Actions.RESEND_VERIFY_EMAIL_REQUEST, Actions.RESEND_VERIFY_EMAIL_SUCCESS, Actions.RESEND_VERIFY_EMAIL_FAILURE],
     endpoint: ApiRoutes.resendEmail,
-    payload: { email, followUp },
+    payload: { email },
     method: 'POST',
   },
 })
@@ -125,13 +124,12 @@ export const verifyEmail = (payload: { token: string, email: string }): AnyActio
   },
 })
 
-export const dispatchLogin = (payload:
-  { email: string, password: string, followUp: { chatId: number, content: string } | undefined }) => login(payload)
+export const dispatchLogin = (payload: { email: string, password: string }) => login(payload)
 
 export const dispatchLogout = () => async (dispatch:
-  ThunkDispatch<{}, {}, StandardAction<APIPayload<any>>>) => dispatch(logout())
+  ThunkDispatch<unknown, unknown, StandardAction<APIPayload<any>>>) => dispatch(logout())
 
-export const updateUser = (payload: { firstName: string, lastName: string }, id: string) => ({
+export const updateUser = (payload: {firstName: string, lastName: string}, id: string) => ({
   type: CALL_API,
   payload: {
     types: [Actions.UPDATE_USER_REQUEST, Actions.UPDATE_USER_SUCCESS, Actions.UPDATE_USER_FAILURE],

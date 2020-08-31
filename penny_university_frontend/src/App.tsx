@@ -6,6 +6,7 @@ import { AnyAction } from 'redux'
 import { connect } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'
 import { Container } from 'reactstrap'
+import * as Sentry from '@sentry/browser';
 import { Modal, Navigation, Alert } from './components'
 
 import ChatsPage from './pages/Chats'
@@ -18,6 +19,7 @@ import { RootState } from './reducers'
 import { Routes } from './constants'
 import { User } from './models'
 import PasswordResetPage from './pages/PasswordReset';
+import config from './config'
 
 type StateProps = {
   user: User,
@@ -35,6 +37,9 @@ const App = (props: Props) => {
   useEffect(() => {
     dispatchBootstrap()
   }, [dispatchBootstrap])
+  if (process.env.NODE_ENV !== 'development') {
+    Sentry.init({ dsn: config.sentry })
+  }
   return (
     <>
       <Navigation user={user} logout={dispatchLogout} />
@@ -60,7 +65,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
   user: selectors.user.getUser(state),
 })
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>): DispatchProps => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>): DispatchProps => ({
   dispatchBootstrap: () => dispatch(bootstrap()),
   dispatchLogout: () => dispatch(logout()),
 })

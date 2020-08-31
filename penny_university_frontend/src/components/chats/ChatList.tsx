@@ -64,7 +64,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   }
 }
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   loadChatsList: (nextPageUrl: string, key: string) => dispatch(loadChatsList(nextPageUrl, key)),
 })
 

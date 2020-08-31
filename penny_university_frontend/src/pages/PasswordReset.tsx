@@ -61,7 +61,7 @@ const mapStateToProps = (state: RootState) => {
   }
 }
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, AnyAction>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
   resetPassword:
     (payload:
       { uid: string, token: string, newPassword1: string, newPassword2: string }) => dispatch(resetPassword(payload)),
