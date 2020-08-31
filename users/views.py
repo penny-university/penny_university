@@ -9,15 +9,14 @@ from rest_framework.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
 )
-
 from sentry_sdk import capture_exception
 
 from common.permissions import (
     method_user_is_self,
     method_is_authenticated,
 )
-from pennychat.serializers import UserChatSerializer, FollowUpWriteSerializer
-from pennychat.models import Participant, FollowUp
+from pennychat.serializers import UserChatSerializer
+from pennychat.models import Participant
 from .models import User
 from .tokens import verification_token_generator
 from .serializers import (
@@ -51,15 +50,6 @@ class RegisterUser(generics.CreateAPIView):
                 user = serializer.save()
             token = verification_token_generator.make_token(user)
             user.send_verification_email(token=token)
-            follow_up = request.data.get('follow_up', None)
-            if follow_up:
-                follow_up_serializer = FollowUpWriteSerializer(data={
-                    'penny_chat': follow_up.get('chat_id', None),
-                    'content': follow_up.get('content', None),
-                    'user': user.id
-                })
-                if follow_up_serializer.is_valid():
-                    follow_up_serializer.save()
             return Response(status=HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -89,15 +79,6 @@ class SendVerificationEmail(views.APIView):
                 user = User.objects.get(email=serializer.validated_data['email'])
                 token = verification_token_generator.make_token(user)
                 user.send_verification_email(token=token)
-                follow_up = request.data.get('follow_up', None)
-                if follow_up:
-                    follow_up_serializer = FollowUpWriteSerializer(data={
-                        'penny_chat': follow_up.get('chat_id', None),
-                        'content': follow_up.get('content', None),
-                        'user': user.id
-                    })
-                    if follow_up_serializer.is_valid():
-                        follow_up_serializer.save()
                 return Response(status=HTTP_204_NO_CONTENT)
             except User.DoesNotExist as e:
                 capture_exception(e)
