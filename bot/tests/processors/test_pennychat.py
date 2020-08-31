@@ -5,6 +5,7 @@ import time
 import pytest
 from pytz import timezone, utc
 from sentry_sdk import capture_exception
+from common.tests.fakes import PennyChatSlackInvitationFactory
 
 from bot.processors.pennychat import PennyChatBotModule
 import bot.processors.pennychat as penny_chat_constants
@@ -30,6 +31,38 @@ def create_penny_chat():
         created_from_slack_team_id=SLACK_TEAM_ID
     )
     return chat.id
+
+
+@pytest.mark.django_db
+def test_visibility_select(mocker):
+    slack_client = mocker.Mock()
+    bot_module = PennyChatBotModule(slack_client)
+
+    penny_chat = PennyChatSlackInvitationFactory()
+
+    event = {
+        'type': 'block_actions',
+        'trigger_id': 'trigger',
+        'view': {
+            'id': 'view'
+        },
+        'actions': [
+            {
+                'action_id': penny_chat_constants.PENNY_CHAT_VISIBILITY,
+                'selected_option': {
+                    'value': str(PennyChat.PRIVATE)
+                }
+            }
+        ],
+        'user': {
+            'id': 'user'
+        }
+    }
+
+    bot_module(event)
+
+    chat_id = PennyChatSlackInvitation.objects.get(id=penny_chat.id)
+    assert chat_id.visibility == PennyChat.PRIVATE
 
 
 @pytest.mark.django_db

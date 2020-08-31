@@ -21,12 +21,19 @@ class PennyChat(models.Model):
         (COMPLETED, 'Completed'),
         (ABANDONED, 'Abandoned'),
     )
+    PUBLIC = 10
+    PRIVATE = 20
+    VISIBILITY_CHOICES = (
+        (PUBLIC, 'Public'),
+        (PRIVATE, 'Private'),
+    )
 
     title = models.TextField()
     description = models.TextField()
     date = models.DateTimeField(null=True)
     status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT)
     created_from_slack_team_id = models.CharField(max_length=20, null=True)
+    visibility = models.IntegerField(choices=VISIBILITY_CHOICES, default=PUBLIC)
 
     # meta
     created = models.DateTimeField(auto_now_add=True)
