@@ -342,11 +342,6 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.view = response.data['view']['id']
         penny_chat_invitation.save()
 
-        if event['actions'][0]['block_id'] == 'organizer_edit_after_share_button':
-            return
-        else:
-            requests.post(event['response_url'], json={'delete_original': True})
-
     @is_block_interaction_event
     @has_action_id([PENNY_CHAT_CAN_ATTEND, PENNY_CHAT_CAN_NOT_ATTEND])
     def attendance_selection(self, event):
