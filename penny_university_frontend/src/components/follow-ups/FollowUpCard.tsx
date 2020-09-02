@@ -7,8 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FollowUp, User } from '../../models'
 import { FollowUpType } from '../../models/followUp'
 import { Dropdown } from '..'
-import { Content, EditContent } from '../content'
-import { SaveButton } from '../buttons'
+import Content from '../content'
 import FollowUpUserInfo from './FollowUpUserInfo'
 import modalDispatch from '../modal/dispatch'
 
@@ -25,54 +24,53 @@ type FollowUpCard = {
 }
 
 const FollowUpButtons = ({
-  confirmDeleteOnPress, editOnPress, saveOnPress, editMode, id,
+  confirmDeleteOnPress, editOnPress, id,
 }: {
-  confirmDeleteOnPress: () => void, editOnPress: () => void, saveOnPress: () => void, editMode: boolean, id: number
-}) => (editMode ? <SaveButton className="align-self-start" type="Changes" onClick={saveOnPress} />
-  : (
-    <Dropdown
-      id={`followup-dropdown-${id}`}
-      header="Options"
-      testID={TestIDs.subMenu}
-      options={[
-        <DropdownItem
-          className="btn btn-link"
-          onClick={editOnPress}
-          key={`edit-followup-${id}`}
-        >
-          <FontAwesomeIcon icon={faPen} className="mr-2" />
-          Edit
-        </DropdownItem>,
-        <DropdownItem
-          className="btn btn-link"
-          onClick={confirmDeleteOnPress}
-          key={`delete-followup-${id}`}
-        >
-          <FontAwesomeIcon icon={faTrash} className="mr-2" />
-          Delete
-        </DropdownItem>,
-      ]}
-    />
-  ))
+  confirmDeleteOnPress: () => void, editOnPress: () => void, id: number
+}) => (
+  <Dropdown
+    id={`followup-dropdown-${id}`}
+    header="Options"
+    testID={TestIDs.subMenu}
+    options={[
+      <DropdownItem
+        className="btn btn-link"
+        onClick={editOnPress}
+        key={`edit-followup-${id}`}
+      >
+        <FontAwesomeIcon icon={faPen} className="mr-2" />
+        Edit
+      </DropdownItem>,
+      <DropdownItem
+        className="btn btn-link"
+        onClick={confirmDeleteOnPress}
+        key={`delete-followup-${id}`}
+      >
+        <FontAwesomeIcon icon={faTrash} className="mr-2" />
+        Delete
+      </DropdownItem>,
+    ]}
+  />
+)
 
 const FollowUpCard = ({
   followUp, updateFollowUp, canEdit, user, role,
 }: FollowUpCard) => {
   const [editMode, toggleEditMode] = useState(false)
-  const [content, updateContent] = useState(followUp.content)
 
-  const saveFollowUp = () => {
+  const saveFollowUp = (text: string) => {
     const fllwUp = { ...followUp }
-    fllwUp.content = content
+    fllwUp.content = text
     updateFollowUp(fllwUp)
     toggleEditMode(false)
   }
 
+  const storageKey = `${followUp.id}:${followUp.pennyChat}`
   const editOnPress = () => toggleEditMode(true)
+  const cancelOnPress = () => toggleEditMode(false)
   const confirmDeleteOnPress = () => {
     modalDispatch.confirmDeleteFollowUp(followUp.id, Number(followUp.pennyChat))
   }
-
   return (
     <div className="pt-2">
       <div className="d-flex justify-content-between">
@@ -80,16 +78,19 @@ const FollowUpCard = ({
         {canEdit ? (
           <FollowUpButtons
             id={followUp.id}
-            editMode={editMode}
-            saveOnPress={saveFollowUp}
             editOnPress={editOnPress}
             confirmDeleteOnPress={confirmDeleteOnPress}
           />
         ) : null}
       </div>
-      {editMode
-        ? <EditContent content={content} onChange={updateContent} />
-        : <Content className="ml-4 border-left pl-3" content={content} />}
+      <Content
+        className="ml-4 border-left pl-3"
+        content={followUp.content}
+        edit={editMode}
+        storageKey={storageKey}
+        saveFollowUp={saveFollowUp}
+        cancelFollowUp={cancelOnPress}
+      />
     </div>
   )
 }
