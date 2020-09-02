@@ -14,6 +14,7 @@ from .serializers import PennyChatSerializer, FollowUpSerializer, FollowUpWriteS
 from common.permissions import IsOwner, method_is_authenticated, perform_is_authenticated
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
+from users.models import User
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,13 @@ class PennyChatViewSet(viewsets.ModelViewSet):
     serializer_class = PennyChatSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = PennyChatFilter
+
+    def get_queryset(self):
+        if User.is_authenticated:
+            user = self.request.user
+            return self.queryset.filter(Q(participants__user=user.id) | Q(visibility=PennyChat.PUBLIC))
+        else:
+            return self.queryset.filter(Q(visibility=PennyChat.PUBLIC))
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

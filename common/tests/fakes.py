@@ -1,11 +1,12 @@
 import pytz
 import string
+from datetime import datetime
 
 from factory import LazyAttribute, Faker
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
-from pennychat.models import PennyChat, FollowUp
+from pennychat.models import PennyChat, FollowUp, PennyChatSlackInvitation
 from users.models import User, SocialProfile
 
 UTC = pytz.utc
@@ -29,6 +30,7 @@ class PennyChatFactory(DjangoModelFactory):
     title = Faker('sentence')
     description = Faker('text')
     date = Faker('date_time_between', start_date='-3y', end_date='+3M', tzinfo=UTC)
+    visibility = PennyChat.PUBLIC
 
 
 class EndedPennyChatFactory(PennyChatFactory):
@@ -55,3 +57,14 @@ class SocialProfileFactory(DjangoModelFactory):
     display_name = Faker('user_name')
     real_name = Faker('name')
     # user must be specified when instantiating this factory!
+
+
+class PennyChatSlackInvitationFactory(DjangoModelFactory):
+    class Meta:
+        model = PennyChatSlackInvitation
+    status = PennyChatSlackInvitation.DRAFT
+    organizer_tz = 'America/Chicago'
+    date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    view = 'view'
+    created_from_slack_team_id = 'test_id'
+    visibility = PennyChat.PUBLIC
