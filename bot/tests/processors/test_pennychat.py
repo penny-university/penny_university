@@ -5,10 +5,11 @@ import time
 import pytest
 from pytz import timezone, utc
 from sentry_sdk import capture_exception
-from common.tests.fakes import PennyChatSlackInvitationFactory
+from common.tests.fakes import PennyChatSlackInvitationFactory, UserFactory, SocialProfileFactory
 
 from bot.processors.pennychat import PennyChatBotModule
 import bot.processors.pennychat as penny_chat_constants
+from bot.tasks.pennychat import _penny_chat_details_blocks
 from pennychat.models import (
     PennyChatSlackInvitation,
     Participant,
@@ -361,3 +362,21 @@ def test_PennyChatBotModule_attendance_selection(
 
     # Make sure the other attendee wasn't affected
     assert Participant.objects.get(penny_chat=penny_chat, user=some_other_attendee.user).role == Participant.ATTENDEE
+
+
+@pytest.mark.django_db
+def test_penny_chat_reminders_blocks(mocker):
+    invite = PennyChatSlackInvitationFactory()
+    organizer = UserFactory()
+    organizer_profile = SocialProfileFactory()
+    Participant.objects.create(user=organizer, penny_chat=invite, role=Participant.ORGANIZER)
+    for i in range(12):
+        user = UserFactory()
+        Participant.objects.create(user=user, penny_chat=invite, role=Participant.ATTENDEE)
+
+    with mocker.patch('bot.tasks.pennychat.get_or_create_social_profile_from_slack_id', return_value=organizer_profile):
+        reminder_blocks = _penny_chat_details_blocks(invite, 'remind')
+
+    # Check that the correct number of blocks were created
+    assert len(reminder_blocks[4]['elements']) == 10
+    assert reminder_blocks[4]['elements'][-1]['text'] == '& 4 more attending'

@@ -36,6 +36,8 @@ PENNY_CHAT_ID = 'penny_chat_id'
 PREVIEW, INVITE, UPDATE, REMIND = 'review', 'invite', 'update', 'remind'
 PENNY_CHAT_DETAILS_BLOCKS_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
 
+MAX_PARTICIPANT_PROFILES = 9
+
 
 def background(*args, **kwargs):
     """This is just a silly hack because we don't have an easy way of shutting off async for tests.
@@ -274,6 +276,13 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
         default = "https://avatars.slack-edge.com/2020-05-25/1144415980914_c8a4ff7c783de54f72e5_512.png"
         size = 40
         profiles = []
+
+        # issue-349: set max profile images to avoid too many blocks
+        profile_overage = 0
+        if len(participants) > MAX_PARTICIPANT_PROFILES:
+            profile_overage = len(participants) - MAX_PARTICIPANT_PROFILES
+            participants = participants[0:MAX_PARTICIPANT_PROFILES]
+
         for participant in participants:
             # get the (gravatar) profile image of a participant
             email = participant.email
@@ -292,7 +301,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
                 'image_url': gravatar_url
             })
 
-        number_votes_text = f"{len(profiles)} attending"
+        profiles_text = f"{len(profiles)} attending" if profile_overage == 0 else f"& {profile_overage} more attending"
 
         attendee_images = [
             {
@@ -307,7 +316,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
             {
                 'type': 'plain_text',
                 'emoji': True,
-                'text': number_votes_text
+                'text': profiles_text
             }
         ]
 
