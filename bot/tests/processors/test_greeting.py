@@ -137,7 +137,9 @@ def test_submit_interests(mocker):
                     },
                     'topics_to_share': {
                         'topics_to_share': {
-                            'value': ''  # user omitted answer
+                            # user omitted answer
+                            # in this case the value key is omitted
+                            # see https://github.com/penny-university/penny_university/issues/355
                         }
                     }
                 }

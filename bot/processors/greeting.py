@@ -211,8 +211,8 @@ class GreetingBotModule(BotModule):
     def submit_interests(self, event):
         slack_id = event['user']['id']
         user_data = self.slack.users_info(user=slack_id).data['user']
-        topics_to_learn = event['view']['state']['values']['topics_to_learn']['topics_to_learn']['value']
-        topics_to_share = event['view']['state']['values']['topics_to_share']['topics_to_share']['value']
+        topics_to_learn = event['view']['state']['values']['topics_to_learn']['topics_to_learn'].get('value', '')
+        topics_to_share = event['view']['state']['values']['topics_to_share']['topics_to_share'].get('value', '')
         kwargs = dict(
             email=user_data['profile']['email'],
             slack_team_id=settings.SLACK_TEAM_ID,
