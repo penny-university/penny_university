@@ -10,8 +10,7 @@ def test_greeting(mocker):
     GreetingBotModule.GREETING_MESSAGE = 'welcome'
     event = {
         'user': 'U42HCBFEF',
-        'type': 'message',
-        'subtype': 'channel_join',
+        'type': 'member_joined_channel',
         'ts': '1557281569.001300',
         'text': '<@U42HCBFEF> has joined the channel',
         'channel': 'GENERAL',

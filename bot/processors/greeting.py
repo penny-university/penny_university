@@ -165,7 +165,7 @@ def after_survey_blocks():
                     'emoji': True
                 },
                 'style': 'primary',
-                'url': 'https://pennyuniversity.org/chats',
+                'url': 'https://www.pennyuniversity.org/chats/',
                 'action_id': 'go_to_penny_chats'
             }
         },
@@ -191,7 +191,7 @@ class GreetingBotModule(BotModule):
         self.slack = slack
 
     @in_room(GREETING_CHANNEL)
-    @has_event_type('message.channel_join')
+    @has_event_type('member_joined_channel')
     def welcome_user(self, event):
         self.slack.chat_postMessage(channel=event['user'], blocks=greeting_blocks(event['user']))
         self.slack.chat_postMessage(channel=channel_lookup(WELCOME_ROOM_CHANNEL),
