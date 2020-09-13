@@ -76,15 +76,34 @@ instead.
 * Create a new app (https://api.slack.com/apps ... this URL comes up a lot) call it "dev_penny"
 * In the "OAuth & Permissions" tab set up auth scopes:
     * Bot Token Scopes:
+        * app_mentions:read
+        * channels:history
+        * channels:join
+        * channels:manage
         * channels:read
         * chat:write
+        * chat:write.customize
+        * chat:write.public
         * commands
+        * groups:history
+        * groups:read
+        * groups:write
+        * im:history
+        * im:read
+        * im:write
+        * incoming-webhook
+        * mpim:history
+        * mpim:read
+        * mpim:write
+        * team:read
         * users:read
         * users:read.email
     * User Token Scopes:
         * channel:history
-        * chat:write
-    * Install the bot in your App. (Note that if you have problems with auth scopes, you'll likely need to reinstall.)
+        * channels:read
+        * groups:read
+* Under "Event Subscriptions">"Subscribe to events on behalf of users" add event names `member_joined_channel` and `message.channels` 
+* Install the bot in your App. (Note that if you have problems with auth scopes, you'll likely need to reinstall.)
 * Stick the "Bot User OAuth Access Token" into your Heroku config as the `SLACK_API_KEY`
 * Set up slack callback hook URLs to point to Heroku QA
     * Subscribe to messages in public channels:
