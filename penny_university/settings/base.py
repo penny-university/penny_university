@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'api',
     'home',
     'pennychat',
+    'matchmaking',
     'users',
     'penny_university',
 ]
