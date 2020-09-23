@@ -106,6 +106,7 @@ class MatchMakingBotModule(BotModule):
 
         recent_requests = MatchRequest.objects.filter(
             topic_channel=topic_channel,
+            profile=profile,
             date__gte=timezone.now() - timedelta(days=1),
         )
 
