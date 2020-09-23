@@ -10,6 +10,7 @@ from common.tests.fakes import PennyChatSlackInvitationFactory, UserFactory, Soc
 from bot.processors.pennychat import PennyChatBotModule
 import bot.processors.pennychat as penny_chat_constants
 from bot.tasks.pennychat import _penny_chat_details_blocks
+from matchmaking.models import Match, TopicChannel
 from pennychat.models import (
     PennyChatSlackInvitation,
     Participant,
@@ -188,8 +189,8 @@ def test_PennyChatBotModule_share(mocker):
     )
 
     # The Actual Test (premature close)
-    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock),\
-            post_organizer_edit_after_share_blocks:
+    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), \
+         post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_count == 0
@@ -197,7 +198,7 @@ def test_PennyChatBotModule_share(mocker):
     # The Actual Test (actual submission)
     event['type'] = penny_chat_constants.VIEW_SUBMISSION
     with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), \
-            post_organizer_edit_after_share_blocks:
+         post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_args == call(penny_chat_invitation.id)

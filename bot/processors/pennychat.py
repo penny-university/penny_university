@@ -15,6 +15,7 @@ from pennychat.models import (
     PennyChatSlackInvitation,
     Participant,
 )
+from matchmaking.models import Match
 from bot.processors.base import BotModule
 from bot.processors.filters import (
     has_action_id,
@@ -35,6 +36,7 @@ PENNY_CHAT_SHARE = 'penny_chat_share'
 PENNY_CHAT_CAN_ATTEND = 'penny_chat_can_attend'
 PENNY_CHAT_CAN_NOT_ATTEND = 'penny_chat_can_not_attend'
 PENNY_CHAT_VISIBILITY = 'penny_chat_visibility'
+PENNY_CHAT_SCHEDULE_MATCH = 'penny_chat_schedule_match'
 
 PENNY_CHAT_ID = 'penny_chat_id'
 
@@ -249,6 +251,7 @@ class PennyChatBotModule(BotModule):
         the organizer is notified accordingly.
     """
     processors = [
+        'schedule_match',
         'date_select',
         'time_select',
         'user_select',
@@ -298,6 +301,38 @@ class PennyChatBotModule(BotModule):
         # TODO once this line is deleted, remove view from model
         penny_chat_invitation.view = response.data['view']['id']
         penny_chat_invitation.save()
+
+    @is_block_interaction_event
+    @has_action_id(PENNY_CHAT_SCHEDULE_MATCH)
+    def schedule_match(self, event):
+        conversation_id = event['actions'][0]['value']
+        user = self.slack_client.users_info(user=event['user']['id']).data['user']
+        match = Match.objects.filter(conversation_id=conversation_id).order_by('-id').first()
+        if match.penny_chat is None:
+            date = datetime.now().replace(minute=0, second=0, microsecond=0, tzinfo=utc)
+            penny_chat_invitation = PennyChatSlackInvitation.objects.create(
+                organizer_slack_id=user['id'],
+                created_from_slack_team_id=user['team_id'],
+                status=PennyChatSlackInvitation.DRAFT,
+                date=date,
+            )
+        else:
+            penny_chat_invitation = PennyChatSlackInvitation.objects.get(penny_chat=match.penny_chat)
+            penny_chat_invitation.organizer_slack_id = user['id']
+
+        penny_chat_invitation.organizer_tz = user['tz']
+        invitees = [profile.slack_id for profile in match.profiles.exclude(slack_id=user['id'])]
+        penny_chat_invitation.invitees = ','.join(invitees)
+        participant_names = ' + '.join([profile.real_name for profile in match.profiles.all()])
+        penny_chat_invitation.title = f'{participant_names} Discuss {match.topic_channel.name}'
+
+        modal = penny_chat_details_modal(penny_chat_invitation)
+        response = self.slack_client.views_open(view=modal, trigger_id=event['trigger_id'])
+
+        penny_chat_invitation.view = response.data['view']['id']
+        penny_chat_invitation.save()
+        match.penny_chat = penny_chat_invitation.penny_chat
+        match.save()
 
     @is_block_interaction_event
     @has_action_id(PENNY_CHAT_DATE)
