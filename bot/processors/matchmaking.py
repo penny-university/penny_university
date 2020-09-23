@@ -1,3 +1,7 @@
+from datetime import timedelta
+
+from django.utils import timezone
+
 from bot.processors.base import BotModule
 from bot.processors.filters import is_block_interaction_event, has_action_id
 from bot.utils import chat_postEphemeral_with_fallback
@@ -100,11 +104,24 @@ class MatchMakingBotModule(BotModule):
         profile = SocialProfile.objects.get(slack_id=user_id)
         topic_channel = TopicChannel.objects.get(channel_id=channel_id, slack_team_id=team_id)
 
-        MatchRequest.objects.create(profile=profile, topic_channel=topic_channel)
-
-        chat_postEphemeral_with_fallback(
-            self.slack_client,
-            channel=channel_id,
-            user=user_id,
-            blocks=confirm_match_request(channel_id)
+        recent_requests = MatchRequest.objects.filter(
+            topic_channel=topic_channel,
+            date__gte=timezone.now() - timedelta(days=1),
         )
+
+        if len(recent_requests) > 0:
+            chat_postEphemeral_with_fallback(
+                self.slack_client,
+                channel=channel_id,
+                user=user_id,
+                text='You already requested to be matched in this channel recently.',
+            )
+        else:
+            MatchRequest.objects.create(profile=profile, topic_channel=topic_channel)
+
+            chat_postEphemeral_with_fallback(
+                self.slack_client,
+                channel=channel_id,
+                user=user_id,
+                blocks=confirm_match_request(channel_id),
+            )
