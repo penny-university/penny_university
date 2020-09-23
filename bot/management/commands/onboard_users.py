@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand
 
 from bot.processors.greeting import greeting_blocks
 from common.utils import get_slack_client
-from users.models import SocialProfile
 
 
 class Command(BaseCommand):

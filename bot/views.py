@@ -10,11 +10,16 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from bot.processors.greeting import GreetingBotModule
 from bot.processors.pennychat import PennyChatBotModule
+from bot.processors.matchmaking import MatchMakingBotModule
 from bot.processors.base import Bot
 from common.utils import get_slack_client
 
 slack_client = get_slack_client()
-bot = Bot(event_processors=[GreetingBotModule(slack_client), PennyChatBotModule(slack_client)])
+bot = Bot(event_processors=[
+    GreetingBotModule(slack_client),
+    PennyChatBotModule(slack_client),
+    MatchMakingBotModule(slack_client),
+])
 
 
 def index(request):
@@ -60,6 +65,8 @@ def command(request):
     command = event['text'].split(' ', 1)[0]
     if command == 'chat':
         PennyChatBotModule.create_penny_chat(slack_client, event)
+    if command == 'set-topic':
+        MatchMakingBotModule.set_topic_channel(slack_client, event)
     else:
         blocks = [
             {
