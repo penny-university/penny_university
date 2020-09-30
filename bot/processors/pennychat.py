@@ -306,22 +306,22 @@ class PennyChatBotModule(BotModule):
     @has_action_id(PENNY_CHAT_SCHEDULE_MATCH)
     def schedule_match(self, event):
         conversation_id = event['actions'][0]['value']
-        user = self.slack_client.users_info(user=event['user']['id']).data['user']
+        profile = get_or_create_social_profile_from_slack_id(event['user']['id'])
         match = Match.objects.filter(conversation_id=conversation_id).order_by('-id').first()
         if match.penny_chat is None:
             date = datetime.now().replace(minute=0, second=0, microsecond=0, tzinfo=utc)
             penny_chat_invitation = PennyChatSlackInvitation.objects.create(
-                organizer_slack_id=user['id'],
-                created_from_slack_team_id=user['team_id'],
+                organizer_slack_id=profile.slack_id,
+                created_from_slack_team_id=profile.slack_team_id,
                 status=PennyChatSlackInvitation.DRAFT,
                 date=date,
             )
         else:
             penny_chat_invitation = PennyChatSlackInvitation.objects.get(penny_chat=match.penny_chat)
-            penny_chat_invitation.organizer_slack_id = user['id']
+            penny_chat_invitation.organizer_slack_id = profile.slack_id
 
-        penny_chat_invitation.organizer_tz = user['tz']
-        invitees = [profile.slack_id for profile in match.profiles.exclude(slack_id=user['id'])]
+        penny_chat_invitation.organizer_tz = profile.timezone
+        invitees = [profile.slack_id for profile in match.profiles.exclude(id=profile.id)]
         penny_chat_invitation.invitees = ','.join(invitees)
         participant_names = ' + '.join([profile.real_name for profile in match.profiles.all()])
         penny_chat_invitation.title = f'{participant_names} Discuss {match.topic_channel.name}'

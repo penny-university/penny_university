@@ -56,6 +56,7 @@ class SocialProfileFactory(DjangoModelFactory):
     slack_team_id = FuzzyText(length=8, chars=string.ascii_uppercase + string.digits, prefix='T')
     display_name = Faker('user_name')
     real_name = Faker('name')
+    timezone = Faker('timezone')
     # user must be specified when instantiating this factory!
 
 
