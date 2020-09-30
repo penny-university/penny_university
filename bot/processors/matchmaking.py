@@ -5,6 +5,7 @@ from django.utils import timezone
 from bot.processors.base import BotModule
 from bot.processors.filters import is_block_interaction_event, has_action_id
 from bot.utils import chat_postEphemeral_with_fallback
+from bot.processors.pennychat import PENNY_CHAT_SCHEDULE_MATCH
 from matchmaking.models import TopicChannel, MatchRequest
 from users.models import SocialProfile
 
@@ -61,6 +62,43 @@ def confirm_match_request(channel_id):
         }
     ]
 
+    return blocks
+
+
+def create_match_blocks(topic_channel_id, conversation_id):
+    blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"Yahoo, you've been matched for a conversation about <#{topic_channel_id}>!",
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "plain_text",
+                "text": "Work together to find a time to meet and chat. Once you do, "
+                        "click the button below to schedule a Penny Chat.",
+            }
+        },
+        {
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "action_id": PENNY_CHAT_SCHEDULE_MATCH,
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Schedule Chat :calendar:",
+                        "emoji": True,
+                    },
+                    "value": conversation_id,
+                    "style": "primary",
+                }
+            ]
+        }
+    ]
     return blocks
 
 

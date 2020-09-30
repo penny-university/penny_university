@@ -10,6 +10,7 @@ from common.tests.fakes import PennyChatSlackInvitationFactory, UserFactory, Soc
 from bot.processors.pennychat import PennyChatBotModule
 import bot.processors.pennychat as penny_chat_constants
 from bot.tasks.pennychat import _penny_chat_details_blocks
+from matchmaking.models import Match, TopicChannel
 from pennychat.models import (
     PennyChatSlackInvitation,
     Participant,
@@ -188,8 +189,8 @@ def test_PennyChatBotModule_share(mocker):
     )
 
     # The Actual Test (premature close)
-    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock),\
-            post_organizer_edit_after_share_blocks:
+    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), \
+         post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_count == 0
@@ -197,7 +198,7 @@ def test_PennyChatBotModule_share(mocker):
     # The Actual Test (actual submission)
     event['type'] = penny_chat_constants.VIEW_SUBMISSION
     with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), \
-            post_organizer_edit_after_share_blocks:
+         post_organizer_edit_after_share_blocks:
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_args == call(penny_chat_invitation.id)
@@ -380,3 +381,41 @@ def test_penny_chat_reminders_blocks(mocker):
     # Check that the correct number of blocks were created
     assert len(reminder_blocks[4]['elements']) == 10
     assert reminder_blocks[4]['elements'][-1]['text'] == '& 4 more attending'
+
+
+@pytest.mark.django_db
+def test_schedule_match_penny_chat(mocker):
+    profile_1 = SocialProfileFactory()
+    profile_2 = SocialProfileFactory()
+    topic = TopicChannel.objects.create(
+        slack_team_id=profile_1.slack_team_id,
+        channel_id='FAKE_CHANNEL',
+        name='testing'
+    )
+    match = Match.objects.create(topic_channel=topic, conversation_id='FAKE_CONVERSATION')
+    match.profiles.add(profile_1, profile_2)
+
+    event = {
+        'user': {
+            'id': profile_1.slack_id,
+            'team_id': profile_1.slack_team_id
+        },
+        'trigger_id': 'fake_trigger',
+        'actions': [{'action_id': 'penny_chat_schedule_match', 'value': match.conversation_id}],
+    }
+
+    slack_client = mocker.Mock()
+    response = mocker.Mock(data={'view': {'id': '12345'}})
+    slack_client.configure_mock(**{'views_open.return_value': response})
+
+    # The Actual Tests
+    with mocker.patch('bot.processors.pennychat.get_or_create_social_profile_from_slack_id', return_value=profile_1):
+        PennyChatBotModule(slack_client).schedule_match(event)
+
+    match.refresh_from_db()
+    penny_chat = match.penny_chat
+    assert penny_chat is not None
+    invite = PennyChatSlackInvitation.objects.get(penny_chat=penny_chat)
+    assert invite.invitees == profile_2.slack_id
+    assert invite.title == f'{profile_1.real_name} + {profile_2.real_name} Discuss {match.topic_channel.name}'
+    assert invite.organizer_slack_id == profile_1.slack_id

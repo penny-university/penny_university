@@ -41,6 +41,7 @@ class SocialProfile(models.Model):
     slack_team_id = models.CharField(max_length=20)
     display_name = models.CharField(max_length=100)
     real_name = models.CharField(max_length=100)
+    timezone = models.CharField(max_length=100, null=True)
 
     # pennyu-related
     topics_to_learn = models.CharField(max_length=1500)
@@ -98,6 +99,7 @@ def update_social_profile_from_slack_user(slack_user):
             slack_team_id=slack_user['team_id'],
             display_name=slack_user['profile']['display_name'],
             real_name=slack_user['profile']['real_name'],
+            timezone=slack_user['tz']
         )
     elif len(profiles) == 1:
         profile = profiles[0]
@@ -106,6 +108,7 @@ def update_social_profile_from_slack_user(slack_user):
         profile.slack_team_id = slack_user['team_id']
         profile.display_name = slack_user['profile']['display_name']
         profile.real_name = slack_user['profile']['real_name']
+        profile.timezone = slack_user['tz']
         profile.save()
     else:
         raise IntegrityError('There are duplicate social profiles in the database!')

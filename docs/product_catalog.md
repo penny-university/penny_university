@@ -22,7 +22,7 @@ The goal of this document is to enumerate all the pieces so that we don't lose t
 * Merge two users using their email (users/management/commands/merge_users.py)
 * Notify members of recent activity on chats they have participated in (users/management/commands/tests/test_notify_users_about_activity.py). Run this in the scheduler as `python manage.py notify_users_about_activity --yesterday --live_run` once a day at 9AM UTC.
 * Background tasks used to perform periodic tasks that are too slow to do within a request or that are not associated with a request. (penny_university/management/commands/background_tasks.py) Run this in the scheduler as `python manage.py background_tasks --duration 600` once every 10 minutes.
-
+* Request, review, and make matches for users to chat about a topic (matchmaking/management/commands)
 
 ## Other
 * Bot framework (bot/processors/base.py) This was used to build the greeting and pennychat processors. This file should be treated as if it's a vendored import. Don't include Penny University specific things back in it.
