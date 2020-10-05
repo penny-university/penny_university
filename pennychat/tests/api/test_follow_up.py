@@ -23,7 +23,7 @@ def test_follow_up_list(test_chats_1):
 @pytest.mark.django_db
 def test_create_follow_up(test_chats_1):
     penny_chat = test_chats_1[0]
-    user = penny_chat.get_organizer()
+    user = penny_chat.get_organizers()[0]
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -55,7 +55,7 @@ def test_create_follow_up_unauthorized(test_chats_1):
 @pytest.mark.django_db
 def test_update_follow_up(test_chats_1):
     first_penny_chat = test_chats_1[0]
-    user = first_penny_chat.get_organizer()
+    user = first_penny_chat.get_organizers()[0]
     token = Token.objects.create(user=user)
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
