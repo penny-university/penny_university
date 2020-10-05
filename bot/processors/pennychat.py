@@ -464,45 +464,48 @@ class PennyChatBotModule(BotModule):
             penny_chat_id = action_value[PENNY_CHAT_ID]
             penny_chat = PennyChat.objects.get(pk=penny_chat_id)
 
-            organizer = penny_chat.get_organizer()
+            organizers = penny_chat.get_organizers()
 
-            if organizer == profile.user:
-                # TODO notify user that it's silly to attend or not attend their own event
-                return
+            for organizer in organizers:
+                if organizer == profile.user:
+                    # TODO notify user that it's silly to attend or not attend their own event
+                    return
 
-            # create organizer notification message (even if we choose not to use it below)
-            timestamp = int(penny_chat.date.astimezone(utc).timestamp())
-            date_text = f'<!date^{timestamp}^{{date}} at {{time}}|{penny_chat.date}>'
-            _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
-            notification = f'<@{profile.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
-            we_will_notify_organizer = 'Thank you. We will notify the organizer.'
-
-            changed = False
-            if participant_role:
-                participant, created = Participant.objects.update_or_create(
-                    user=profile.user,
-                    penny_chat=penny_chat,
-                    defaults={'role': participant_role}
+                # create organizer notification message (even if we choose not to use it below)
+                timestamp = int(penny_chat.date.astimezone(utc).timestamp())
+                date_text = f'<!date^{timestamp}^{{date}} at {{time}}|{penny_chat.date}>'
+                _not = '' if participant_role == Participant.ATTENDEE else ' _not_'
+                notification = (
+                    f'<@{profile.slack_id}> will{_not} attend your Penny Chat "{penny_chat.title}" ({date_text})'
                 )
-                if created:
-                    changed = True
-            else:
-                num_deleted, _ = Participant.objects.filter(user=profile.user, penny_chat=penny_chat).delete()
-                if num_deleted > 0:
-                    changed = True
+                we_will_notify_organizer = 'Thank you. We will notify the organizer.'
 
-            if changed:
-                organizer_profile = SocialProfile.objects.get(
-                    user=organizer,
-                    slack_team_id=penny_chat.created_from_slack_team_id,
-                )
-                self.slack_client.chat_postMessage(channel=organizer_profile.slack_id, text=notification)
-                chat_postEphemeral_with_fallback(
-                    self.slack_client,
-                    channel=event['channel']['id'],
-                    user=profile.slack_id,
-                    text=we_will_notify_organizer,
-                )
+                changed = False
+                if participant_role:
+                    participant, created = Participant.objects.update_or_create(
+                        user=profile.user,
+                        penny_chat=penny_chat,
+                        defaults={'role': participant_role}
+                    )
+                    if created:
+                        changed = True
+                else:
+                    num_deleted, _ = Participant.objects.filter(user=profile.user, penny_chat=penny_chat).delete()
+                    if num_deleted > 0:
+                        changed = True
+
+                if changed:
+                    organizer_profile = SocialProfile.objects.get(
+                        user=organizer,
+                        slack_team_id=penny_chat.created_from_slack_team_id,
+                    )
+                    self.slack_client.chat_postMessage(channel=organizer_profile.slack_id, text=notification)
+                    chat_postEphemeral_with_fallback(
+                        self.slack_client,
+                        channel=event['channel']['id'],
+                        user=profile.slack_id,
+                        text=we_will_notify_organizer,
+                    )
         except RuntimeError as e:
             capture_exception(e)
             chat_postEphemeral_with_fallback(

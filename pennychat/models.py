@@ -55,8 +55,8 @@ class PennyChat(models.Model):
             defaults=dict(role=role),
         )
 
-    def get_organizer(self):
-        return User.objects.get(
+    def get_organizers(self):
+        return User.objects.filter(
             user_chats__penny_chat=self,
             user_chats__role=Participant.ORGANIZER,
         )
