@@ -32,15 +32,7 @@ def test_make_matches(mocker):
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "Yahoo, you've been matched for a conversation about <#one>!",
-            }
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "plain_text",
-                "text": "Work together to find a time to meet and chat. Once you do, "
-                        "click the button below to schedule a Penny Chat.",
+                "text": "Yahoo, you've been matched for a conversation about <#one>!\n\nWork together to find a time to meet and chat. Once you do, click the button below to schedule a Penny Chat.",  # noqa
             }
         },
         {

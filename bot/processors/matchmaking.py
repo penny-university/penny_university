@@ -67,24 +67,20 @@ def confirm_match_request(channel_id):
 
 def create_match_blocks(topic_channel_id, conversation_id, reminder=False):
     if reminder:
-        message = f'You were matched for a conversation about <#{topic_channel_id}>, but it looks like you haven\'t ' \
-                  f'created a Penny Chat yet.'
+        message = f'''Hey! Were you all able to meet for the <#{topic_channel_id}> discussion?
+
+If not, there\'s still time. Just click the button below when you\'re ready to set up the Penny Chat.'''
     else:
-        message = f'Yahoo, you\'ve been matched for a conversation about <#{topic_channel_id}>!'
+        message = f'''Yahoo, you\'ve been matched for a conversation about <#{topic_channel_id}>!
+
+Work together to find a time to meet and chat. Once you do, click the button below to schedule a Penny Chat.'''
+
     blocks = [
         {
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
                 'text': message,
-            }
-        },
-        {
-            'type': 'section',
-            'text': {
-                'type': 'plain_text',
-                'text': 'Work together to find a time to meet and chat. Once you do, '
-                        'click the button below to schedule a Penny Chat.',
             }
         },
         {
