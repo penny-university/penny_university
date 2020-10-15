@@ -225,7 +225,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
             'type': 'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': f'*Title*\n{penny_chat_invitation.title}'
+                'text': f'*Title*\n{penny_chat_invitation.title} (<https://www.pennyuniversity.org/chats/{penny_chat_invitation.id}|sharable link>)'
             }
         },
         {
