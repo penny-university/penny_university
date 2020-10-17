@@ -16,7 +16,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-FRONT_END_HOST = os.getenv('FRONT_END_HOST')
+FRONT_END_HOST = os.getenv('FRONT_END_HOST')  # https://www.pennyuniversity.org
 
 if os.environ.get('SENTRY_DSN') is None:
     raise(ImproperlyConfigured('SENTRY_DSN must be set in production.'))
