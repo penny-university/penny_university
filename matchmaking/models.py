@@ -21,3 +21,4 @@ class Match(models.Model):
     profiles = models.ManyToManyField(SocialProfile)
     penny_chat = models.ForeignKey(PennyChat, on_delete=models.SET_NULL, null=True)
     conversation_id = models.CharField(max_length=20)
+    date = models.DateTimeField(auto_now_add=True)
