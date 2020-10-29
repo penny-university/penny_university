@@ -1,5 +1,5 @@
 import Modal from './modal'
-import { Input } from './fields'
+import { Input, Editable } from './fields'
 import Dropdown from './dropdown'
 import Navigation from './nav'
 import Alert from './alerts'
@@ -16,4 +16,5 @@ export {
   Navigation,
   PrivateRoute,
   Content,
+  Editable,
 }

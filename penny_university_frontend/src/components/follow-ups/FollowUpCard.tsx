@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
-import { DropdownItem } from 'reactstrap';
+import { DropdownItem } from 'reactstrap'
 import {
   faTrash, faPen,
 } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FollowUp, User } from '../../models'
 import { FollowUpType } from '../../models/followUp'
 import { Dropdown } from '..'
 import Content from '../content'
 import FollowUpUserInfo from './FollowUpUserInfo'
 import modalDispatch from '../modal/dispatch'
+import { Strings } from '../../constants'
 
 export const TestIDs = {
   subMenu: 'followup-submenu',
@@ -28,30 +28,19 @@ const FollowUpButtons = ({
 }: {
   confirmDeleteOnPress: () => void, editOnPress: () => void, id: number
 }) => (
-  <Dropdown
-    id={`followup-dropdown-${id}`}
-    header="Options"
-    testID={TestIDs.subMenu}
-    options={[
-      <DropdownItem
-        className="btn btn-link"
-        onClick={editOnPress}
-        key={`edit-followup-${id}`}
-      >
-        <FontAwesomeIcon icon={faPen} className="mr-2" />
-        Edit
-      </DropdownItem>,
-      <DropdownItem
-        className="btn btn-link"
-        onClick={confirmDeleteOnPress}
-        key={`delete-followup-${id}`}
-      >
-        <FontAwesomeIcon icon={faTrash} className="mr-2" />
-        Delete
-      </DropdownItem>,
-    ]}
-  />
-)
+    <Dropdown
+      id={`followup-dropdown-${id}`}
+      header="Options"
+      testID={TestIDs.subMenu}
+      options={[{
+        onClick: editOnPress, icon: faPen, text: Strings.General.edit, key: id
+      },
+      {
+        onClick: confirmDeleteOnPress, icon: faTrash, text: Strings.General.delete, key: id
+      },
+      ]}
+    />
+  )
 
 const FollowUpCard = ({
   followUp, updateFollowUp, canEdit, user, role,

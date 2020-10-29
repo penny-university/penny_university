@@ -17,7 +17,7 @@ interface Props {
   icon: IconDefinition,
   color: string,
   id: string,
-  testID?: string | null,
+  testID?: string | undefined,
 }
 
 const IconButton = ({
@@ -112,7 +112,7 @@ SaveButton.defaultProps = {
 
 const MoreOptions = ({
   className, onClick, id, testID,
-}: { className: string, id: string, onClick: () => void, testID: string }) => (
+}: { className: string, id: string, onClick: () => void, testID: string | undefined }) => (
   <IconButton className={className} onClick={onClick} icon={faEllipsisH} id={id} color="link" testID={testID} />
 )
 

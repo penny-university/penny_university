@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { Card } from 'reactstrap'
 import {
+  faTrash, faPen,
+} from '@fortawesome/free-solid-svg-icons'
+import {
   CreateButton,
 } from '../buttons'
 import Date from '../Date'
 import Content from '../content'
 import { FollowUpCard } from '../follow-ups'
 import modalDispatch from '../modal/dispatch'
+import { Editable}  from '../fields'
+import { EditTitleButtons } from '../../components/fields/editable'
 import { Chat, FollowUp, User } from '../../models'
+import { Strings } from '../../constants'
 import { FollowUpType } from '../../models/followUp'
 import ParticipantList from './ParticipantList'
 
@@ -75,6 +81,7 @@ const ChatDetail = ({
       <Card body className="mb-3 border-0 shadow-sm">
         <div className="chat-detail-header">
           <h3 className="mr-3">{chat.title}</h3>
+          <EditTitleButtons editOnPress={() => {}} id={chat.id}/>
         </div>
         <Date className="text-secondary" date={chat.formattedDate} />
         {chat.description ? <Content className="mb-4" content={chat.description} /> : null}
@@ -85,9 +92,7 @@ const ChatDetail = ({
           <ParticipantList className="mr-2 h5" participants={chat.participants} chatID={chat.id} getUserByID={getUserByID} />
           <h5>-</h5>
           <h5 className="mb-3 ml-2">
-            {followUps.length}
-            {' '}
-            Follow Ups
+            {`${followUps.length} ${Strings.General.followUps}`}
           </h5>
         </div>
         {followUps.map((followUp) => {

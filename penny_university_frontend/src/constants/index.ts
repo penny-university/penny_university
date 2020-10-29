@@ -1,4 +1,4 @@
-import { Confirmation, ModalHeaders } from './strings';
+import { Confirmation, ModalHeaders, General } from './strings';
 
 const ApiRoutes = {
   user: 'auth/user/',
@@ -26,6 +26,6 @@ export const Routes = {
   VerifyEmail: '/verify',
 }
 
-export const Strings = { Confirmation, ModalHeaders }
+export const Strings = { Confirmation, ModalHeaders, General }
 
 export default ApiRoutes

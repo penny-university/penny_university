@@ -1,5 +1,13 @@
+const General = {
+  save: 'Save',
+  edit: 'Edit',
+  cancel: 'Cancel',
+  delete: 'Delete',
+  followUps: 'Follow Ups',
+}
+
 const Confirmation = {
-  deleteFollowUp: 'Are you sure you want to delete this Follow Up? This action cannot be undone.',
+  deleteFollowUp: (id: string) => `Are you sure you want to delete this Follow Up? This action cannot be undone. ${id}`,
 }
 
 const ModalHeaders = {
@@ -7,6 +15,7 @@ const ModalHeaders = {
 }
 
 export {
+  General,
   Confirmation,
   ModalHeaders,
 }
