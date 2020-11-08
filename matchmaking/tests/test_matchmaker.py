@@ -114,5 +114,6 @@ def test_gather_data():
         'prof4@email.com': {'prof1@email.com', 'prof3@email.com'},
     }
 
-    def test_pair_score_and_topic():
-        pytest.fail("START HERE")
+@pytest.mark.django_db
+def test_pair_score_and_topic():
+    pytest.fail("START HERE")
