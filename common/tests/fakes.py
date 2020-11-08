@@ -89,7 +89,6 @@ class MatchRequestFactory(DjangoModelFactory):
     topic_channel = factory.SubFactory(TopicChannelFactory)
     profile = factory.SubFactory(SocialProfileFactory)
 
-
 class MatchFactory(DjangoModelFactory):
     class Meta:
         model = Match

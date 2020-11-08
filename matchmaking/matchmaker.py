@@ -29,7 +29,7 @@ class MatchMaker:
 
 
     def _gather_data(self):
-        "pull the data from the database and organize it"
+        "pull the data from the database and create lookup dicts used in scoring and filtering to admissible matches"
         match_requests = MatchRequest.objects.filter(date__gte=self.match_request_since_date)\
             .values_list('profile__email', 'topic_channel__name')
         emails = set(mr[0] for mr in match_requests)
@@ -61,11 +61,12 @@ class MatchMaker:
 
         possible_matches = {}
         for profile_A, topics in match_requests_profile_to_topic.items():
+            possible_matches[profile_A] = set()
             for topic in topics:
                 profiles_B = match_requests_topic_to_profile[topic]
-                possible_matches.setdefault(profile_A, profiles_B).union(profiles_B)
-        for profile_A, profiles_B in possible_matches.copy().items():
-            possible_matches[profile_A] = profiles_B - {profile_A}
+                for profile_B in profiles_B:
+                    if profile_A != profile_B:
+                        possible_matches[profile_A].add(profile_B)
 
         # assign instance vars
         self._recent_match_by_profile_pair = recent_match_by_profile_pair
