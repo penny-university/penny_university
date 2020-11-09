@@ -61,10 +61,7 @@ def test_gather_data():
         date=now - timedelta(weeks=3),
     )
 
-    match_maker = MatchMaker(
-        match_request_since_date=now-timedelta(weeks=2),
-        match_since_date=now-timedelta(weeks=8),
-    )
+    match_maker = MatchMaker(match_request_since_date=now-timedelta(weeks=2))
     match_maker._gather_data()
 
     # _recent_match_by_profile_pair, _recent_match_by_profile_pair, and _recent_match_by_profile_pair_and_topic
@@ -114,6 +111,66 @@ def test_gather_data():
         'prof4@email.com': {'prof1@email.com', 'prof3@email.com'},
     }
 
-@pytest.mark.django_db
-def test_pair_score_and_topic():
-    pytest.fail("START HERE")
+
+def test_pair_score_and_topic__is_memoized(mocker):
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+    match_maker._not_memoized_pair_score_and_topic = mocker.Mock()
+    match_maker._not_memoized_pair_score_and_topic.return_value = 'output'
+
+    # intentionally call this multiple times and assert that _not_memoized is called once
+    assert match_maker._pair_score_and_topic('profile_1', 'profile_2') == 'output'
+    assert match_maker._pair_score_and_topic('profile_1', 'profile_2') == 'output'
+    assert match_maker._pair_score_and_topic('profile_2', 'profile_1') == 'output'
+    assert match_maker._not_memoized_pair_score_and_topic.call_count == 1
+    assert match_maker._pair_score_and_topic('profile_1', 'profile_999') == 'output'
+    assert match_maker._not_memoized_pair_score_and_topic.call_count == 2
+
+
+def test_scoring__more_recently_pared_gets_penalized():
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+    now = timezone('America/Chicago').localize(datetime.now())
+    match_maker._most_recent_match_by_profile = {
+        # this should give them no boost
+        key('A'): {'date': now},
+        key('B'): {'date': now},
+        key('C'): {'date': now},
+        key('D'): {'date': now},
+        key('E'): {'date': now},
+    }
+    match_maker._recent_match_by_profile_pair = {
+        key('A', 'B'): {'date': now - timedelta(days=1)},
+        key('A', 'C'): {'date': now - timedelta(weeks=10)},
+        key('A', 'D'): {'date': now - timedelta(weeks=20)},
+        # key('A', 'E'): {'date': now - infinity},  <- no entry is treated as never having met
+    }
+    match_maker._match_requests_profile_to_topic = {
+        'A': {'science'},
+        'B': {'science'},
+        'C': {'science'},
+        'D': {'science'},
+        'E': {'science'},
+    }
+    scoreB, topic = match_maker._not_memoized_pair_score_and_topic('A', 'B')
+    scoreC, topic = match_maker._not_memoized_pair_score_and_topic('A', 'C')
+    scoreD, topic = match_maker._not_memoized_pair_score_and_topic('A', 'D')
+    scoreE, topic = match_maker._not_memoized_pair_score_and_topic('A', 'E')
+    assert scoreB == 0
+    assert scoreB < scoreC < scoreD < scoreE
+    
+# def test_scoring__get_best_matching_topic_if_multiple_available():
+# def test_scoring__people_that_havent_met_in_a_while_are_boosted()
+
+"""
+TODO! delete
+
+    match_maker._recent_match_by_profile_pair = {
+        key('A', 'B'): {'date': now - timedelta(weeks=2)},
+    }
+    match_maker._recent_match_by_profile_topic = {
+        key('A', 'art'): {'date': now - timedelta(weeks=4)},
+        key('B', 'art'): {'date': now - timedelta(weeks=4)},
+    }
+    match_maker._recent_match_by_profile_pair_and_topic = {
+        key('A', 'B', 'art'): {'date': now - timedelta(weeks=4)},
+    }
+"""

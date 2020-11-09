@@ -13,19 +13,37 @@ def key(*args):
 
 
 class MatchMaker:
-    def __init__(self, match_request_since_date, match_since_date):
+    def __init__(self, match_request_since_date):
         """Initialize the MatchMaker
 
-        :param match_request_since_date:
-        :param match_since_date: historic matches are used to score possible future matches (for instance, the score to
-          be matched with someone you were just matched with will be very low)
+        :param match_request_since_date: only matches for people that requested a match after this date
         """
         self.match_request_since_date = match_request_since_date
-        self.match_since_date = match_since_date
 
-        # stick parameters here such as the min/max dates
         self._now = datetime.datetime.now().astimezone(timezone.utc)
+
+        # CONFIG PARAMS
+        # How far to look back in the past for earlier matches. This is used in scoring so that the score is higher if
+        # the people being matched haven't been matched in a while or ever.
+        self.match_since_date = self._now - datetime.timedelta(weeks=26)
+
+        # give a score boost if we haven't seen them in a while or ever
+        self._recent_match_boost_halflife = datetime.timedelta(weeks=6)
+
+        # if they have met this recently or less then give them a score of 0
+        self._cutoff_for_repairing = datetime.timedelta(weeks=4)
+        # thereafter the penalty has a halflife of this time period
+        self._repairing_penalty_halflife = datetime.timedelta(weeks=4)
+
+        # STATE
         self._memos_for_pair_score_and_topic = {}
+
+        self._recent_match_by_profile_pair = dict()
+        self._recent_match_by_profile_topic = dict()
+        self._recent_match_by_profile_pair_and_topic = dict()
+        self._match_requests_profile_to_topic = dict()
+        self._match_requests_topic_to_profile = dict()
+        self._possible_matches = dict()
 
 
     def _gather_data(self):
@@ -39,6 +57,7 @@ class MatchMaker:
             .filter(profiles__email__in=emails)\
             .order_by('date')\
             .prefetch_related('profiles', 'topic_channel')
+        most_recent_match_by_profile = {}
         recent_match_by_profile_pair = {}
         recent_match_by_profile_topic = {}
         recent_match_by_profile_pair_and_topic = {}
@@ -47,6 +66,9 @@ class MatchMaker:
             data = {'num_attending': len(profiles), 'date': match.date}
             topic = match.topic_channel.name
             for i in range(len(profiles)):
+                prof_key = key(profiles[i])
+                if prof_key not in most_recent_match_by_profile or most_recent_match_by_profile[prof_key]['date'] > data['date']  :
+                    most_recent_match_by_profile[prof_key] = data  #TODO! test
                 recent_match_by_profile_topic[key(profiles[i], topic)] = data
                 for j in range(i + 1, len(profiles)):
                     recent_match_by_profile_pair[key(profiles[i], profiles[j])] = data
@@ -68,13 +90,18 @@ class MatchMaker:
                     if profile_A != profile_B:
                         possible_matches[profile_A].add(profile_B)
 
+        ######################
         # assign instance vars
-        self._recent_match_by_profile_pair = recent_match_by_profile_pair
+        self._most_recent_match_by_profile = most_recent_match_by_profile
         # example: {
-        #   ('matt.cronin@gmail.com', 'nikola.novakovic9@gmail.com'): {
+        #   ('matt.cronin@gmail.com'): {
         #       'num_attending': 2,
         #       'date': datetime.datetime(2020, 10, 3, 0, 0, tzinfo=timezone.utc),
         #   },  ...
+
+        self._recent_match_by_profile_pair = recent_match_by_profile_pair
+        # example: {
+        #   ('matt.cronin@gmail.com', 'nikola.novakovic9@gmail.com'): { <same as above> } ...
 
         self._recent_match_by_profile_topic = recent_match_by_profile_topic
         # example: {
@@ -107,25 +134,11 @@ class MatchMaker:
         return memo
 
     def _not_memoized_pair_score_and_topic(self, p1, p2):
-        """returns score and topic for this player to player match
-
-        the score is based upon a number of factors:
-        * how recently the players have been matched with one another under this topic
-        * how recently the players have been matched with one another regardless of topic
-        * how recently each player has been matches to someone else with this topic
-        * how recently each player has been matched
-
-        a score of zero goes to a pair that has been matched too recently
-        a high score goes to pairs involving a new player being matched
-        and intermediate scored are given for intermediate matching
-
-        if multiple topics are involved, then the score for the highest topic is returned
-        """
+        """returns score and topic for this player to player match"""
         #TODO! test if data is not present in lookups, we need to do something smart
         assert p1 is not p2
 
-        cutoff_for_repairing = datetime.timedelta(weeks=4)
-        cutoff_for_repairing_same_topic = datetime.timedelta(weeks=12)
+        score = 1.0
 
         p1_topics = self._match_requests_profile_to_topic[p1]
         p2_topics = self._match_requests_profile_to_topic[p2]
@@ -134,33 +147,90 @@ class MatchMaker:
         # if this fails then we are being very inefficient about picking pairs to test
         assert len(topics) > 0, "won't score pair with no common topics"
 
+        # promote matching of people who have never participated before or haven't participated recently
+        score += self._boost_based_upon_recenty_of_match(p1, p2)
+        # demote matching between two people that have been paired recently
+        penalty = self._penalty_based_on_recent_pairing(p1, p2)
+        score -= penalty
+        if score <= 0:
+            return 0, None
+        met_recently = False
+        if penalty:
+            met_recently = True
+
+        # get best topic
+        topic = self._select_topic(p2, p1, met_recently, topics)
+
+        return score, topic
+
+    def _boost_based_upon_recenty_of_match(self, profile1, p2):
+        # for individual players, if they've never participated, then get a boost of 1.0
+        # if they've participated recently then get a boost of 0
+        for profile in [profile1, p2]:
+            if key(profile) in self._most_recent_match_by_profile:
+                time_since_last_meeting = self._now - self._most_recent_match_by_profile[key(profile)]['date']
+                # if time_since_last_meeting == 0
+                #   then the boost is 0
+                # if time_since_last_meeting == self._recent_match_boost_halflife
+                #   then the penalty is 0.5
+                # if time_since_last_meeting == 2*_recent_match_boost_halflife
+                #   then the penalty is 0.75
+                boost = 1 - 2 ** (time_since_last_meeting / self._recent_match_boost_halflife)
+            else:
+                # if they've never participated they get a boost of 1.0
+                boost = 1
+        return boost
+
+    def _penalty_based_on_recent_pairing(self, profile1, p2):
         # if they've met too recently, then score is zero and fast return
-        p1p2_key = key(p1, p2)
+        # if they've never met, there is no penalty
+        # if they have met, then penalize score based on recency (max penalty = 1.0)
+        penalty = 0
+        p1p2_key = key(profile1, p2)
         recent_match_by_profile_pair = None
         if p1p2_key in self._recent_match_by_profile_pair:
             recent_match_by_profile_pair = self._recent_match_by_profile_pair[p1p2_key]
-            if self._now - recent_match_by_profile_pair['date'] < cutoff_for_repairing:
-                return 0, None
+            time_since_last_meeting = self._now - recent_match_by_profile_pair['date']
+            if time_since_last_meeting < self._cutoff_for_repairing:
+                penalty = 9999999
+            else:
+                # if time_since_last_meeting == self._cutoff_for_repairing
+                #   then the penalty is 1.0
+                # if time_since_last_meeting == self._cutoff_for_repairing + self._repairing_penalty_halflife
+                #   then the penalty is 0.5
+                # if time_since_last_meeting == self._cutoff_for_repairing + 2*self._repairing_penalty_halflife
+                #   then the penalty is 0.25
+                penalty = 2 ** (-time_since_last_meeting / self._repairing_penalty_halflife)
+        return penalty
 
-        # if there are multiple topics they could be matched in, then weed out any where they've already met (less recently than above)
+    def _select_topic(self, profile2, profile1, met_recently, topics):
+        # if there are multiple topics they could be matched in, then weed out any where they've already met (less
+        # recently than above)
         topics_to_remove = set()
+        topics_this_pair_has_discussed = set()
+        least_recent_topic = None
+        least_recent_date = None
         for topic in topics:
-            p1p2top_key = key(p1, p2, topic)
-            if recent_match_by_profile_pair and p1p2top_key in self._recent_match_by_profile_pair_and_topic:
-                if self._now - self._recent_match_by_profile_pair_and_topic[p1p2top_key][
-                    'date'] < cutoff_for_repairing_same_topic:
-                    topics_to_remove.add(topic)
+            p1p2top_key = key(profile1, profile2, topic)
+            if met_recently and p1p2top_key in self._recent_match_by_profile_pair_and_topic:
+                topics_this_pair_has_discussed.add(topic)
+                date_of_that_meeting = self._recent_match_by_profile_pair_and_topic[p1p2top_key]['date']
+                if least_recent_date is None or least_recent_date > date_of_that_meeting:
+                    least_recent_topic = topic
+                    least_recent_date = date_of_that_meeting
+        if len(topics - topics_this_pair_has_discussed) == 0:
+            # they've discussed all these topics, so just return the least recently discussed topic
+            topic = least_recent_topic
+        else:
+            # exclude topics they're already talked about and then just pick one
+            topics -= topics_this_pair_has_discussed
 
-        topics = topics - topics_to_remove
+            # TODO: here we're just picking one of the remaining topics but we could do better by selecting topics
+            # that at least one of them haven't been matched in before. And if that didn't uniquely identify a best topic
+            # we could find the topic where they've met least recently.
+            topic = topics.pop()
+        return topic
 
-        if len(topics) == 0:
-            # no admissible topics left because they've met too recently to discuss them
-            return 0, None
-
-        # TODO NEXT - come up with a floating point score based upon how recently they've met and pick the right topic
-        # increase the score if it involves new or unrecently matched people
-
-        return 1, topics.pop()
 
     def _get_matches(self):
         graph = nx.Graph()
