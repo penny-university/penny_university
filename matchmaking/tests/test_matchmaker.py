@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from itertools import chain
 
 from freezegun import freeze_time
-from pytz import timezone
 
 import pytest
 
@@ -12,7 +11,7 @@ from matchmaking.matchmaker import MatchMaker, key
 
 @pytest.mark.django_db
 def test_gather_data():
-    now = timezone('America/Chicago').localize(datetime.now())
+    now = datetime.now().astimezone(timezone.utc)
     prof1, prof2, prof3, prof4, prof5, prof6, prof_too_old = [SocialProfileFactory(email=f'prof{i+1}@email.com') for i in range(7)]
     prof_too_old.email = 'prof_too_old@email.com'
     prof_too_old.save()
@@ -126,51 +125,78 @@ def test_pair_score_and_topic__is_memoized(mocker):
     assert match_maker._not_memoized_pair_score_and_topic.call_count == 2
 
 
-def test_scoring__more_recently_pared_gets_penalized():
+def test_penalty_based_on_recent_pairing():
     match_maker = MatchMaker(match_request_since_date='does not matter')
-    now = timezone('America/Chicago').localize(datetime.now())
-    match_maker._most_recent_match_by_profile = {
-        # this should give them no boost
-        key('A'): {'date': now},
-        key('B'): {'date': now},
-        key('C'): {'date': now},
-        key('D'): {'date': now},
-        key('E'): {'date': now},
-    }
+    now = datetime.now().astimezone(timezone.utc)
     match_maker._recent_match_by_profile_pair = {
         key('A', 'B'): {'date': now - timedelta(days=1)},
         key('A', 'C'): {'date': now - timedelta(weeks=10)},
         key('A', 'D'): {'date': now - timedelta(weeks=20)},
         # key('A', 'E'): {'date': now - infinity},  <- no entry is treated as never having met
     }
-    match_maker._match_requests_profile_to_topic = {
-        'A': {'science'},
-        'B': {'science'},
-        'C': {'science'},
-        'D': {'science'},
-        'E': {'science'},
+    scoreAB = match_maker._penalty_based_on_recent_pairing('A', 'B')
+    scoreAC = match_maker._penalty_based_on_recent_pairing('A', 'C')
+    scoreAD = match_maker._penalty_based_on_recent_pairing('A', 'D')
+    scoreAE = match_maker._penalty_based_on_recent_pairing('A', 'E')
+    assert scoreAB > scoreAC > scoreAD > scoreAE, 'the penalty is greater if they have met more recently'
+    assert scoreAB == float('infinity'), 'having just met implies "infinite" penalty'
+
+
+def test_boost_based_upon_recency_of_match():
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+    now = datetime.now().astimezone(timezone.utc)
+    match_maker._most_recent_match_by_profile = {
+        key('A'): {'date': now},
+        key('B'): {'date': now - timedelta(weeks=1)},
+        key('C'): {'date': now - timedelta(weeks=2)},
+        # key('D'): {'date': now - infinity},  <- no entry is treated as never having met
+        # key('E'): {'date': now - infinity},  <- no entry is treated as never having met
     }
-    scoreB, topic = match_maker._not_memoized_pair_score_and_topic('A', 'B')
-    scoreC, topic = match_maker._not_memoized_pair_score_and_topic('A', 'C')
-    scoreD, topic = match_maker._not_memoized_pair_score_and_topic('A', 'D')
-    scoreE, topic = match_maker._not_memoized_pair_score_and_topic('A', 'E')
-    assert scoreB == 0
-    assert scoreB < scoreC < scoreD < scoreE
-    
-# def test_scoring__get_best_matching_topic_if_multiple_available():
-# def test_scoring__people_that_havent_met_in_a_while_are_boosted()
+    scoreAB = match_maker._boost_based_upon_recency_of_match('A', 'B')
+    scoreAC = match_maker._boost_based_upon_recency_of_match('A', 'C')
+    scoreAD = match_maker._boost_based_upon_recency_of_match('A', 'D')
+    scoreDE = match_maker._boost_based_upon_recency_of_match('D', 'E')
+    assert scoreAB < scoreAC < scoreAD < scoreDE, 'there is a larger boost for those who have not met in a while'
+    assert scoreDE == 2, \
+        'boosts of the individual profiles are additive, and if a player has never been in a match their boost is 1'
 
-"""
-TODO! delete
 
+def test_select_topic():
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+    now = datetime.now().astimezone(timezone.utc)
+    match_maker._recent_match_by_profile_pair_and_topic = {
+        key('A', 'B', 'science'): {'date': now - timedelta(weeks=10)},
+        key('A', 'B', 'art'): {'date': now - timedelta(weeks=20)},
+    }
+    met_recently = True
+
+    topics = {'science', 'art', 'history'}
+    selected_topic = match_maker._select_topic('A', 'B', met_recently, topics)
+    assert selected_topic == 'history', 'choose the topic they have not yet met in'
+
+    topics = {'science', 'art'}
+    selected_topic = match_maker._select_topic('A', 'B', met_recently, topics)
+    assert selected_topic == 'art', 'if they have already met in all topics, choose the least recent topic'
+
+
+def test_not_memoized_pair_score_and_topic():
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+    now = datetime.now().astimezone(timezone.utc)
     match_maker._recent_match_by_profile_pair = {
-        key('A', 'B'): {'date': now - timedelta(weeks=2)},
+        key('A', 'B'): {'date': now - timedelta(weeks=20)},
     }
-    match_maker._recent_match_by_profile_topic = {
-        key('A', 'art'): {'date': now - timedelta(weeks=4)},
-        key('B', 'art'): {'date': now - timedelta(weeks=4)},
+    match_maker._most_recent_match_by_profile = {
+        key('A'): {'date': now - timedelta(weeks=20)},
+        key('B'): {'date': now - timedelta(weeks=20)},
     }
     match_maker._recent_match_by_profile_pair_and_topic = {
-        key('A', 'B', 'art'): {'date': now - timedelta(weeks=4)},
+        key('A', 'B', 'science'): {'date': now - timedelta(weeks=10)},
+        key('A', 'B', 'art'): {'date': now - timedelta(weeks=20)},
     }
-"""
+    match_maker._match_requests_profile_to_topic = {
+        'A': {'science', 'art', 'history'},
+        'B': {'science', 'art', 'religion'},
+    }
+    score, topic = match_maker._not_memoized_pair_score_and_topic('A', 'B')
+    assert score > 0
+    assert topic == 'art'

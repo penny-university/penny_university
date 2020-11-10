@@ -148,7 +148,7 @@ class MatchMaker:
         assert len(topics) > 0, "won't score pair with no common topics"
 
         # promote matching of people who have never participated before or haven't participated recently
-        score += self._boost_based_upon_recenty_of_match(p1, p2)
+        score += self._boost_based_upon_recency_of_match(p1, p2)
         # demote matching between two people that have been paired recently
         penalty = self._penalty_based_on_recent_pairing(p1, p2)
         score -= penalty
@@ -159,14 +159,15 @@ class MatchMaker:
             met_recently = True
 
         # get best topic
-        topic = self._select_topic(p2, p1, met_recently, topics)
+        topic = self._select_topic(p1, p2, met_recently, topics)
 
         return score, topic
 
-    def _boost_based_upon_recenty_of_match(self, profile1, p2):
+    def _boost_based_upon_recency_of_match(self, profile1, profile2):
         # for individual players, if they've never participated, then get a boost of 1.0
         # if they've participated recently then get a boost of 0
-        for profile in [profile1, p2]:
+        boost = 0
+        for profile in [profile1, profile2]:
             if key(profile) in self._most_recent_match_by_profile:
                 time_since_last_meeting = self._now - self._most_recent_match_by_profile[key(profile)]['date']
                 # if time_since_last_meeting == 0
@@ -175,24 +176,24 @@ class MatchMaker:
                 #   then the penalty is 0.5
                 # if time_since_last_meeting == 2*_recent_match_boost_halflife
                 #   then the penalty is 0.75
-                boost = 1 - 2 ** (time_since_last_meeting / self._recent_match_boost_halflife)
+                boost += 1 - 2 ** (-time_since_last_meeting / self._recent_match_boost_halflife)
             else:
                 # if they've never participated they get a boost of 1.0
-                boost = 1
+                boost += 1
         return boost
 
-    def _penalty_based_on_recent_pairing(self, profile1, p2):
+    def _penalty_based_on_recent_pairing(self, profile1, profile2):
         # if they've met too recently, then score is zero and fast return
         # if they've never met, there is no penalty
         # if they have met, then penalize score based on recency (max penalty = 1.0)
         penalty = 0
-        p1p2_key = key(profile1, p2)
+        p1p2_key = key(profile1, profile2)
         recent_match_by_profile_pair = None
         if p1p2_key in self._recent_match_by_profile_pair:
             recent_match_by_profile_pair = self._recent_match_by_profile_pair[p1p2_key]
             time_since_last_meeting = self._now - recent_match_by_profile_pair['date']
             if time_since_last_meeting < self._cutoff_for_repairing:
-                penalty = 9999999
+                penalty = float('infinity')
             else:
                 # if time_since_last_meeting == self._cutoff_for_repairing
                 #   then the penalty is 1.0
@@ -203,7 +204,7 @@ class MatchMaker:
                 penalty = 2 ** (-time_since_last_meeting / self._repairing_penalty_halflife)
         return penalty
 
-    def _select_topic(self, profile2, profile1, met_recently, topics):
+    def _select_topic(self, profile1, profile2, met_recently, topics):
         # if there are multiple topics they could be matched in, then weed out any where they've already met (less
         # recently than above)
         topics_to_remove = set()
