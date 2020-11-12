@@ -17,7 +17,7 @@ const logout = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
   dispatch(logoutRequest())
 }
 
-const checkAuth = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
+const checkAsuth = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
   const token = CookieHelper.getToken()
   if (token) {
     dispatch(setToken(token))

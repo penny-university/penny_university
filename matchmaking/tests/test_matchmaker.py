@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from itertools import chain
+from unittest.mock import call
 
 from freezegun import freeze_time
 
@@ -200,3 +201,62 @@ def test_not_memoized_pair_score_and_topic():
     score, topic = match_maker._not_memoized_pair_score_and_topic('A', 'B')
     assert score > 0
     assert topic == 'art'
+
+def test_get_matches(mocker):
+    # Given these possible connections where every pair is scored 1, there is only one matching that scores
+    # as high as 2, we better get that!
+    #
+    #    A---B
+    #     \ /
+    #      C
+    #      |
+    #      D
+
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+    match_maker._pair_score_and_topic = mocker.Mock()
+    match_maker._pair_score_and_topic.return_value = (1, 'history')
+
+    match_maker._possible_matches = {
+        'A': ['B', 'C'],
+        'B': ['A', 'C'],
+        'C': ['A', 'B', 'D'],
+        'D': ['C'],
+    }
+    matches = match_maker._get_matches()
+    matches = set(key(*m) for m in matches)  # convert to set of sorted tuples so that ordering doesn't matter
+    assert matches == {key('A', 'B'), key('C', 'D')}
+    for forbidden_call in [call('D', 'A'), call('A', 'D'), call('D', 'B'), call('B', 'D')]:
+        assert forbidden_call not in match_maker._pair_score_and_topic.call_args_list, \
+            "we should not make score calls for pairs that aren't in _possible_matches (very inefficient)"
+
+def test_match_unmatched(mocker):
+    # scenario: assume that the matches are A+B in the topic of 'math' and C+D in the topic of 'history', and E and F are
+    # unmatched. E is a _possible_match with A or C in the topic of 'math' and F is a _possible_match with A or C in the
+    # topic of 'history' therefore the final matching should be A+B+E in 'math' and C+D+F in 'history'
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+    matches = [['A', 'B'], ['C', 'D']]
+
+    def mock_pair_score_and_topic(p1, p2):
+        return {
+            key('A', 'B'): (1, 'math'),
+            key('C', 'D'): (1, 'history'),
+        }[key(p1, p2)]
+
+    match_maker._pair_score_and_topic = mocker.Mock()
+    match_maker._pair_score_and_topic.side_effect = mock_pair_score_and_topic
+    match_maker._match_requests_profile_to_topic = {
+        'A': ['math'],
+        'B': ['math'],
+        'C': ['history'],
+        'D': ['history'],
+        'E': ['math'],
+        'F': ['history'],
+    }
+    match_maker._possible_matches = {
+        'E': ['A', 'C'],
+        'F': ['A', 'C'],
+        # really the other keys would be here, but the method wouldn't currently call them
+    }
+    matches = match_maker._match_unmatched(matches)
+    matches = set(key(*m) for m in matches)  # convert to set of sorted tuples so that ordering doesn't matter
+    assert matches == {key('A', 'B', 'E'), key('C', 'D', 'F')}

@@ -232,8 +232,12 @@ class MatchMaker:
             topic = topics.pop()
         return topic
 
-
     def _get_matches(self):
+        """Builds graph of profiles and weights its edges according to the pair score, and then identifies optimal
+        matching. Runs in O(num_profiles^3). In the future consider implementing
+        https://web.eecs.umich.edu/~pettie/papers/ApproxMWM-JACM.pdf which finds an approximate solution in
+        O(num_profiles)
+        """
         graph = nx.Graph()
         for profile_A, profiles_B in self._possible_matches.items():
             for profile_B in profiles_B:
@@ -246,6 +250,11 @@ class MatchMaker:
         return matches
 
     def _match_unmatched(self, matches):
+        """identifies profiles that are yet unmatched and adds them to the best matches that can be found
+
+        currently, the algorithm is weak. we don't use the score to identify a best match for this person; rather we
+        just add them to a match that was one of their original _possible_matches
+        """
         profiles_with_matches = set(chain(*matches))  # this just collects all the people that are matched so far
         all_profiles = set(self._match_requests_profile_to_topic.keys())
         unmatched = all_profiles - profiles_with_matches
@@ -283,6 +292,8 @@ class MatchMaker:
     def _add_topics_to_matches(self, matches):
         matches_with_topic = []
         for match in matches:
+            # get topics for only the first 2 profiles in a match because any subsequent matches were added via
+            # _match_unmatched
             score, topic = self._pair_score_and_topic(match[0], match[1])
             matches_with_topic.append({
                 'match': match,
