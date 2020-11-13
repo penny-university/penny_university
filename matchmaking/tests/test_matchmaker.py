@@ -13,7 +13,9 @@ from matchmaking.matchmaker import MatchMaker, key
 @pytest.mark.django_db
 def test_gather_data():
     now = datetime.now().astimezone(timezone.utc)
-    prof1, prof2, prof3, prof4, prof5, prof6, prof_too_old = [SocialProfileFactory(email=f'prof{i+1}@email.com') for i in range(7)]
+    prof1, prof2, prof3, prof4, prof5, prof6, prof_too_old = [
+        SocialProfileFactory(email=f'prof{i+1}@email.com') for i in range(7)
+    ]
     prof_too_old.email = 'prof_too_old@email.com'
     prof_too_old.save()
 
@@ -21,33 +23,33 @@ def test_gather_data():
     topic_channel_art = TopicChannelFactory(name='art')
 
     with freeze_time(now - timedelta(weeks=52), tz_offset=0):
-        match_request_too_old = MatchRequestFactory(profile=prof_too_old)
+        MatchRequestFactory(profile=prof_too_old)
 
     with freeze_time(now - timedelta(weeks=1), tz_offset=0):
-        match_request_prof1a = MatchRequestFactory(
+        MatchRequestFactory(
             profile=prof1,
             topic_channel=topic_channel_art,
         )
-        match_request_prof1b = MatchRequestFactory(
+        MatchRequestFactory(
             profile=prof1,
             topic_channel=topic_channel_science,
         )
-        match_request_prof2 = MatchRequestFactory(
+        MatchRequestFactory(
             profile=prof2,
             topic_channel=topic_channel_art
         )
-        match_request_prof3 = MatchRequestFactory(
+        MatchRequestFactory(
             profile=prof3,
             topic_channel=topic_channel_science
         )
-        match_request_prof4 = MatchRequestFactory(
+        MatchRequestFactory(
             profile=prof4,
             topic_channel=topic_channel_science
         )
 
     MatchFactory(
         topic_channel=topic_channel_art,
-        profiles=(prof1, prof2, prof3),#TODO! test that all pairs got stuck in a table
+        profiles=(prof1, prof2, prof3),
         date=now - timedelta(weeks=3),
     )
     MatchFactory(
@@ -61,7 +63,7 @@ def test_gather_data():
         date=now - timedelta(weeks=3),
     )
 
-    match_maker = MatchMaker(match_request_since_date=now-timedelta(weeks=2))
+    match_maker = MatchMaker(match_request_since_date=now - timedelta(weeks=2))
     match_maker._gather_data()
 
     # _recent_match_by_profile_pair, _recent_match_by_profile_pair, and _recent_match_by_profile_pair_and_topic
@@ -200,7 +202,9 @@ def test_not_memoized_pair_score_and_topic():
     }
     score, topic = match_maker._not_memoized_pair_score_and_topic('A', 'B')
     assert score > 0
+    assert score != int(score), "score is a whole number, that's unlikely if we're really exercising the functionality"
     assert topic == 'art'
+
 
 def test_get_matches(mocker):
     # Given these possible connections where every pair is scored 1, there is only one matching that scores
@@ -228,6 +232,7 @@ def test_get_matches(mocker):
     for forbidden_call in [call('D', 'A'), call('A', 'D'), call('D', 'B'), call('B', 'D')]:
         assert forbidden_call not in match_maker._pair_score_and_topic.call_args_list, \
             "we should not make score calls for pairs that aren't in _possible_matches (very inefficient)"
+
 
 def test_match_unmatched(mocker):
     # scenario: assume that the matches are A+B in the topic of 'math' and C+D in the topic of 'history', and E and F are

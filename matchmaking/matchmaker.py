@@ -45,7 +45,6 @@ class MatchMaker:
         self._match_requests_topic_to_profile = dict()
         self._possible_matches = dict()
 
-
     def _gather_data(self):
         "pull the data from the database and create lookup dicts used in scoring and filtering to admissible matches"
         match_requests = MatchRequest.objects.filter(date__gte=self.match_request_since_date)\
@@ -67,8 +66,11 @@ class MatchMaker:
             topic = match.topic_channel.name
             for i in range(len(profiles)):
                 prof_key = key(profiles[i])
-                if prof_key not in most_recent_match_by_profile or most_recent_match_by_profile[prof_key]['date'] > data['date']  :
-                    most_recent_match_by_profile[prof_key] = data  #TODO! test
+                if (
+                    prof_key not in most_recent_match_by_profile or
+                    most_recent_match_by_profile[prof_key]['date'] > data['date']
+                ):
+                    most_recent_match_by_profile[prof_key] = data
                 recent_match_by_profile_topic[key(profiles[i], topic)] = data
                 for j in range(i + 1, len(profiles)):
                     recent_match_by_profile_pair[key(profiles[i], profiles[j])] = data
@@ -123,7 +125,6 @@ class MatchMaker:
         # example: {
         #   'sydneynoh@gmail.com': {'ant@gmail.com', 'colin@gmail.me', 'sydneynoh@gmail.com'}, ...
 
-
     def _pair_score_and_topic(self, p1, p2):
         p1p2_key = key(p1, p2)
         if p1p2_key in self._memos_for_pair_score_and_topic:
@@ -135,10 +136,9 @@ class MatchMaker:
 
     def _not_memoized_pair_score_and_topic(self, p1, p2):
         """returns score and topic for this player to player match"""
-        #TODO! test if data is not present in lookups, we need to do something smart
-        assert p1 is not p2
+        assert p1 is not p2, "must not match a person with themselves"
 
-        score = 1.0
+        score = 1.0  # base score
 
         p1_topics = self._match_requests_profile_to_topic[p1]
         p2_topics = self._match_requests_profile_to_topic[p2]
@@ -207,7 +207,6 @@ class MatchMaker:
     def _select_topic(self, profile1, profile2, met_recently, topics):
         # if there are multiple topics they could be matched in, then weed out any where they've already met (less
         # recently than above)
-        topics_to_remove = set()
         topics_this_pair_has_discussed = set()
         least_recent_topic = None
         least_recent_date = None
@@ -274,7 +273,8 @@ class MatchMaker:
                     # could have been paired with at least one of these, but they're meeting for a different topic
                     continue
 
-                # yay! at least one of these is a possible match AND they are already meeting about a topic of interest to the unmatched person
+                # yay! at least one of these is a possible match AND they are already meeting about a topic of interest
+                # to the unmatched person
                 best_match = match
 
                 if number_possible_matches == 2:

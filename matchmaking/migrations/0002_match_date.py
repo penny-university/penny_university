@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='match',
             name='date',
-            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2020, 10, 3, tzinfo=datetime.timezone.utc)),
+            field=models.DateTimeField(auto_now_add=True, default=datetime.datetime(2020, 10, 3, tzinfo=datetime.timezone.utc)),  # noqa
             preserve_default=False,
         ),
     ]

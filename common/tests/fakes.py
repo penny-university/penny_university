@@ -14,6 +14,7 @@ UTC = pytz.utc
 
 slack_team_id = FuzzyText(length=8, chars=string.ascii_uppercase + string.digits, prefix='T')
 
+
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
@@ -89,6 +90,7 @@ class MatchRequestFactory(DjangoModelFactory):
     topic_channel = factory.SubFactory(TopicChannelFactory)
     profile = factory.SubFactory(SocialProfileFactory)
 
+
 class MatchFactory(DjangoModelFactory):
     class Meta:
         model = Match
@@ -103,5 +105,5 @@ class MatchFactory(DjangoModelFactory):
             # I'm not sure if I need to do anything here
             return
         if not extracted:
-            extracted = (SocialProfileFactory(),SocialProfileFactory())
+            extracted = (SocialProfileFactory(), SocialProfileFactory())
         self.profiles.set(extracted)
