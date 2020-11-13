@@ -1,6 +1,6 @@
 import pytz
 import string
-from datetime import datetime
+from datetime import datetime, timezone
 
 import factory
 from factory.django import DjangoModelFactory
@@ -67,7 +67,7 @@ class PennyChatSlackInvitationFactory(DjangoModelFactory):
         model = PennyChatSlackInvitation
     status = PennyChatSlackInvitation.DRAFT
     organizer_tz = 'America/Chicago'
-    date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    date = datetime.now().astimezone(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     view = 'view'
     created_from_slack_team_id = 'test_id'
     visibility = PennyChat.PUBLIC
