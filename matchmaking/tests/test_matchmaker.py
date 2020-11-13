@@ -265,3 +265,38 @@ def test_match_unmatched(mocker):
     matches = match_maker._match_unmatched(matches)
     matches = set(key(*m) for m in matches)  # convert to set of sorted tuples so that ordering doesn't matter
     assert matches == {key('A', 'B', 'E'), key('C', 'D', 'F')}
+
+
+def test_add_topics_to_matches(mocker):
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+
+    def mock_pair_score_and_topic(p1, p2):
+        return {
+            key('A', 'B'): (1, 'math'),
+            key('C', 'D'): (2, 'history'),
+        }[key(p1, p2)]
+
+    match_maker._pair_score_and_topic = mocker.Mock()
+    match_maker._pair_score_and_topic.side_effect = mock_pair_score_and_topic
+
+    matches = match_maker._add_topics_to_matches([['A', 'B', 'E'], ['C', 'D']])
+    assert matches == [
+        {'match': ['A', 'B', 'E'], 'score': 1, 'topic': 'math'},
+        {'match': ['C', 'D'], 'score': 2, 'topic': 'history'},
+    ]
+
+
+def test_run(mocker):
+    # just make sure everything is wired up
+    match_maker = MatchMaker(match_request_since_date='does not matter')
+    match_maker._gather_data = mocker.Mock()
+    match_maker._get_matches = mocker.Mock()
+    match_maker._get_matches.return_value = "a"
+    match_maker._match_unmatched = mocker.Mock()
+    match_maker._match_unmatched.side_effect = lambda x: x + 'b'
+    match_maker._add_topics_to_matches = mocker.Mock()
+    match_maker._add_topics_to_matches.side_effect = lambda x: x + 'c'
+
+    matches = match_maker.run()
+    assert matches == "abc"
+    assert match_maker._gather_data.called

@@ -13,6 +13,38 @@ def key(*args):
 
 
 class MatchMaker:
+    """
+    MatchMaker collects data about who is requesting a match and what matches they have had recently and it returns
+    matches that optimize our scoring function.
+
+    Usage:
+    ```
+    matches = MatchMaker(
+        match_request_since_date=datetime.now().astimezone(timezone.utc) - timedelta(weeks=2)
+    ).run()
+    ```
+
+    If someone has met too recently then we don't allow them to be matched. The score then is:
+     * a base score of 1.0
+     * a per-person boost of up to 1.0 based on how recently they've been matched. We score people higher if they
+       haven't used this feature recently or ever before
+     * a pair-penalty if that same pair of people has met fairly recently.
+
+    The score can be modified without worrying about the rest of the algorithm, the thing to remember is that the
+    algorithm tries to make matches to maximize the total score.
+
+    The formal computer science problem that we're actually solving here is "maximum weight matching". And the algorithm
+    we chose to use for actually making the matches is from the networkx library and runs in O(num_people^3)
+    see: https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.matching.max_weight_matching.html  # noqa
+    At some point, this might be too slow. At that point we can look into other algorithms, such as this approximate
+    algorithm https://web.eecs.umich.edu/~pettie/papers/ApproxMWM-JACM.pdf which supposedly runs in O(num_people).
+
+    The matching algorithm only finds optimal pairs of people, but sometimes this means that people are left out. So
+    following the matching phase, we collect all the unmatched people and attempt to match them with an existing group.
+
+    The final output of `run()` is a list of matches each of which lists the people involved, the score of their match,
+    and the topic selected for them.
+    """
     def __init__(self, match_request_since_date):
         """Initialize the MatchMaker
 
@@ -244,7 +276,9 @@ class MatchMaker:
                 if weight > 0:
                     graph.add_edge(profile_A, profile_B, weight=weight)
 
-        matches = nx.algorithms.max_weight_matching(graph, True)
+        # NOTE: maxcardinality=True means that we will find the greatest number of possible matches even if there is
+        # a matching that is higher score but contains fewer matches
+        matches = nx.algorithms.max_weight_matching(graph, maxcardinality=True)
         matches = [list(m) for m in matches]
         return matches
 
