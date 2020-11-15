@@ -155,7 +155,7 @@ class MatchMaker:
 
         self._possible_matches = possible_matches
         # example: {
-        #   'sydneynoh@gmail.com': {'ant@gmail.com', 'colin@gmail.me', 'sydneynoh@gmail.com'}, ...
+        #   'sydneynoh@gmail.com': {'ant@gmail.com', 'colin@gmail.me'}, ...
 
     def _pair_score_and_topic(self, p1, p2):
         p1p2_key = key(p1, p2)
