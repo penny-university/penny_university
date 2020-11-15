@@ -9,7 +9,9 @@ from bot.tasks import (
     post_organizer_edit_after_share_blocks,
     share_penny_chat_invitation,
 )
-from bot.utils import chat_postEphemeral_with_fallback
+from bot.utils import chat_postEphemeral_with_fallback, build_share_string
+from integrations.google import build_credentials, GoogleCalendar, get_authorization_url
+from integrations.models import GoogleCredentials
 from pennychat.models import (
     PennyChat,
     PennyChatSlackInvitation,
@@ -26,11 +28,13 @@ from users.models import get_or_create_social_profile_from_slack_id, SocialProfi
 VIEW_SUBMISSION = 'view_submission'
 VIEW_CLOSED = 'view_closed'
 
+ADD_GOOGLE_INTEGRATION = 'add_google_integration'
 PENNY_CHAT_DATE = 'penny_chat_date'
 PENNY_CHAT_TIME = 'penny_chat_time'
 PENNY_CHAT_USER_SELECT = 'penny_chat_user_select'
 PENNY_CHAT_CHANNEL_SELECT = 'penny_chat_channel_select'
 PENNY_CHAT_DETAILS = 'penny_chat_details'
+PENNY_CHAT_REVIEW_DETAILS = 'penny_chat_review_details'
 PENNY_CHAT_EDIT = 'penny_chat_edit'
 PENNY_CHAT_SHARE = 'penny_chat_share'
 PENNY_CHAT_CAN_ATTEND = 'penny_chat_can_attend'
@@ -85,7 +89,7 @@ def penny_chat_details_modal(penny_chat_invitation):
         },
         'submit': {
             'type': 'plain_text',
-            'text': 'Share Invite :the_horns:',
+            'text': 'Submit :floppy_disk:',
         },
         'blocks': [
             {
@@ -231,6 +235,40 @@ def penny_chat_details_modal(penny_chat_invitation):
     return template
 
 
+def add_google_integration_modal(authorization_url):
+    template = {
+        'type': 'modal',
+        'notify_on_close': True,
+        'callback_id': "google_auth_callback",
+        'title': {
+            'type': 'plain_text',
+            'text': 'Penny Chat Details'
+        },
+        'blocks': [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Click the button to activate the Google Calendar integration."
+                },
+                "accessory": {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "Add Google Integration",
+                        "emoji": True
+                    },
+                    "value": "add_integration",
+                    "url": authorization_url,
+                    "action_id": ADD_GOOGLE_INTEGRATION
+                }
+            }
+        ]
+    }
+
+    return template
+
+
 class PennyChatBotModule(BotModule):
     """Responsible for all interactions related to the `/penny chat` command.
 
@@ -301,6 +339,12 @@ class PennyChatBotModule(BotModule):
         # TODO once this line is deleted, remove view from model
         penny_chat_invitation.view = response.data['view']['id']
         penny_chat_invitation.save()
+
+    @classmethod
+    def integrate_google_calendar(cls, slack, event):
+        user = get_or_create_social_profile_from_slack_id(event['user_id'])
+        modal = add_google_integration_modal(authorization_url=get_authorization_url(user.email))
+        slack.views_open(view=modal, trigger_id=event['trigger_id'])
 
     @is_block_interaction_event
     @has_action_id(PENNY_CHAT_SCHEDULE_MATCH)
@@ -379,6 +423,18 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.visibility = int(selected_visibility)
         penny_chat_invitation.save()
 
+    def add_google_meet(self, penny_chat_invitation):
+        user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
+        google_credentials = GoogleCredentials.objects.get(user=user)
+        credentials = build_credentials(google_credentials)
+        calendar = GoogleCalendar(credentials=credentials)
+
+        return calendar.create_event(
+            summary=penny_chat_invitation.title,
+            description=penny_chat_invitation.description,
+            start=penny_chat_invitation.date
+        )
+
     @has_event_type([VIEW_SUBMISSION, VIEW_CLOSED])
     @has_callback_id(PENNY_CHAT_DETAILS)
     def submit_details_and_share(self, event):
@@ -402,6 +458,18 @@ class PennyChatBotModule(BotModule):
                         'One is a lonely number for a Penny Chat. Invite at least one channel or user below.'
                 }
             }
+
+        penny_chat_invitation.save_organizer_from_slack_id(penny_chat_invitation.organizer_slack_id)
+
+        user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
+
+        if user.google_credentials is None:
+            update_modal = add_google_integration_modal(view['id'])
+            response = self.slack_client.views_push(view=update_modal, trigger_id=event['trigger_id'])
+
+        if not penny_chat_invitation.video_conference_link:
+            meet = self.add_google_meet(penny_chat_invitation)
+            penny_chat_invitation.video_conference_link = meet['hangoutLink']
 
         # Ready to share
         penny_chat_invitation.status = PennyChatSlackInvitation.SHARED

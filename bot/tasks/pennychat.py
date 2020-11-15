@@ -8,12 +8,12 @@ from django.conf import settings
 from pytz import timezone, utc
 from sentry_sdk import capture_exception
 
+from bot.utils import build_share_string, comma_split
 from common.utils import get_slack_client
 from pennychat.models import PennyChatSlackInvitation, Participant
 from users.models import (
     SocialProfile,
     get_or_create_social_profile_from_slack_id,
-    get_or_create_social_profile_from_slack_ids,
 )
 
 VIEW_SUBMISSION = 'view_submission'
@@ -197,11 +197,13 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     if include_calendar_link:
         start_date = penny_chat_invitation.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
         end_date = (penny_chat_invitation.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
+
+        description = f'{penny_chat_invitation.description} [Video Link]({penny_chat_invitation.video_conference_link})'
         google_cal_url = 'https://calendar.google.com/calendar/render?' \
                          'action=TEMPLATE&text=' \
             f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
             f'{start_date}/{end_date}&details=' \
-            f'{urllib.parse.quote(penny_chat_invitation.description)}'
+            f'{urllib.parse.quote(description)}'
 
         date_time_block['accessory'] = {
             'type': 'button',
@@ -239,6 +241,45 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
         },
         date_time_block
     ]
+
+    if penny_chat_invitation.video_conference_link:
+        body.append(
+            {
+                'type': 'section',
+                'text': {
+                    'type': 'mrkdwn',
+                    'text': f'*Video Call Link*'
+                }
+            }
+        )
+        if mode in {PREVIEW, INVITE, UPDATE}:
+            body.append(
+                {
+                    'type': 'section',
+                    'text': {
+                        'type': 'mrkdwn',
+                        'text': f'A video link will be provided shortly before the chat starts'
+                    }
+                }
+            )
+        elif mode in {REMIND}:
+            body.append(
+                {
+                    'type': 'actions',
+                    'elements': [
+                        {
+                            'type': 'button',
+                            'text': {
+                                'type': 'plain_text',
+                                'text': 'Join Video Call :call_me_hand:',
+                                'emoji': True,
+                            },
+                            'url': penny_chat_invitation.video_conference_link,
+                            'style': 'primary',
+                        }
+                    ]
+                }
+            )
 
     if include_rsvp:
         body.append(
@@ -368,25 +409,7 @@ def _followup_reminder_blocks(penny_chat_invitation):
 
 
 def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
-    shares = []
-    users = get_or_create_social_profile_from_slack_ids(
-        comma_split(penny_chat_invitation.invitees),
-        slack_client=slack_client,
-    )
-    for slack_user_id in comma_split(penny_chat_invitation.invitees):
-        shares.append(users[slack_user_id].real_name)
-
-    if len(penny_chat_invitation.channels) > 0:
-        for channel in comma_split(penny_chat_invitation.channels):
-            shares.append(f'<#{channel}>')
-
-    if len(shares) == 1:
-        share_string = shares[0]
-    elif len(shares) == 2:
-        share_string = ' and '.join(shares)
-    elif len(shares) > 2:
-        shares[-1] = f'and {shares[-1]}'
-        share_string = ', '.join(shares)
+    share_string = build_share_string(slack_client, penny_chat_invitation)
 
     shared_message_preview_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=PREVIEW) + [
         {
@@ -422,8 +445,3 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
     ]
 
     return shared_message_preview_blocks
-
-
-def comma_split(comma_delimited_string):
-    """normal string split for  ''.split(',') returns [''], so using this instead"""
-    return [x for x in comma_delimited_string.split(',') if x]
