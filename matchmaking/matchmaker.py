@@ -1,6 +1,7 @@
 import datetime
 from datetime import timezone
 from itertools import chain
+import random
 
 import networkx as nx
 
@@ -205,9 +206,9 @@ class MatchMaker:
                 # if time_since_last_meeting == 0
                 #   then the boost is 0
                 # if time_since_last_meeting == self._recent_match_boost_halflife
-                #   then the penalty is 0.5
+                #   then the boost is 0.5
                 # if time_since_last_meeting == 2*_recent_match_boost_halflife
-                #   then the penalty is 0.75
+                #   then the boost is 0.75
                 boost += 1 - 2 ** (-time_since_last_meeting / self._recent_match_boost_halflife)
             else:
                 # if they've never participated they get a boost of 1.0
@@ -260,7 +261,7 @@ class MatchMaker:
             # TODO: here we're just picking one of the remaining topics but we could do better by selecting topics
             # that at least one of them haven't been matched in before. And if that didn't uniquely identify a best topic
             # we could find the topic where they've met least recently.
-            topic = topics.pop()
+            topic = random.choice(tuple(topics))
         return topic
 
     def _get_matches(self):
