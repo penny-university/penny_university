@@ -8,12 +8,11 @@ from django.conf import settings
 from pytz import timezone, utc
 from sentry_sdk import capture_exception
 
-from bot.utils import build_share_string, comma_split
 from common.utils import get_slack_client
 from pennychat.models import PennyChatSlackInvitation, Participant
 from users.models import (
     SocialProfile,
-    get_or_create_social_profile_from_slack_id,
+    get_or_create_social_profile_from_slack_id, get_or_create_social_profile_from_slack_ids,
 )
 
 VIEW_SUBMISSION = 'view_submission'
@@ -102,6 +101,36 @@ def share_penny_chat_invitation(penny_chat_id):
         shares[resp.data['channel']] = resp.data['ts']
     penny_chat_invitation.shares = json.dumps(shares)
     penny_chat_invitation.save()
+
+
+def comma_split(comma_delimited_string):
+    """normal string split for  ''.split(',') returns [''], so using this instead"""
+    return [x for x in comma_delimited_string.split(',') if x]
+
+
+def build_share_string(slack_client, penny_chat_invitation):
+    shares = []
+    users = get_or_create_social_profile_from_slack_ids(
+        comma_split(penny_chat_invitation.invitees),
+        slack_client=slack_client,
+    )
+    for slack_user_id in comma_split(penny_chat_invitation.invitees):
+        shares.append(users[slack_user_id].real_name)
+
+    if len(penny_chat_invitation.channels) > 0:
+        for channel in comma_split(penny_chat_invitation.channels):
+            shares.append(f'<#{channel}>')
+
+    share_string = ''
+    if len(shares) == 1:
+        share_string = shares[0]
+    elif len(shares) == 2:
+        share_string = ' and '.join(shares)
+    elif len(shares) > 2:
+        shares[-1] = f'and {shares[-1]}'
+        share_string = ', '.join(shares)
+
+    return share_string
 
 
 def send_penny_chat_reminders_and_mark_chat_as_reminded():

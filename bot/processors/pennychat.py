@@ -4,12 +4,13 @@ import logging
 from pytz import timezone, utc
 import requests
 from sentry_sdk import capture_exception
+from slack.errors import SlackApiError
 
 from bot.tasks import (
     post_organizer_edit_after_share_blocks,
     share_penny_chat_invitation,
 )
-from bot.utils import chat_postEphemeral_with_fallback, build_share_string
+from bot.utils import chat_postEphemeral_with_fallback
 from integrations.google import build_credentials, GoogleCalendar, get_authorization_url
 from integrations.models import GoogleCredentials
 from pennychat.models import (
@@ -89,7 +90,7 @@ def penny_chat_details_modal(penny_chat_invitation):
         },
         'submit': {
             'type': 'plain_text',
-            'text': 'Submit :floppy_disk:',
+            'text': 'Share Invite :the_horns:',
         },
         'blocks': [
             {
@@ -424,8 +425,13 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.save()
 
     def add_google_meet(self, penny_chat_invitation):
-        user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
-        google_credentials = GoogleCredentials.objects.get(user=user)
+        try:
+            user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
+            google_credentials = GoogleCredentials.objects.get(user=user)
+        except SlackApiError:
+            return None
+        except GoogleCredentials.DoesNotExist:
+            return None
         credentials = build_credentials(google_credentials)
         calendar = GoogleCalendar(credentials=credentials)
 
@@ -461,15 +467,10 @@ class PennyChatBotModule(BotModule):
 
         penny_chat_invitation.save_organizer_from_slack_id(penny_chat_invitation.organizer_slack_id)
 
-        user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
-
-        if user.google_credentials is None:
-            update_modal = add_google_integration_modal(view['id'])
-            response = self.slack_client.views_push(view=update_modal, trigger_id=event['trigger_id'])
-
         if not penny_chat_invitation.video_conference_link:
             meet = self.add_google_meet(penny_chat_invitation)
-            penny_chat_invitation.video_conference_link = meet['hangoutLink']
+            if meet is not None:
+                penny_chat_invitation.video_conference_link = meet['hangoutLink']
 
         # Ready to share
         penny_chat_invitation.status = PennyChatSlackInvitation.SHARED
