@@ -1,7 +1,6 @@
 import pytest
 
 from rest_framework.test import APIClient
-from unittest.mock import call
 
 
 @pytest.mark.django_db
@@ -89,7 +88,7 @@ def test_penny_chat_update_and_submit(mocker):
         # Note: the following only works if pytest runs with TASK_ALWAYS_EAGER=TRUE
         assert "(channel='U017BP48MA6'" in chat_postMessage_args, 'Are we inviting all the expected people? individual users, organizer, channel; also is TASK_ALWAYS_EAGER==True?'  # noqa
         assert "*deadbender* invited you to a new Penny Chat" in chat_postMessage_args, 'Are we telling them who is the organizer?'  # noqa
-        assert "'text': '*Title*\\nTest Title'" in chat_postMessage_args, 'Are we telling them the title of the chat?'
+        assert "'text': '*Title*\\nTest Title" in chat_postMessage_args, 'Are we telling them the title of the chat?'
         assert "'text': '*Description*\\nTest Description" in chat_postMessage_args, 'Are we describing the chat?'
         assert "'text': '*Date and Time*" in chat_postMessage_args, 'Are we telling them the time?'  # noqa
         assert "You just shared this invitation with:* deadbender and <#C018QN5BKHT>" in chat_postMessage_args, 'Are we telling the organizer who we shared the event with?'  # noqa
