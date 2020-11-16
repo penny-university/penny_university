@@ -15,34 +15,34 @@ REQUEST_MATCHES = 'request_matches'
 def request_match_blocks(channel_id):
     blocks = [
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"Hey folks! <#{channel_id}> has been set up as a topic channel. Every couple of weeks, "
-                        f"I (the Penny Bot) will set you up with other users to chat about <#{channel_id}>.",
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'Hey folks! <#{channel_id}> has been set up as a topic channel. Every couple of weeks, '
+                        f'I (the Penny Bot) will set you up with other users to chat about <#{channel_id}>.',
             }
         },
         {
-            "type": "section",
-            "text": {
-                "type": "plain_text",
-                "text": "If you're interested in having a virtual chat with another member of this channel next week, "
-                        "click the button below!",
-                "emoji": True,
+            'type': 'section',
+            'text': {
+                'type': 'plain_text',
+                'text': 'If you\'re interested in having a virtual chat with another member of this channel next week, '
+                        'click the button below!',
+                'emoji': True,
             }
         },
         {
-            "type": "actions",
-            "elements": [
+            'type': 'actions',
+            'elements': [
                 {
-                    "type": "button",
-                    "action_id": REQUEST_MATCHES,
-                    "text": {
-                        "type": "plain_text",
-                        "text": "I'm in! :handshake:",
-                        "emoji": True,
+                    'type': 'button',
+                    'action_id': REQUEST_MATCHES,
+                    'text': {
+                        'type': 'plain_text',
+                        'text': 'I\'m in! :handshake:',
+                        'emoji': True,
                     },
-                    "style": "primary",
+                    'style': 'primary',
                 }
             ]
         }
@@ -54,10 +54,10 @@ def request_match_blocks(channel_id):
 def confirm_match_request(channel_id):
     blocks = [
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"Awesome, we will match you with other users in <#{channel_id}> soon!",
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': f'Awesome, we will match you with other users in <#{channel_id}> soon!',
             }
         }
     ]
@@ -65,36 +65,37 @@ def confirm_match_request(channel_id):
     return blocks
 
 
-def create_match_blocks(topic_channel_id, conversation_id):
+def create_match_blocks(topic_channel_id, conversation_id, reminder=False):
+    if reminder:
+        message = f'''Hey! Were you all able to meet for the <#{topic_channel_id}> discussion?
+
+If not, there\'s still time. Just click the button below when you\'re ready to set up the Penny Chat.'''
+    else:
+        message = f'''Yahoo, you\'ve been matched for a conversation about <#{topic_channel_id}>!
+
+Work together to find a time to meet and chat. Once you do, click the button below to schedule a Penny Chat.'''
+
     blocks = [
         {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"Yahoo, you've been matched for a conversation about <#{topic_channel_id}>!",
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': message,
             }
         },
         {
-            "type": "section",
-            "text": {
-                "type": "plain_text",
-                "text": "Work together to find a time to meet and chat. Once you do, "
-                        "click the button below to schedule a Penny Chat.",
-            }
-        },
-        {
-            "type": "actions",
-            "elements": [
+            'type': 'actions',
+            'elements': [
                 {
-                    "type": "button",
-                    "action_id": PENNY_CHAT_SCHEDULE_MATCH,
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Schedule Chat :calendar:",
-                        "emoji": True,
+                    'type': 'button',
+                    'action_id': PENNY_CHAT_SCHEDULE_MATCH,
+                    'text': {
+                        'type': 'plain_text',
+                        'text': 'Schedule Chat :calendar:',
+                        'emoji': True,
                     },
-                    "value": conversation_id,
-                    "style": "primary",
+                    'value': conversation_id,
+                    'style': 'primary',
                 }
             ]
         }

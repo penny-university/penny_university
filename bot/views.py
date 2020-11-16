@@ -12,6 +12,7 @@ from bot.processors.greeting import GreetingBotModule
 from bot.processors.pennychat import PennyChatBotModule
 from bot.processors.matchmaking import MatchMakingBotModule
 from bot.processors.base import Bot
+from bot.utils import chat_postEphemeral_with_fallback
 from common.utils import get_slack_client
 
 slack_client = get_slack_client()
@@ -65,7 +66,7 @@ def command(request):
     command = event['text'].split(' ', 1)[0]
     if command == 'chat':
         PennyChatBotModule.create_penny_chat(slack_client, event)
-    if command == 'set-topic':
+    elif command == 'set-topic':
         MatchMakingBotModule.set_topic_channel(slack_client, event)
     else:
         blocks = [
@@ -78,6 +79,11 @@ def command(request):
                 }
             }
         ]
-        slack_client.chat_postEphemeral(channel=event['channel_id'], user=event['user_id'], blocks=blocks)
+        chat_postEphemeral_with_fallback(
+            slack_client,
+            channel=event['channel_id'],
+            user=event['user_id'],
+            blocks=blocks,
+        )
 
     return HttpResponse('')
