@@ -20,6 +20,7 @@ import { Routes } from './constants'
 import { User } from './models'
 import PasswordResetPage from './pages/PasswordReset';
 import config from './config'
+import GoogleIntegrationPage from './pages/GoogleIntegration';
 
 type StateProps = {
   user: User,
@@ -47,8 +48,9 @@ const App = (props: Props) => {
         <Switch>
           <Route path={Routes.ChatDetail} component={ChatDetailPage} />
           <Route path={Routes.Chats} component={ChatsPage} />
-          <Route path={Routes.VerifyEmail} component={VerifyPage} />
           <Route path={Routes.Profile} component={ProfilePage} />
+          <Route path={Routes.GoogleIntegration} component={GoogleIntegrationPage} />
+          <Route path={Routes.VerifyEmail} component={VerifyPage} />
           <Route path={Routes.ResetPassword} component={PasswordResetPage} />
           <Route path={Routes.Home}>
             <Redirect to={Routes.Chats} />

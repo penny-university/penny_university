@@ -9,6 +9,8 @@ from pytz import timezone, utc
 from sentry_sdk import capture_exception
 
 from common.utils import get_slack_client
+from integrations.google import build_credentials, get_authorization_url, GoogleCalendar
+from integrations.models import GoogleCredentials
 from pennychat.models import PennyChatSlackInvitation, Participant
 from users.models import (
     SocialProfile,
@@ -18,6 +20,7 @@ from users.models import (
 VIEW_SUBMISSION = 'view_submission'
 VIEW_CLOSED = 'view_closed'
 
+ADD_GOOGLE_INTEGRATION = 'add_google_integration'
 PENNY_CHAT_DATE = 'penny_chat_date'
 PENNY_CHAT_TIME = 'penny_chat_time'
 PENNY_CHAT_USER_SELECT = 'penny_chat_user_select'
@@ -30,7 +33,6 @@ PENNY_CHAT_CAN_NOT_ATTEND = 'penny_chat_can_not_attend'
 GO_TO_FOLLOWUP = 'go_to_followup'
 
 PENNY_CHAT_ID = 'penny_chat_id'
-
 
 PREVIEW, INVITE, UPDATE, REMIND = 'review', 'invite', 'update', 'remind'
 PENNY_CHAT_DETAILS_BLOCKS_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
@@ -62,6 +64,34 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
         channel=penny_chat_invitation.organizer_slack_id,
         blocks=organizer_edit_after_share_blocks(slack_client, penny_chat_invitation),
     )
+
+
+@background
+def add_google_meet(penny_chat_id):
+    penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
+    user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
+    try:
+        google_credentials = GoogleCredentials.objects.get(user=user)
+    except GoogleCredentials.DoesNotExist:
+        slack_client = get_slack_client()
+        authorization_url = get_authorization_url(user)
+        slack_client.chat_postMessage(
+            channel=penny_chat_invitation.organizer_slack_id,
+            blocks=add_google_integration_blocks(authorization_url, from_penny_chat=True),
+        )
+        return
+
+    credentials = build_credentials(google_credentials)
+    calendar = GoogleCalendar(credentials=credentials)
+
+    meet = calendar.create_event(
+        summary=penny_chat_invitation.title,
+        description=penny_chat_invitation.description,
+        start=penny_chat_invitation.date
+    )
+
+    penny_chat_invitation.video_conference_link = meet['hangoutLink']
+    penny_chat_invitation.save()
 
 
 @background
@@ -230,9 +260,9 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
         description = f'{penny_chat_invitation.description} [Video Link]({penny_chat_invitation.video_conference_link})'
         google_cal_url = 'https://calendar.google.com/calendar/render?' \
                          'action=TEMPLATE&text=' \
-            f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
-            f'{start_date}/{end_date}&details=' \
-            f'{urllib.parse.quote(description)}'
+                         f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
+                         f'{start_date}/{end_date}&details=' \
+                         f'{urllib.parse.quote(description)}'
 
         date_time_block['accessory'] = {
             'type': 'button',
@@ -277,7 +307,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
                 'type': 'section',
                 'text': {
                     'type': 'mrkdwn',
-                    'text': f'*Video Call Link*'
+                    'text': '*Video Call Link*'
                 }
             }
         )
@@ -287,7 +317,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
                     'type': 'section',
                     'text': {
                         'type': 'mrkdwn',
-                        'text': f'A video link will be provided shortly before the chat starts'
+                        'text': 'A video link will be provided shortly before the chat starts'
                     }
                 }
             )
@@ -300,7 +330,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
                             'type': 'button',
                             'text': {
                                 'type': 'plain_text',
-                                'text': 'Join Video Call :call_me_hand:',
+                                'text': ':call_me_hand: Join Video Call',
                                 'emoji': True,
                             },
                             'url': penny_chat_invitation.video_conference_link,
@@ -449,8 +479,9 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
             'text': {
                 'type': 'mrkdwn',
                 'text': f'*:point_up: You just shared this invitation with:* {share_string}. '
-                    'We will notify you as invitees respond.\n\n'
-                    'In the meantime if you need to update the event, click the button below.'
+                        'We will notify you as invitees respond.\n\n'
+                        'In the meantime if you need to update the event, click the button below.\n\n'
+                        '*If you have enabled Google Calendar, a video link will be provided automatically.*'
             }
         },
         {
@@ -460,7 +491,7 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
                     'type': 'button',
                     'text': {
                         'type': 'plain_text',
-                        'text': 'Edit Details :pencil2:',
+                        'text': ':pencil2: Edit Details',
                         'emoji': True,
                     },
                     # TODO should this be a helper function?
@@ -474,3 +505,56 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
     ]
 
     return shared_message_preview_blocks
+
+
+def missing_google_auth_blocks():
+    blocks = [
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Awesome, it looks like you just shared a Penny Chat!'
+            }
+        },
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'If you want to make the Penny Chat experience even better, consider adding our Google Calendar integration so that we can automatically add video conference links to your Penny Chat.'  # noqa
+            }
+        },
+    ]
+
+    return blocks
+
+
+def add_google_integration_blocks(authorization_url, from_penny_chat=False):
+    pre_add_button_blocks = missing_google_auth_blocks() if from_penny_chat else None
+    blocks = pre_add_button_blocks + [
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Click the button below to activate the Google Calendar integration.'
+            }
+        },
+        {
+            'type': 'actions',
+            'elements': [
+                {
+                    'type': 'button',
+                    'text': {
+                        'type': 'plain_text',
+                        'text': 'Add Google Integration',
+                        'emoji': True
+                    },
+                    'value': 'add_integration',
+                    'style': 'primary',
+                    'url': authorization_url,
+                    'action_id': ADD_GOOGLE_INTEGRATION
+                },
+            ]
+        },
+    ]
+
+    return blocks

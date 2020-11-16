@@ -22,6 +22,7 @@ export const Routes = {
   Chats: '/chats',
   ChatDetail: '/chats/:id',
   Home: '/',
+  GoogleIntegration: '/google-integration',
   ResetPassword: '/reset-password',
   VerifyEmail: '/verify',
 }

@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('token', models.TextField()),
                 ('refresh_token', models.TextField()),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='google_credentials', to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='google_credentials', to=settings.AUTH_USER_MODEL)),  # noqa
             ],
         ),
         migrations.CreateModel(
@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('scope', models.TextField()),
-                ('credentials', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='scopes', to='integrations.GoogleCredentials')),
+                ('credentials', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='scopes', to='integrations.GoogleCredentials')),  # noqa
             ],
         ),
     ]
