@@ -1,3 +1,5 @@
+import functools
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -135,6 +137,7 @@ def update_social_profile_from_slack_user(slack_user):
     return profile, created
 
 
+@functools.lru_cache()  # memoizes the function
 def get_or_create_social_profile_from_slack_id(slack_user_id, slack_client=None, ignore_user_not_found=True):
     return get_or_create_social_profile_from_slack_ids(
         [slack_user_id],

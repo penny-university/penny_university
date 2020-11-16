@@ -7,6 +7,7 @@ from background_task import background as original_background
 from django.conf import settings
 from pytz import timezone, utc
 from sentry_sdk import capture_exception
+from slack.errors import SlackApiError
 
 from common.utils import get_slack_client
 from integrations.google import build_credentials, get_authorization_url, GoogleCalendar
@@ -68,17 +69,20 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
 
 @background
 def add_google_meet(penny_chat_id):
+    slack_client = get_slack_client()
     penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
-    user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
+    user = None
     try:
+        user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
         google_credentials = GoogleCredentials.objects.get(user=user)
     except GoogleCredentials.DoesNotExist:
-        slack_client = get_slack_client()
         authorization_url = get_authorization_url(user)
         slack_client.chat_postMessage(
             channel=penny_chat_invitation.organizer_slack_id,
             blocks=add_google_integration_blocks(authorization_url, from_penny_chat=True),
         )
+        return
+    except SlackApiError:
         return
 
     credentials = build_credentials(google_credentials)
