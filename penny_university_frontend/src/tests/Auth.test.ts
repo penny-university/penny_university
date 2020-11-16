@@ -2,7 +2,6 @@ import fetchMock from 'fetch-mock'
 import {
   bootstrap, dispatchLogout, Actions,
 } from '../actions/user'
-import { ChatActions } from '../actions'
 import ApiRoutes from '../constants'
 import { makeMockStore, baseUrl } from './config'
 import { chats } from './data'

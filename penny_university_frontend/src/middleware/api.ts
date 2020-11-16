@@ -2,7 +2,6 @@ import {
   MiddlewareAPI, Dispatch, Middleware, AnyAction,
 } from 'redux'
 import { camelizeKeys, decamelizeKeys } from 'humps'
-import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
 import { CookieHelper } from '../helpers'
 

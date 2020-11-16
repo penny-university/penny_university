@@ -7,10 +7,9 @@ import * as Sentry from '@sentry/browser'
 import {
   setToken, fetchUser, Actions, logoutRequest,
 } from '../actions/user'
-import { loadChatsList } from '../actions/chat'
 import CookieHelper from '../helpers/cookie'
 import modalDispatch from '../components/modal/dispatch'
-import ApiRoutes, { Routes } from '../constants'
+import { Routes } from '../constants'
 
 const logout = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
   CookieHelper.clearCookies()
