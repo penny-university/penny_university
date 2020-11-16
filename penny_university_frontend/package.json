@@ -46,6 +46,7 @@
     "react-scripts": "^3.3.0",
     "reactstrap": "^8.4.1",
     "redux": "^4.0.4",
+    "redux-devtools-extension": "^2.13.8",
     "redux-mock-store": "^1.5.4",
     "redux-thunk": "^2.3.0",
     "typescript": "^3.8.3"
