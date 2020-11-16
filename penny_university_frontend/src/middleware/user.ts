@@ -35,7 +35,6 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       break
     case Actions.BOOTSTRAP:
       checkAuth(store.dispatch)
-      // store.dispatch(loadChatsList(ApiRoutes.chats))
       break
     case Actions.SIGNUP_SUCCESS:
       modalDispatch.verifyEmail(action.payload.meta.email)
@@ -49,7 +48,6 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
     case Actions.FETCH_USER_SUCCESS:
       // Load data
       const pk = action.payload.result.pk.toString() // eslint-disable-line no-case-declarations
-      // store.dispatch(loadChatsList(ApiRoutes.userChats(pk), pk))
       Sentry.configureScope((scope) => {
         scope.setUser({ id: pk })
       })
