@@ -44,7 +44,9 @@ export const AuthPasswordModal = ({ email, login, requestPasswordReset }: AuthPa
         </Form>
       </ModalBody>
       <ModalFooter>
-        <Button id="forgot-password" color="link" onClick={() => { requestPasswordReset({ email }) }}>Forgot password?</Button>
+        <Button id="forgot-password" color="link" onClick={() => { requestPasswordReset({ email }) }}>
+          Forgot password?
+        </Button>
       </ModalFooter>
     </>
   )
