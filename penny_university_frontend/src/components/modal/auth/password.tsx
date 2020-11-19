@@ -17,7 +17,7 @@ type AuthPasswordModalProps = {
   requestPasswordReset: (payload: {email: string}) => void,
 }
 
-const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
+export const AuthPasswordModal = ({ email, login, requestPasswordReset }: AuthPasswordModalProps) => {
   const [password, setPassword] = useState('')
   return (
     <>
@@ -44,7 +44,9 @@ const AuthPasswordModal = ({ email, login }: AuthPasswordModalProps) => {
         </Form>
       </ModalBody>
       <ModalFooter>
-        <Button color="link" onClick={() => { requestPasswordReset({ email }) }}>Forgot password?</Button>
+        <Button id="forgot-password" color="link" onClick={() => { requestPasswordReset({ email }) }}>
+          Forgot password?
+        </Button>
       </ModalFooter>
     </>
   )
