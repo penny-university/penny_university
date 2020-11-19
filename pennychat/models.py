@@ -35,6 +35,7 @@ class PennyChat(models.Model):
     created_from_slack_team_id = models.CharField(max_length=20, null=True)
     visibility = models.IntegerField(choices=VISIBILITY_CHOICES, default=PUBLIC)
     video_conference_link = models.TextField(null=True)
+    google_event_id = models.TextField(null=True)
 
     # meta
     created = models.DateTimeField(auto_now_add=True)

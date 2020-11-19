@@ -7,7 +7,6 @@ from background_task import background as original_background
 from django.conf import settings
 from pytz import timezone, utc
 from sentry_sdk import capture_exception
-from slack.errors import SlackApiError
 
 from common.utils import get_slack_client
 from integrations.google import build_credentials, get_authorization_url, GoogleCalendar
@@ -67,26 +66,31 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
     )
 
 
-@background
-def add_google_meet(penny_chat_id):
-    slack_client = get_slack_client()
-    penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
-    user = None
+def get_user_google_calendar_from_slack_id(slack_id):
+    user = get_or_create_social_profile_from_slack_id(slack_id).user
     try:
-        user = get_or_create_social_profile_from_slack_id(penny_chat_invitation.organizer_slack_id).user
         google_credentials = GoogleCredentials.objects.get(user=user)
     except GoogleCredentials.DoesNotExist:
         authorization_url = get_authorization_url(user)
+        slack_client = get_slack_client()
         slack_client.chat_postMessage(
-            channel=penny_chat_invitation.organizer_slack_id,
+            channel=slack_id,
             blocks=add_google_integration_blocks(authorization_url, from_penny_chat=True),
         )
         return
-    except SlackApiError:
-        return
 
     credentials = build_credentials(google_credentials)
-    calendar = GoogleCalendar(credentials=credentials)
+    return GoogleCalendar(credentials=credentials)
+
+
+@background
+def add_google_meet(penny_chat_id):
+    penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
+
+    calendar = get_user_google_calendar_from_slack_id(penny_chat_invitation.organizer_slack_id)
+
+    if calendar is None:
+        return
 
     meet = calendar.create_event(
         summary=penny_chat_invitation.title,
@@ -94,8 +98,23 @@ def add_google_meet(penny_chat_id):
         start=penny_chat_invitation.date
     )
 
-    penny_chat_invitation.video_conference_link = meet['hangoutLink']
+    penny_chat_invitation.video_conference_link = meet.get('hangoutLink')
+    penny_chat_invitation.google_event_id = meet.get('id')
     penny_chat_invitation.save()
+
+
+@background
+def update_google_meet(penny_chat_id):
+    penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
+
+    calendar = get_user_google_calendar_from_slack_id(penny_chat_invitation.organizer_slack_id)
+
+    calendar.update_event(
+        event_id=penny_chat_invitation.google_event_id,
+        summary=penny_chat_invitation.title,
+        description=penny_chat_invitation.description,
+        start=penny_chat_invitation.date
+    )
 
 
 @background
@@ -261,7 +280,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
         start_date = penny_chat_invitation.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
         end_date = (penny_chat_invitation.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
 
-        description = f'{penny_chat_invitation.description} [Video Link]({penny_chat_invitation.video_conference_link})'
+        description = f'{penny_chat_invitation.description}\nVideo Link: {penny_chat_invitation.video_conference_link}'
         google_cal_url = 'https://calendar.google.com/calendar/render?' \
                          'action=TEMPLATE&text=' \
                          f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
@@ -306,27 +325,25 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     ]
 
     if penny_chat_invitation.video_conference_link:
-        body.append(
-            {
-                'type': 'section',
-                'text': {
-                    'type': 'mrkdwn',
-                    'text': '*Video Call Link*'
-                }
-            }
-        )
         if mode in {PREVIEW, INVITE, UPDATE}:
             body.append(
                 {
                     'type': 'section',
                     'text': {
                         'type': 'mrkdwn',
-                        'text': 'A video link will be provided shortly before the chat starts'
+                        'text': '_(A video link will be provided shortly before the chat starts)_'
                     }
                 }
             )
         elif mode in {REMIND}:
-            body.append(
+            body += [
+                {
+                    'type': 'section',
+                    'text': {
+                        'type': 'mrkdwn',
+                        'text': '*Video Call Link*'
+                    }
+                },
                 {
                     'type': 'actions',
                     'elements': [
@@ -342,7 +359,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
                         }
                     ]
                 }
-            )
+            ]
 
     if include_rsvp:
         body.append(
@@ -533,7 +550,7 @@ def missing_google_auth_blocks():
 
 
 def add_google_integration_blocks(authorization_url, from_penny_chat=False):
-    pre_add_button_blocks = missing_google_auth_blocks() if from_penny_chat else None
+    pre_add_button_blocks = missing_google_auth_blocks() if from_penny_chat else []
     blocks = pre_add_button_blocks + [
         {
             'type': 'section',

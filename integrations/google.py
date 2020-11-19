@@ -6,7 +6,6 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from google.oauth2.credentials import Credentials
 
 from django.conf import settings
@@ -16,10 +15,7 @@ class GoogleCalendar:
     def __init__(self, credentials, calendar_id='primary'):
         self.service = build('calendar', 'v3', credentials=credentials)
         self.calendar_id = calendar_id
-
-    @property
-    def events(self):
-        return self.service.events()
+        self.events = self.service.events()
 
     def add_conference_call_to_event(self, event_id):
         event_patch = {
@@ -39,7 +35,8 @@ class GoogleCalendar:
         # Fetch updated event and return it
         return self.events.get(calendarId=self.calendar_id, eventId=event_id).execute()
 
-    def create_event(self, summary, description, start, end=None, with_meet=True):
+    @staticmethod
+    def build_event_data(summary, description, start, end):
         if not end:
             end = start + timedelta(hours=1)
         data = {
@@ -52,15 +49,20 @@ class GoogleCalendar:
                 'dateTime': end.isoformat(),
             }
         }
-        try:
-            event_data = self.events.insert(calendarId='primary', body=data).execute()
+        return data
 
-            if with_meet:
-                event_data = self.add_conference_call_to_event(event_id=event_data['id'])
-        except HttpError as e:
-            print(e)
+    def create_event(self, summary, description, start, end=None, with_meet=True):
+        data = GoogleCalendar.build_event_data(summary, description, start, end)
+        event_data = self.events.insert(calendarId='primary', body=data).execute()
+
+        if with_meet:
+            event_data = self.add_conference_call_to_event(event_id=event_data['id'])
 
         return event_data
+
+    def update_event(self, event_id, summary, description, start, end=None):
+        data = GoogleCalendar.build_event_data(summary, description, start, end)
+        self.events.patch(calendarId='primary', eventId=event_id, body=data).execute()
 
 
 def get_google_flow():

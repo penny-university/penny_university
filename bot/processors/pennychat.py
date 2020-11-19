@@ -9,7 +9,7 @@ from bot.tasks import (
     post_organizer_edit_after_share_blocks,
     share_penny_chat_invitation,
     add_google_meet,
-    add_google_integration_blocks,
+    add_google_integration_blocks, update_google_meet,
 )
 from bot.utils import chat_postEphemeral_with_fallback
 from integrations.google import get_authorization_url
@@ -424,6 +424,8 @@ class PennyChatBotModule(BotModule):
 
         if not penny_chat_invitation.video_conference_link:
             add_google_meet(penny_chat_invitation.id)
+        else:
+            update_google_meet(penny_chat_invitation.id)
         share_penny_chat_invitation(penny_chat_invitation.id)
 
     @is_block_interaction_event
