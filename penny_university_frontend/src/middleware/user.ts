@@ -7,9 +7,10 @@ import * as Sentry from '@sentry/browser'
 import {
   setToken, fetchUser, Actions, logoutRequest,
 } from '../actions/user'
+import { loadChatsList } from '../actions/chat'
 import CookieHelper from '../helpers/cookie'
 import modalDispatch from '../components/modal/dispatch'
-import { Routes } from '../constants'
+import ApiRoutes, { Routes } from '../constants'
 
 const logout = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => {
   CookieHelper.clearCookies()
@@ -35,6 +36,7 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
       break
     case Actions.BOOTSTRAP:
       checkAuth(store.dispatch)
+      store.dispatch(loadChatsList(ApiRoutes.chats))
       break
     case Actions.SIGNUP_SUCCESS:
       modalDispatch.verifyEmail(action.payload.meta.email)
@@ -48,6 +50,7 @@ const user : Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: An
     case Actions.FETCH_USER_SUCCESS:
       // Load data
       const pk = action.payload.result.pk.toString() // eslint-disable-line no-case-declarations
+      store.dispatch(loadChatsList(ApiRoutes.userChats(pk), pk))
       Sentry.configureScope((scope) => {
         scope.setUser({ id: pk })
       })
