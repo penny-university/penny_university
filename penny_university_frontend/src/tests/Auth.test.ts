@@ -15,7 +15,7 @@ describe('auth flow', () => {
     fetchMock.restore()
   })
 
-  it('should only fetch chats if token doesnt exist', () => {
+  it('should not fetch chats during BOOTSTRAP', () => {
     document.cookie = ''
     const store = makeMockStore()
 
