@@ -1,9 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from bot.tasks.pennychat import background
-from common.utils import get_slack_client
-from matchmaking.models import TopicChannel
-from bot.processors.matchmaking import request_match_blocks
+from matchmaking.tasks import request_matches
 
 
 class Command(BaseCommand):
@@ -28,19 +25,4 @@ class Command(BaseCommand):
         channels_string = options['topic_channels']
         slack_team = options['slack_team']
 
-        self.request_matches(channels_string, slack_team).now() ???
-
-    @background
-    def request_matches(self, channels_string, slack_team):
-        if channels_string == '*':
-            topic_channels = TopicChannel.objects.all()
-        else:
-            topic_channels = TopicChannel.objects.filter(name__in=channels_string.split())
-        if slack_team is not None:
-            topic_channels = topic_channels.filter(slack_team_id=slack_team)
-        if len(topic_channels) == 0:
-            raise Exception('No topic channels found for provided arguments')
-        slack_client = get_slack_client()
-        for channel in topic_channels:
-            blocks = request_match_blocks(channel.channel_id)
-            slack_client.chat_postMessage(channel=channel.channel_id, blocks=blocks)
+        request_matches.now(slack_team, channels_string)
