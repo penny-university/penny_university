@@ -9,7 +9,8 @@ from bot.tasks import (
     post_organizer_edit_after_share_blocks,
     share_penny_chat_invitation,
     add_google_meet,
-    add_google_integration_blocks, update_google_meet,
+    add_google_integration_blocks,
+    update_google_meet,
 )
 from bot.utils import chat_postEphemeral_with_fallback
 from integrations.google import get_authorization_url

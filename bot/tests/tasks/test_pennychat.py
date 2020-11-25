@@ -13,10 +13,12 @@ from bot.tasks.pennychat import (
     post_organizer_edit_after_share_blocks,
     _penny_chat_details_blocks,
     _followup_reminder_blocks,
+    add_google_integration_blocks,
     organizer_edit_after_share_blocks,
     send_penny_chat_reminders_and_mark_chat_as_reminded,
     send_followup_reminder_and_mark_chat_as_completed,
 )
+from common.tests.fakes import PennyChatSlackInvitationFactory, SocialProfileFactory
 from pennychat.models import PennyChatSlackInvitation, Participant
 from users.models import User, SocialProfile
 
@@ -391,6 +393,7 @@ def test_penny_chat_details_blocks(mocker):
         date=datetime(1979, 10, 12, 1, 1, 1, tzinfo=utc),
         organizer_slack_id=organizer_slack_id,
         created_from_slack_team_id=SLACK_TEAM_ID,
+        video_conference_link='http://meet.google.com/fake'
     )
     organizer = SocialProfile(slack_id=organizer_slack_id, real_name='John Berryman', slack_team_id=SLACK_TEAM_ID)
 
@@ -406,6 +409,7 @@ def test_penny_chat_details_blocks(mocker):
     assert 'Count me in' not in preview_blocks, 'should not be there when include_rsvp is False'
     assert 'I can\'t make it' not in preview_blocks, 'should not be there when include_rsvp is False'
     assert 'calendar.google.com' in preview_blocks, 'should have calendar link when include_calendar_link is True'
+    assert '_(A video link will be provided shortly before the chat starts)_' in preview_blocks
 
     assert '*John Berryman* invited you to a new Penny Chat' in invite_blocks, 'wrong header_text'
     assert '*Title*\\nChat 1' in invite_blocks
@@ -413,6 +417,7 @@ def test_penny_chat_details_blocks(mocker):
     assert 'Count me in' in invite_blocks, 'should be there when include_rsvp is True'
     assert 'I can\'t make it' in invite_blocks, 'should be there when include_rsvp is True'
     assert 'calendar.google.com' in invite_blocks, 'should have calendar link when include_calendar_link is True'
+    assert '_(A video link will be provided shortly before the chat starts)_' in invite_blocks
 
     assert '*John Berryman* has updated their Penny Chat' in update_blocks, 'wrong header_text'
     assert '*Title*\\nChat 1' in update_blocks
@@ -420,11 +425,13 @@ def test_penny_chat_details_blocks(mocker):
     assert 'Count me in' in update_blocks, 'should be there when include_rsvp is True'
     assert 'I can\'t make it' in update_blocks, 'should be there when include_rsvp is True'
     assert 'calendar.google.com' in update_blocks, 'should have calendar link when include_calendar_link is True'
+    assert '_(A video link will be provided shortly before the chat starts)_' in invite_blocks
 
     assert '*John Berryman\'s* Penny Chat is coming up soon! We hope you can still make it' in remind_blocks, \
         'wrong header_text'
     assert '*Title*\\nChat 1' in remind_blocks
     assert '*Description*\\nsome_description' in remind_blocks
+    assert 'http://meet.google.com/fake' in remind_blocks, 'should include button on reminder'
     assert 'Count me in' not in remind_blocks, 'should not be there when include_rsvp is False'
     assert 'I can\'t make it' not in remind_blocks, 'should not be there when include_rsvp is False'
     assert 'calendar.google.com'not in remind_blocks, 'should not have calendar link when include_calendar_link is False'
@@ -493,3 +500,53 @@ def test_followup_reminder_blocks(mocker):
 
     assert 'John Berryman\\\'s Penny Chat *"Chat 1"* has completed.' in reminder_blocks
     assert "'url': 'https://www.pennyuniversity.org/chats/123'" in reminder_blocks
+
+
+@pytest.mark.django_db
+def test_add_google_meet(mocker):
+    calendar = mocker.Mock()
+
+    response = {
+        'id': 'fake_id',
+        'hangoutLink': 'http://meet.google.com/fake',
+    }
+
+    calendar.configure_mock(**{'create_event.return_value': response})
+
+    penny_chat = PennyChatSlackInvitationFactory()
+
+    with mocker.patch('bot.tasks.pennychat.get_user_google_calendar_from_slack_id', return_value=calendar):
+        pennychat_constants.add_google_meet(penny_chat.id)
+
+    penny_chat.refresh_from_db()
+    assert penny_chat.video_conference_link == 'http://meet.google.com/fake'
+    assert penny_chat.google_event_id == 'fake_id'
+
+
+def test_add_google_integration_blocks():
+    authorization_url = 'http://googleauth.test'
+    blocks_from_chat = str(add_google_integration_blocks(authorization_url, from_penny_chat=True))
+
+    assert 'Awesome, it looks like you just shared a Penny Chat!' in blocks_from_chat
+    assert authorization_url in blocks_from_chat
+
+    blocks_not_from_chat = str(add_google_integration_blocks(authorization_url, from_penny_chat=False))
+    assert 'Awesome, it looks like you just shared a Penny Chat!' not in blocks_not_from_chat
+    assert authorization_url in blocks_not_from_chat
+
+
+@pytest.mark.django_db
+def test_send_google_integration_message_if_does_not_exist(mocker):
+    profile = SocialProfileFactory()
+    slack_client = mocker.Mock()
+    get_slack_client = mocker.patch('bot.tasks.pennychat.get_slack_client', return_value=slack_client)
+    authorization_url = 'http://googleauth.test'
+    get_authorization_url = mocker.patch('bot.tasks.pennychat.get_authorization_url', return_value=authorization_url)
+
+    with _make_get_or_create_social_profile_from_slack_id_mocks(mocker, 'bot.tasks.pennychat', [profile]), \
+         get_slack_client, get_authorization_url:
+        pennychat_constants.get_user_google_calendar_from_slack_id(profile.slack_id)
+
+    add_integration_blocks = add_google_integration_blocks(authorization_url, from_penny_chat=True)
+
+    assert slack_client.chat_postMessage.call_args == call(blocks=add_integration_blocks, channel=profile.slack_id)

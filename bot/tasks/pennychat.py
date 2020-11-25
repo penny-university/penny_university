@@ -109,6 +109,9 @@ def update_google_meet(penny_chat_id):
 
     calendar = get_user_google_calendar_from_slack_id(penny_chat_invitation.organizer_slack_id)
 
+    if calendar is None:
+        return
+
     calendar.update_event(
         event_id=penny_chat_invitation.google_event_id,
         summary=penny_chat_invitation.title,
@@ -277,25 +280,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     }
 
     if include_calendar_link:
-        start_date = penny_chat_invitation.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
-        end_date = (penny_chat_invitation.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
-
-        description = f'{penny_chat_invitation.description}\nVideo Link: {penny_chat_invitation.video_conference_link}'
-        google_cal_url = 'https://calendar.google.com/calendar/render?' \
-                         'action=TEMPLATE&text=' \
-                         f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
-                         f'{start_date}/{end_date}&details=' \
-                         f'{urllib.parse.quote(description)}'
-
-        date_time_block['accessory'] = {
-            'type': 'button',
-            'text': {
-                'type': 'plain_text',
-                'text': 'Add to Google Calendar :calendar:',
-                'emoji': True
-            },
-            'url': google_cal_url
-        }
+        date_time_block['accessory'] = _google_calendar_link_block(penny_chat_invitation)
 
     body = [
         {
@@ -453,6 +438,26 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     return body
 
 
+def _google_calendar_link_block(penny_chat_invitation):
+    start_date = penny_chat_invitation.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
+    end_date = (penny_chat_invitation.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
+    description = f'{penny_chat_invitation.description}\nVideo Link: {penny_chat_invitation.video_conference_link}'
+    google_cal_url = 'https://calendar.google.com/calendar/render?' \
+                     'action=TEMPLATE&text=' \
+                     f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
+                     f'{start_date}/{end_date}&details=' \
+                     f'{urllib.parse.quote(description)}'
+    return {
+        'type': 'button',
+        'text': {
+            'type': 'plain_text',
+            'text': 'Add to Google Calendar :calendar:',
+            'emoji': True
+        },
+        'url': google_cal_url
+    }
+
+
 def _followup_reminder_blocks(penny_chat_invitation):
     organizer = get_or_create_social_profile_from_slack_id(
         penny_chat_invitation.organizer_slack_id,
@@ -528,7 +533,7 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
     return shared_message_preview_blocks
 
 
-def missing_google_auth_blocks():
+def _missing_google_auth_blocks():
     blocks = [
         {
             'type': 'section',
@@ -550,7 +555,7 @@ def missing_google_auth_blocks():
 
 
 def add_google_integration_blocks(authorization_url, from_penny_chat=False):
-    pre_add_button_blocks = missing_google_auth_blocks() if from_penny_chat else []
+    pre_add_button_blocks = _missing_google_auth_blocks() if from_penny_chat else []
     blocks = pre_add_button_blocks + [
         {
             'type': 'section',
