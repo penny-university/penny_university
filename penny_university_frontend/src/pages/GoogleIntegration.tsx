@@ -2,7 +2,7 @@ import React from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import queryString from 'query-string'
 import { Card, CardBody } from 'reactstrap';
-import {SlackButton} from "../components/buttons";
+import { SlackButton } from '../components/buttons';
 
 type PasswordResetPageProps = RouteComponentProps<{}>
 
