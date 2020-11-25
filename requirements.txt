@@ -10,6 +10,7 @@ google-api-python-client==1.12.4
 google-auth-httplib2==0.0.4
 google-auth-oauthlib==0.4.1
 gunicorn==19.9.0
+networkx==2.5
 python-dateutil==2.8.1
 requests==2.22.0
 sentry-sdk==0.14.4

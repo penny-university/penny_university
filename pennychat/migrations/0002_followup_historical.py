@@ -6,7 +6,7 @@ from django.db import migrations, models
 def set_historical(apps, schema_editor):
     # The chats were imported on June 24th, 2020
     FollowUp = apps.get_model('pennychat', 'FollowUp')
-    for follow_up in FollowUp.objects.filter(date__lte=datetime.date(2020, 6, 24)):
+    for follow_up in FollowUp.objects.filter(date__lte=datetime.datetime(2020, 6, 24, tzinfo=datetime.timezone.utc)):
         follow_up.historical = True
         follow_up.save()
 
