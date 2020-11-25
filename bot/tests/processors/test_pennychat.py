@@ -187,16 +187,17 @@ def test_PennyChatBotModule_share(mocker):
     post_organizer_edit_after_share_blocks = mocker.patch(
         'bot.processors.pennychat.post_organizer_edit_after_share_blocks'
     )
+    add_google_meet = mocker.patch('bot.processors.pennychat.add_google_meet')
 
     # The Actual Test (premature close)
-    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), post_organizer_edit_after_share_blocks:  # noqa
+    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), post_organizer_edit_after_share_blocks, add_google_meet:  # noqa
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_count == 0
 
     # The Actual Test (actual submission)
     event['type'] = penny_chat_constants.VIEW_SUBMISSION
-    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), post_organizer_edit_after_share_blocks:  # noqa
+    with mocker.patch('pennychat.models.get_or_create_social_profile_from_slack_id', side_effect=id_mock), post_organizer_edit_after_share_blocks, add_google_meet:  # noqa
         PennyChatBotModule(mocker.Mock()).submit_details_and_share(event)
 
     assert share_penny_chat_invitation.call_args == call(penny_chat_invitation.id)
