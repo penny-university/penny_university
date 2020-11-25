@@ -13,7 +13,7 @@ def test_make_matches(mocker):
             'id': 'FAKE123'
         }
     }
-    slack_client.configure_mock(**{'conversations_open.return_value': conversation})
+    slack_client.conversations_open.return_value = conversation
 
     profile1 = SocialProfileFactory()
     profile2 = SocialProfileFactory()
@@ -25,7 +25,8 @@ def test_make_matches(mocker):
         name='uno',
     )
 
-    make_matches(slack_client, [profile1, profile2, profile3], channel)
+    with mocker.patch('matchmaking.tasks.get_slack_client', return_value=slack_client):
+        make_matches(slack_client, [profile1.email, profile2.email, profile3.email], channel.name)
 
     expected_blocks = [
         {

@@ -37,8 +37,9 @@ def build_url(base, endpoint, **kwargs):
 
 
 def background(*args, **kwargs):
-    """Use this anywhere that you would used the backgroun_tasks @background decorator. In production it acts just like
-    normal, but when the TASK_ALWAYS_EAGER setting is True, the tasks will be run immediately.
+    """Use this anywhere that you would used the background_tasks @background decorator. In production it acts like
+    the underlying background decorator except that it can't take arguments. But when the TASK_ALWAYS_EAGER setting is
+    True, the tasks will be run immediately.
 
     I'm trying to get a change into the library here https://github.com/arteria/django-background-tasks/issues/234
     """
@@ -50,4 +51,3 @@ def background(*args, **kwargs):
         return func
     else:
         return original_background(*args, **kwargs)
-
