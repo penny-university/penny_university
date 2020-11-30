@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from matchmaking.tasks import request_matches
+from matchmaking.common import request_matches
 
 
 class Command(BaseCommand):
@@ -25,4 +25,4 @@ class Command(BaseCommand):
         channels_string = options['topic_channels']
         slack_team = options['slack_team']
 
-        request_matches.now(slack_team, channels_string)
+        request_matches.now(slack_team, channels_string.split())

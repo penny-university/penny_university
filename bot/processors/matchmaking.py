@@ -67,7 +67,7 @@ def confirm_match_request(channel_id):
 
 def create_match_blocks(topic_channel_id, conversation_id, reminder=False):
     if reminder:
-        message = f'''Hey! Were you all able to meet for the <#{topic_channel_id}> discussion?
+        message = f'''Hey! Were you able to meet for the <#{topic_channel_id}> discussion?
 
 If not, there\'s still time. Just click the button below when you\'re ready to set up the Penny Chat.'''
     else:

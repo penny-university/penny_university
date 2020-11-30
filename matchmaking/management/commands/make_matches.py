@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from matchmaking.tasks import make_matches
+from matchmaking.common import make_matches
 
 
 class Command(BaseCommand):
