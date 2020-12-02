@@ -16,7 +16,7 @@ type TParams = { id: string };
 type ChatsProps = DispatchProps & RouteComponentProps<TParams>
 
 const Chats = ({
-  loadChatsList, match,
+  loadChatsList,
 }: ChatsProps) => {
   useEffect(() => {
     loadChatsList(ApiRoutes.chats, 'all')
