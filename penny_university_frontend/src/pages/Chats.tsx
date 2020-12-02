@@ -8,12 +8,10 @@ import { loadChatsList } from '../actions/chat'
 import ApiRoutes from '../constants'
 
 type DispatchProps = {
-  loadChatsList: (nextPageUrl?: string, userID?: string) => void,
+  loadChatsList: (nextPageUrl?: string, filter?: string) => void,
 }
 
-type TParams = { id: string };
-
-type ChatsProps = DispatchProps & RouteComponentProps<TParams>
+type ChatsProps = DispatchProps & RouteComponentProps
 
 const Chats = ({
   loadChatsList,
@@ -29,7 +27,7 @@ const Chats = ({
 }
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<unknown, unknown, AnyAction>) => ({
-  loadChatsList: (nextPageUrl: string, userID: string) => dispatch(loadChatsList(nextPageUrl, userID)),
+  loadChatsList: (nextPageUrl: string, filter: string) => dispatch(loadChatsList(nextPageUrl, filter)),
 })
 
 // @ts-ignore
