@@ -13,36 +13,6 @@
 
 {% block content %}
 
-
-<nav class="navbar navbar-expand-md navbar-light row">
-    <div class="container">
-        <span class="navbar-brand mb-0 mr-0 h1">Penny University</span>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
-            <div class="d-flex flex-column flex-md-row align-items-center">
-                <a href="#faq" class="mr-2 mb-2 mb-md-0 btn btn-outline-dark" role="button" aria-pressed="true">
-                    FAQs <i class="fa fa-question"></i>
-                </a>
-                <a href="/chats" class="mr-2 mb-2 mb-md-0 btn btn-outline-dark" role="button" aria-pressed="true">
-                    Chats <i class="fa fa-comments"></i>
-                </a>
-                <button type="button" class="mr-2 mb-2 mb-md-0 btn btn-outline-dark" data-toggle="modal"
-                        data-target="#formModal">
-                    Join Us! <i class="fa fa-slack"></i>
-                </button>
-                <div class="social-icons">
-                    <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
-                    <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
-                    <a href="https://www.youtube.com/channel/UCgYQSZ4GrTsdHNE2SvTQdiw" class="fa fa-youtube"></a>
-                </div>
-            </div>
-        </div>
-    </div>
-</nav>
-
 <div class="position-relative">
     <div class="overlay"></div>
     <div class="bg-image text-white text-center d-flex align-items-center">
@@ -130,19 +100,5 @@
         </div>
     </div>
 </div>
-
-<footer class="bg-light d-flex justify-content-center align-items-center p-2">
-    <div class="social-icons">
-        <a href="https://www.facebook.com/officialpennyu" class="fa fa-facebook"></a>
-        <a href="https://twitter.com/officialpennyu" class="fa fa-twitter"></a>
-        <a href="https://www.instagram.com/officialpennyu" class="fa fa-instagram"></a>
-    </div>
-    <button type="button" class="ml-2 btn btn-outline-dark" data-toggle="modal"
-            data-target="#formModal">
-        Join Us! <i class="fa fa-slack"></i>
-    </button>
-</footer>
-
-{% include 'home/modal.html' %}
 
 {% endblock %}
