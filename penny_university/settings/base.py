@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'bot',
     'api',
     'home',
+    'integrations',
     'pennychat',
     'matchmaking',
     'users',
@@ -208,3 +209,11 @@ REST_AUTH_SERIALIZERS = {
 # Background Tasks
 CHAT_REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # extra 15 minutes to make sure we remind them MORE than an hour in advance
 FOLLOWUP_REMINDER_AFTER_PENNY_CHAT_MINUTES = 30
+
+
+# Google OAuth Settings
+GOOGLE_AUTH = {
+    'CLIENT_ID': os.environ.get('GOOGLE_CLIENT_ID'),
+    'CLIENT_SECRET': os.environ.get('GOOGLE_CLIENT_SECRET'),
+    'REDIRECT_URI': os.environ.get('GOOGLE_REDIRECT_URI'),
+}

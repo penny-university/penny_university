@@ -1,7 +1,7 @@
 import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faPlus, faTimes, faTrash, faPen, faSave, faHeart, IconDefinition, faCog, faEllipsisH,
+  faPlus, faTimes, faTrash, faPen, faSave, faHeart, IconDefinition, faCog, faEllipsisH, faHashtag,
 } from '@fortawesome/free-solid-svg-icons'
 import classNames from 'classnames/dedupe'
 import { Button } from 'reactstrap'
@@ -12,6 +12,7 @@ interface Props {
   className: string,
   size: 'md',
   onClick: () => void | null,
+  href: string | null,
   title: string,
   detail: string,
   icon: IconDefinition,
@@ -21,7 +22,7 @@ interface Props {
 }
 
 const IconButton = ({
-  className, size, onClick, title, detail, icon, color, id, testID,
+  className, size, onClick, href, title, detail, icon, color, id, testID,
 }: Props) => {
   const text = title && detail ? `${title} ${detail}` : title || detail
   return (
@@ -29,6 +30,7 @@ const IconButton = ({
       size={size}
       color={color}
       onClick={onClick}
+      href={href}
       className={classNames(className, 'edit-button')}
       id={id}
       data-testid={testID}
@@ -46,6 +48,7 @@ IconButton.defaultProps = {
   className: '',
   title: '',
   onClick: null,
+  href: null,
   id: '',
   testID: null,
 }
@@ -131,8 +134,19 @@ SettingsButton.defaultProps = {
   className: '',
 }
 
+const SlackButton = ({
+  className, href,
+}: { className: string, href: string | null }) => (
+  <IconButton className={className} href={href} title="Go to Slack" icon={faHashtag} />
+)
+
+SlackButton.defaultProps = {
+  className: '',
+  href: 'slack://open',
+}
+
 export {
-  HeartButton, CreateButton, DeleteButton, EditButton, SaveButton, CancelButton, MoreOptions, SettingsButton,
+  HeartButton, CreateButton, DeleteButton, EditButton, SaveButton, CancelButton, MoreOptions, SettingsButton, SlackButton,
 }
 
 export default IconButton

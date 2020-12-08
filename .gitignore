@@ -18,6 +18,7 @@ db.sqlite3
 venv
 staticfiles/*
 !staticfiles/.gitignore
+.env
 .envrc
 .direnv
 

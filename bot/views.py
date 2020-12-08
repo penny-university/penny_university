@@ -66,6 +66,8 @@ def command(request):
     command = event['text'].split(' ', 1)[0]
     if command == 'chat':
         PennyChatBotModule.create_penny_chat(slack_client, event)
+    elif command == 'gcal':
+        PennyChatBotModule.integrate_google_calendar(slack_client, event)
     elif command == 'set-topic':
         MatchMakingBotModule.set_topic_channel(slack_client, event)
     else:

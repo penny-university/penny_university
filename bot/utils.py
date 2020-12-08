@@ -1,9 +1,12 @@
 import logging
 
 from django.conf import settings
+
 from common.utils import get_slack_client
 from sentry_sdk import capture_exception
 from slack.errors import SlackApiError
+
+from users.models import get_or_create_social_profile_from_slack_ids
 
 _CHANNEL_NAME__ID = None
 

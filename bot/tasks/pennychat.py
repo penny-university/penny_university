@@ -9,16 +9,18 @@ from pytz import timezone, utc
 from sentry_sdk import capture_exception
 
 from common.utils import get_slack_client
+from integrations.google import build_credentials, get_authorization_url, GoogleCalendar
+from integrations.models import GoogleCredentials
 from pennychat.models import PennyChatSlackInvitation, Participant
 from users.models import (
     SocialProfile,
-    get_or_create_social_profile_from_slack_id,
-    get_or_create_social_profile_from_slack_ids,
+    get_or_create_social_profile_from_slack_id, get_or_create_social_profile_from_slack_ids,
 )
 
 VIEW_SUBMISSION = 'view_submission'
 VIEW_CLOSED = 'view_closed'
 
+ADD_GOOGLE_INTEGRATION = 'add_google_integration'
 PENNY_CHAT_DATE = 'penny_chat_date'
 PENNY_CHAT_TIME = 'penny_chat_time'
 PENNY_CHAT_USER_SELECT = 'penny_chat_user_select'
@@ -31,7 +33,6 @@ PENNY_CHAT_CAN_NOT_ATTEND = 'penny_chat_can_not_attend'
 GO_TO_FOLLOWUP = 'go_to_followup'
 
 PENNY_CHAT_ID = 'penny_chat_id'
-
 
 PREVIEW, INVITE, UPDATE, REMIND = 'review', 'invite', 'update', 'remind'
 PENNY_CHAT_DETAILS_BLOCKS_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
@@ -62,6 +63,60 @@ def post_organizer_edit_after_share_blocks(penny_chat_view_id):
     slack_client.chat_postMessage(
         channel=penny_chat_invitation.organizer_slack_id,
         blocks=organizer_edit_after_share_blocks(slack_client, penny_chat_invitation),
+    )
+
+
+def get_user_google_calendar_from_slack_id(slack_id):
+    user = get_or_create_social_profile_from_slack_id(slack_id).user
+    try:
+        google_credentials = GoogleCredentials.objects.get(user=user)
+    except GoogleCredentials.DoesNotExist:
+        authorization_url = get_authorization_url(user)
+        slack_client = get_slack_client()
+        slack_client.chat_postMessage(
+            channel=slack_id,
+            blocks=add_google_integration_blocks(authorization_url, from_penny_chat=True),
+        )
+        return
+
+    credentials = build_credentials(google_credentials)
+    return GoogleCalendar(credentials=credentials)
+
+
+@background
+def add_google_meet(penny_chat_id):
+    penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
+
+    calendar = get_user_google_calendar_from_slack_id(penny_chat_invitation.organizer_slack_id)
+
+    if calendar is None:
+        return
+
+    meet = calendar.create_event(
+        summary=penny_chat_invitation.title,
+        description=penny_chat_invitation.description,
+        start=penny_chat_invitation.date
+    )
+
+    penny_chat_invitation.video_conference_link = meet.get('hangoutLink')
+    penny_chat_invitation.google_event_id = meet.get('id')
+    penny_chat_invitation.save()
+
+
+@background
+def update_google_meet(penny_chat_id):
+    penny_chat_invitation = PennyChatSlackInvitation.objects.get(id=penny_chat_id)
+
+    calendar = get_user_google_calendar_from_slack_id(penny_chat_invitation.organizer_slack_id)
+
+    if calendar is None:
+        return
+
+    calendar.update_event(
+        event_id=penny_chat_invitation.google_event_id,
+        summary=penny_chat_invitation.title,
+        description=penny_chat_invitation.description,
+        start=penny_chat_invitation.date
     )
 
 
@@ -102,6 +157,36 @@ def share_penny_chat_invitation(penny_chat_id):
         shares[resp.data['channel']] = resp.data['ts']
     penny_chat_invitation.shares = json.dumps(shares)
     penny_chat_invitation.save()
+
+
+def comma_split(comma_delimited_string):
+    """normal string split for  ''.split(',') returns [''], so using this instead"""
+    return [x for x in comma_delimited_string.split(',') if x]
+
+
+def build_share_string(slack_client, penny_chat_invitation):
+    shares = []
+    users = get_or_create_social_profile_from_slack_ids(
+        comma_split(penny_chat_invitation.invitees),
+        slack_client=slack_client,
+    )
+    for slack_user_id in comma_split(penny_chat_invitation.invitees):
+        shares.append(users[slack_user_id].real_name)
+
+    if len(penny_chat_invitation.channels) > 0:
+        for channel in comma_split(penny_chat_invitation.channels):
+            shares.append(f'<#{channel}>')
+
+    share_string = ''
+    if len(shares) == 1:
+        share_string = shares[0]
+    elif len(shares) == 2:
+        share_string = ' and '.join(shares)
+    elif len(shares) > 2:
+        shares[-1] = f'and {shares[-1]}'
+        share_string = ', '.join(shares)
+
+    return share_string
 
 
 def send_penny_chat_reminders_and_mark_chat_as_reminded():
@@ -195,23 +280,7 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     }
 
     if include_calendar_link:
-        start_date = penny_chat_invitation.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
-        end_date = (penny_chat_invitation.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
-        google_cal_url = 'https://calendar.google.com/calendar/render?' \
-                         'action=TEMPLATE&text=' \
-            f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
-            f'{start_date}/{end_date}&details=' \
-            f'{urllib.parse.quote(penny_chat_invitation.description)}'
-
-        date_time_block['accessory'] = {
-            'type': 'button',
-            'text': {
-                'type': 'plain_text',
-                'text': 'Add to Google Calendar :calendar:',
-                'emoji': True
-            },
-            'url': google_cal_url
-        }
+        date_time_block['accessory'] = _google_calendar_link_block(penny_chat_invitation)
 
     body = [
         {
@@ -239,6 +308,43 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
         },
         date_time_block
     ]
+
+    if penny_chat_invitation.video_conference_link:
+        if mode in {PREVIEW, INVITE, UPDATE}:
+            body.append(
+                {
+                    'type': 'section',
+                    'text': {
+                        'type': 'mrkdwn',
+                        'text': '_(A video link will be provided shortly before the chat starts)_'
+                    }
+                }
+            )
+        elif mode in {REMIND}:
+            body += [
+                {
+                    'type': 'section',
+                    'text': {
+                        'type': 'mrkdwn',
+                        'text': '*Video Call Link*'
+                    }
+                },
+                {
+                    'type': 'actions',
+                    'elements': [
+                        {
+                            'type': 'button',
+                            'text': {
+                                'type': 'plain_text',
+                                'text': ':call_me_hand: Join Video Call',
+                                'emoji': True,
+                            },
+                            'url': penny_chat_invitation.video_conference_link,
+                            'style': 'primary',
+                        }
+                    ]
+                }
+            ]
 
     if include_rsvp:
         body.append(
@@ -332,6 +438,26 @@ def _penny_chat_details_blocks(penny_chat_invitation, mode=None):
     return body
 
 
+def _google_calendar_link_block(penny_chat_invitation):
+    start_date = penny_chat_invitation.date.astimezone(utc).strftime('%Y%m%dT%H%M%SZ')
+    end_date = (penny_chat_invitation.date.astimezone(utc) + timedelta(hours=1)).strftime('%Y%m%dT%H%M%SZ')
+    description = f'{penny_chat_invitation.description}\nVideo Link: {penny_chat_invitation.video_conference_link}'
+    google_cal_url = 'https://calendar.google.com/calendar/render?' \
+                     'action=TEMPLATE&text=' \
+                     f'{urllib.parse.quote(penny_chat_invitation.title)}&dates=' \
+                     f'{start_date}/{end_date}&details=' \
+                     f'{urllib.parse.quote(description)}'
+    return {
+        'type': 'button',
+        'text': {
+            'type': 'plain_text',
+            'text': 'Add to Google Calendar :calendar:',
+            'emoji': True
+        },
+        'url': google_cal_url
+    }
+
+
 def _followup_reminder_blocks(penny_chat_invitation):
     organizer = get_or_create_social_profile_from_slack_id(
         penny_chat_invitation.organizer_slack_id,
@@ -368,25 +494,7 @@ def _followup_reminder_blocks(penny_chat_invitation):
 
 
 def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
-    shares = []
-    users = get_or_create_social_profile_from_slack_ids(
-        comma_split(penny_chat_invitation.invitees),
-        slack_client=slack_client,
-    )
-    for slack_user_id in comma_split(penny_chat_invitation.invitees):
-        shares.append(users[slack_user_id].real_name)
-
-    if len(penny_chat_invitation.channels) > 0:
-        for channel in comma_split(penny_chat_invitation.channels):
-            shares.append(f'<#{channel}>')
-
-    if len(shares) == 1:
-        share_string = shares[0]
-    elif len(shares) == 2:
-        share_string = ' and '.join(shares)
-    elif len(shares) > 2:
-        shares[-1] = f'and {shares[-1]}'
-        share_string = ', '.join(shares)
+    share_string = build_share_string(slack_client, penny_chat_invitation)
 
     shared_message_preview_blocks = _penny_chat_details_blocks(penny_chat_invitation, mode=PREVIEW) + [
         {
@@ -397,8 +505,9 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
             'text': {
                 'type': 'mrkdwn',
                 'text': f'*:point_up: You just shared this invitation with:* {share_string}. '
-                    'We will notify you as invitees respond.\n\n'
-                    'In the meantime if you need to update the event, click the button below.'
+                        'We will notify you as invitees respond.\n\n'
+                        'In the meantime if you need to update the event, click the button below.\n\n'
+                        '*If you have enabled Google Calendar, a video link will be provided automatically.*'
             }
         },
         {
@@ -408,7 +517,7 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
                     'type': 'button',
                     'text': {
                         'type': 'plain_text',
-                        'text': 'Edit Details :pencil2:',
+                        'text': ':pencil2: Edit Details',
                         'emoji': True,
                     },
                     # TODO should this be a helper function?
@@ -424,6 +533,54 @@ def organizer_edit_after_share_blocks(slack_client, penny_chat_invitation):
     return shared_message_preview_blocks
 
 
-def comma_split(comma_delimited_string):
-    """normal string split for  ''.split(',') returns [''], so using this instead"""
-    return [x for x in comma_delimited_string.split(',') if x]
+def _missing_google_auth_blocks():
+    blocks = [
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Awesome, it looks like you just shared a Penny Chat!'
+            }
+        },
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'If you want to make the Penny Chat experience even better, consider adding our Google Calendar integration so that we can automatically add video conference links to your Penny Chat.'  # noqa
+            }
+        },
+    ]
+
+    return blocks
+
+
+def add_google_integration_blocks(authorization_url, from_penny_chat=False):
+    pre_add_button_blocks = _missing_google_auth_blocks() if from_penny_chat else []
+    blocks = pre_add_button_blocks + [
+        {
+            'type': 'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Click the button below to activate the Google Calendar integration.'
+            }
+        },
+        {
+            'type': 'actions',
+            'elements': [
+                {
+                    'type': 'button',
+                    'text': {
+                        'type': 'plain_text',
+                        'text': 'Add Google Integration',
+                        'emoji': True
+                    },
+                    'value': 'add_integration',
+                    'style': 'primary',
+                    'url': authorization_url,
+                    'action_id': ADD_GOOGLE_INTEGRATION
+                },
+            ]
+        },
+    ]
+
+    return blocks

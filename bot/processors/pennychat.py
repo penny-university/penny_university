@@ -8,8 +8,12 @@ from sentry_sdk import capture_exception
 from bot.tasks import (
     post_organizer_edit_after_share_blocks,
     share_penny_chat_invitation,
+    add_google_meet,
+    add_google_integration_blocks,
+    update_google_meet,
 )
 from bot.utils import chat_postEphemeral_with_fallback
+from integrations.google import get_authorization_url
 from pennychat.models import (
     PennyChat,
     PennyChatSlackInvitation,
@@ -31,6 +35,7 @@ PENNY_CHAT_TIME = 'penny_chat_time'
 PENNY_CHAT_USER_SELECT = 'penny_chat_user_select'
 PENNY_CHAT_CHANNEL_SELECT = 'penny_chat_channel_select'
 PENNY_CHAT_DETAILS = 'penny_chat_details'
+PENNY_CHAT_REVIEW_DETAILS = 'penny_chat_review_details'
 PENNY_CHAT_EDIT = 'penny_chat_edit'
 PENNY_CHAT_SHARE = 'penny_chat_share'
 PENNY_CHAT_CAN_ATTEND = 'penny_chat_can_attend'
@@ -302,6 +307,12 @@ class PennyChatBotModule(BotModule):
         penny_chat_invitation.view = response.data['view']['id']
         penny_chat_invitation.save()
 
+    @classmethod
+    def integrate_google_calendar(cls, slack, event):
+        user = get_or_create_social_profile_from_slack_id(event['user_id'])
+        blocks = add_google_integration_blocks(authorization_url=get_authorization_url(user.email))
+        chat_postEphemeral_with_fallback(slack, channel=event['channel_id'], user=event['user_id'], blocks=blocks)
+
     @is_block_interaction_event
     @has_action_id(PENNY_CHAT_SCHEDULE_MATCH)
     def schedule_match(self, event):
@@ -403,12 +414,19 @@ class PennyChatBotModule(BotModule):
                 }
             }
 
+        penny_chat_invitation.save_organizer_from_slack_id(penny_chat_invitation.organizer_slack_id)
+
         # Ready to share
         penny_chat_invitation.status = PennyChatSlackInvitation.SHARED
         penny_chat_invitation.save()
 
         post_organizer_edit_after_share_blocks.now(view['id'])
         penny_chat_invitation.save_organizer_from_slack_id(penny_chat_invitation.organizer_slack_id)
+
+        if not penny_chat_invitation.video_conference_link:
+            add_google_meet(penny_chat_invitation.id)
+        else:
+            update_google_meet(penny_chat_invitation.id)
         share_penny_chat_invitation(penny_chat_invitation.id)
 
     @is_block_interaction_event
