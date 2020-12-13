@@ -27,7 +27,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         #TODO! make sure to log problems to sentry!
-        #TODO! add ability to cancel too
         #TODO! test tasks happen in the proper order (how?)
         import ipdb;ipdb.set_trace()
         periodically_request_matches(

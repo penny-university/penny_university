@@ -10,10 +10,9 @@ from matchmaking.common import request_matches
 
 
 def periodically_request_matches(slack_team_id, period_in_days, days_after_request_to_make_match, days_after_match_to_remind):
-    # first check if we already have a task for this slack team
+    """first check if we already have a task for this slack team"""
     # this is a little lazy way to implement this, and it ties our implementation to background_tasks, but
-    # I'd rather not yet think through and create a whole new model for SlackTeamsWithAutomatedMatchMaking or something.
-    # We'll learn more and create that later.
+    # I'd rather not think through and create a whole new model for SlackTeamsWithAutomatedMatchMaking just yet.
     existing_request_match_tasks = Task.objects.filter(
         task_name=_request_matches_task_name(),
         task_params__contains=f'"slack_team_id": "{slack_team_id}"',
@@ -42,12 +41,11 @@ def _request_matches_task_name():
     return f'{_request_matches_task.__module__}.{_request_matches_task.now.__name__}'
 
 
-def request_matches():
-    #TODO! import the real version of this
-    pass
-
 @background
 def _request_matches_task(slack_team_id, period_in_days, days_after_request_to_make_match, days_after_match_to_remind):
+    """Runs request_matches and then schedules make_matches. Importantly this also connects failure of this task to a
+    callback that starts it over again.
+    """
     def set_up_again(**kwargs):
         if 'completed_task' not in kwargs:
             return
@@ -77,8 +75,8 @@ def _request_matches_task(slack_team_id, period_in_days, days_after_request_to_m
     # the dispatch_uid will ensure that even though task_failed.connect is called each time this task runs,
     # this callback will only be used once per task
     task_failed.connect(set_up_again, dispatch_uid=f'request_matches_task_for_{slack_team_id}')
-    print(f'FAKE REQUEST MATCHES (will remind in {days_after_request_to_make_match} days')
-    request_matches()
+
+    request_matches(slack_team_id)
     _make_matches_task(
         days_after_match_to_remind=days_after_match_to_remind,
         schedule=timedelta(seconds=days_after_request_to_make_match),#TODO! change to days
@@ -87,6 +85,7 @@ def _request_matches_task(slack_team_id, period_in_days, days_after_request_to_m
 
 @background
 def _make_matches_task(days_after_match_to_remind):
+    """Runs make_matches and then schedules remind_matches."""
     #TODO! this is fake
     print(f'FAKE MAKE MATCHES (will remind in {days_after_match_to_remind} days')
     _remind_matches_task(
@@ -96,6 +95,7 @@ def _make_matches_task(days_after_match_to_remind):
 
 @background
 def _remind_matches_task():
+    """Runs remind_matches."""
     #TODO! this is fake
     print('FAKE REMIND MATCHES')
 

@@ -7,6 +7,11 @@ import networkx as nx
 
 from matchmaking.models import Match, MatchRequest
 
+MATCH_SINCE_WEEKS = 26
+RECENT_MATCH_BOOST_HALFLIFE_WEEKS = 6
+CUTOFF_FOR_REPAIRING_WEEKS = 4
+REPAIRING_PENALTY_HALFLIFE_WEEKS = 4
+
 
 def key(*args):
     'standardized key used for lookup dicts in this file'
@@ -58,15 +63,15 @@ class MatchMaker:
         # CONFIG PARAMS
         # How far to look back in the past for earlier matches. This is used in scoring so that the score is higher if
         # the people being matched haven't been matched in a while or ever.
-        self.match_since_date = self._now - datetime.timedelta(weeks=26)
+        self.match_since_date = self._now - datetime.timedelta(weeks=MATCH_SINCE_WEEKS)
 
         # give a score boost if we haven't seen them in a while or ever
-        self._recent_match_boost_halflife = datetime.timedelta(weeks=6)
+        self._recent_match_boost_halflife = datetime.timedelta(weeks=RECENT_MATCH_BOOST_HALFLIFE_WEEKS)
 
         # if they have met this recently or less then give them a score of 0
-        self._cutoff_for_repairing = datetime.timedelta(weeks=4)
+        self._cutoff_for_repairing = datetime.timedelta(weeks=CUTOFF_FOR_REPAIRING_WEEKS)
         # thereafter the penalty has a halflife of this time period
-        self._repairing_penalty_halflife = datetime.timedelta(weeks=4)
+        self._repairing_penalty_halflife = datetime.timedelta(weeks=REPAIRING_PENALTY_HALFLIFE_WEEKS)
 
         # STATE
         self._memos_for_pair_score_and_topic = {}
@@ -78,11 +83,17 @@ class MatchMaker:
         self._match_requests_topic_to_profile = dict()
         self._possible_matches = dict()
 
+    def run(self):
+        self._gather_data()
+        matches = self._get_matches()
+        matches = self._match_unmatched(matches)
+        matches = self._add_topics_to_matches(matches)
+        return matches
+
     def _gather_data(self):
         "pull the data from the database and create lookup dicts used in scoring and filtering to admissible matches"
-        match_requests = MatchRequest.objects.filter(date__gte=self.match_request_since_date)\
-            .values_list('profile__email', 'topic_channel__name')
-        emails = set(mr[0] for mr in match_requests)
+        match_requests = self._get_unfulfilled_match_requests(self.match_request_since_date)
+        emails = set(mr['profile__email'] for mr in match_requests)
 
         # recent matches
         matches = Match.objects.filter(date__gte=self.match_since_date)\
@@ -113,8 +124,8 @@ class MatchMaker:
         match_requests_profile_to_topic = {}
         match_requests_topic_to_profile = {}
         for match_request in match_requests:
-            match_requests_profile_to_topic.setdefault(match_request[0], set()).add(match_request[1])
-            match_requests_topic_to_profile.setdefault(match_request[1], set()).add(match_request[0])
+            match_requests_profile_to_topic.setdefault(match_request['profile__email'], set()).add(match_request['topic_channel__name'])
+            match_requests_topic_to_profile.setdefault(match_request['topic_channel__name'], set()).add(match_request['profile__email'])
 
         possible_matches = {}
         for profile_A, topics in match_requests_profile_to_topic.items():
@@ -157,6 +168,35 @@ class MatchMaker:
         self._possible_matches = possible_matches
         # example: {
         #   'cindyyeah@gmail.com': {'ant@gmail.com', 'sylvester@gmail.me'}, ...
+
+    @staticmethod
+    def _get_unfulfilled_match_requests(since_date):
+        """An unfulfilled match request is a match request that was created after since_date that hasn't been
+        "successfully" matched since then. In order to be "successfully matched" the person in the match request must be
+        associated with a match that includes a chat indicating that they attempted to meet.
+
+        Output looks like `MatchRequest.objects.all().values('profile_id', 'profile__email', 'topic_channel__name')`
+
+        NOTE: this is not perfect!
+        * Example 1: Users could schedule chats outside of the button we provide and we wouldn't know about it. We would
+          erroneously keep scheduling matches for them.
+        * Example 2: Users could click the button which currently creates a chat, but then not schedule it. We would
+          erroneously NOT attempt to match them again until they made another match request.
+        """
+        match_requests = MatchRequest.objects.filter(date__gte=since_date) \
+            .values('profile_id', 'profile__email', 'topic_channel__name')
+        profile_ids = set([mr['profile_id'] for mr in match_requests])
+        profiles_with_successful_recent_matches = set(Match.objects.filter(
+            profiles__id__in=profile_ids,
+            date__gte=since_date,
+            penny_chat_id__isnull=False,
+        ).values_list('profiles__id', flat=True).distinct())
+        match_requests = [
+            mr for mr in match_requests
+            # include match_requests only if they haven't had a more recent successul match
+            if mr['profile_id'] not in profiles_with_successful_recent_matches
+        ]
+        return match_requests
 
     def _pair_score_and_topic(self, p1, p2):
         p1p2_key = key(p1, p2)
@@ -298,7 +338,7 @@ class MatchMaker:
             possible_matches = self._possible_matches[profile]
             best_match = None
             for match in matches:
-                number_possible_matches = sum(m in possible_matches for m in match)  # TODO! test w/ both possibilities
+                number_possible_matches = sum(m in possible_matches for m in match)
                 if number_possible_matches == 0:
                     # can't be paired with either of these
                     continue
@@ -336,10 +376,3 @@ class MatchMaker:
                 'topic': topic,
             })
         return matches_with_topic
-
-    def run(self):
-        self._gather_data()
-        matches = self._get_matches()
-        matches = self._match_unmatched(matches)
-        matches = self._add_topics_to_matches(matches)
-        return matches

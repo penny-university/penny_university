@@ -4,7 +4,7 @@ from bot.processors.matchmaking import create_match_blocks, request_match_blocks
 from users.models import SocialProfile
 
 
-def request_matches(slack_team_id, channel_names=None):
+def request_matches(slack_team_id, channel_names=None) -> object:
     """Contact all topic channels (or only those specified) and allow users to sign up to be matched for chats."""
     topic_channels = TopicChannel.objects.filter(slack_team_id=slack_team_id)
     if channel_names is not None:
