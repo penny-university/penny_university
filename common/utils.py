@@ -46,6 +46,7 @@ def background(*args, **kwargs):
     """
     if getattr(settings, 'TASK_ALWAYS_EAGER', False):
         func = args[0]
+
         @functools.wraps(func)
         def new_func(*args, **kwargs):
             for kw in ['schedule', 'repeat', 'repeat_until']:

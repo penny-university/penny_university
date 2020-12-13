@@ -1,7 +1,6 @@
 from unittest.mock import call, patch
 
 import pytest
-
 from background_task.signals import task_failed
 
 from matchmaking.management.commands.initialize_automated_matching import (
@@ -53,8 +52,8 @@ def test_request_matches_correctly_restarts_on_failure(mocker):
             task_failed.send(sender=Task.__class__, task_id='doesnt matter', completed_task=completed_task)
             raise RuntimeError('boom')
 
-    with patch('matchmaking.tasks.request_matches', side_effect=fail_after_a_few_calls) as mock_request_matches, \
-        patch('matchmaking.tasks._make_matches_task') as mock_make_matches_task, \
+    with patch('matchmaking.tasks.request_matches', side_effect=fail_after_a_few_calls), \
+        patch('matchmaking.tasks._make_matches_task'), \
         patch('matchmaking.tasks.periodically_request_matches') as mock_periodically_request_matches:
 
         # simulate running several times and eventually failing in request_matches
@@ -94,11 +93,13 @@ def test_periodically_request_matches_handles_too_many_tasks():
             task_name=f'{_request_matches_task.__module__}.{_request_matches_task.__name__}',
             task_params=f'"slack_team_id": "{slack_team_id}"',
         )
-    Task.objects.create(run_at='2020-10-05 11:11:11Z',
+    Task.objects.create(
+        run_at='2020-10-05 11:11:11Z',
         task_name=f'{_request_matches_task.__module__}.{_request_matches_task.__name__}',
         task_params=f'"slack_team_id": "SOME_OTHER_TEAM"',
     )
-    Task.objects.create(run_at='2020-10-05 11:11:11Z',
+    Task.objects.create(
+        run_at='2020-10-05 11:11:11Z',
         task_name='some.other.task',
         task_params=f'"whatever": "something"',
     )

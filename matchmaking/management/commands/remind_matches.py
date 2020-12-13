@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 
 from matchmaking.common import remind_matches
 
+
 class Command(BaseCommand):
     help = """Remind matches without Penny Chats to set one up."""
 
