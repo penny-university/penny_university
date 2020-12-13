@@ -1,5 +1,13 @@
 from django.core.management.base import BaseCommand
 
+from background_task.models import CompletedTask, Task
+from matchmaking.tasks import periodically_request_matches
+
+PERIOD_IN_DAYS = 15
+DAYS_AFTER_REQUEST_TO_MAKE_MATCH = 7
+DAYS_AFTER_MATCH_TO_REMIND = 7
+
+
 class Command(BaseCommand):
     help = """Run this command to set up automated matching for a particular slack team. Eventually this command will
     be unnecessary because this functionality will be automatically set up when a new slack team starts using Penny
@@ -18,23 +26,27 @@ class Command(BaseCommand):
     #     parser.add_argument('slack_handles', type=str, nargs='*', help='a list of slack user names')
 
     def handle(self, *args, **options):
-        #
+        #TODO! make sure to log problems to sentry!
+        #TODO! add ability to cancel too
+        #TODO! test tasks happen in the proper order (how?)
+        import ipdb;ipdb.set_trace()
+        periodically_request_matches(
+            period_in_days=PERIOD_IN_DAYS,
+            days_after_request_to_make_match=DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
+            days_after_match_to_remind=DAYS_AFTER_MATCH_TO_REMIND,
+        )
 
-        # TODO! put safety function here to check whether or not we have this set up for that slack team already
-        # OR maybe set the "overwite if already exists" to true if that makes sense
 
-        #TODO! if a repeating task fails, then future tasks are canceled BUT this seems to indicate that we can
-        #subscribe to this signal and just reschedule it again
-        # /Users/johnberryman/.virtualenvs/penny/lib/python3.8/site-packages/background_task/models.py:254
 
-        #
-        request_matches(schedule=now, repeat='every 15 days', until='forever')
-
-    def request_matches(self):
-        make_matches(schedule='in 7 days')
-
-    def make_matches(self):
-        remind_matches(schedule='in 7 days')
-
-    def remind_matches(self):
-        pass
+#TODO! delete this:w
+def deets():
+    print('\n'.join([f'{t.task_name}:  {t.task_params}' for t in Task.objects.all()]))
+def kill():
+    Task.objects.all().delete()
+def do():
+    periodically_request_matches(
+        slack_team_id='T123',
+        period_in_days=PERIOD_IN_DAYS,
+        days_after_request_to_make_match=DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
+        days_after_match_to_remind=DAYS_AFTER_MATCH_TO_REMIND,
+    )

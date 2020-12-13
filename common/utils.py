@@ -1,3 +1,4 @@
+import functools
 import json
 from urllib.parse import urlencode
 
@@ -45,9 +46,16 @@ def background(*args, **kwargs):
     """
     if getattr(settings, 'TASK_ALWAYS_EAGER', False):
         func = args[0]
+        @functools.wraps(func)
+        def new_func(*args, **kwargs):
+            for kw in ['schedule', 'repeat', 'repeat_until']:
+                if kw in kwargs:
+                    del kwargs[kw]
+            return func(*args, **kwargs)
+
         # We use .now() in a couple places in code like
         # https://github.com/penny-university/penny_university/blob/36be6d3c75f8094b454f4041abf7208f833583a4/bot/processors/pennychat.py#L312  # noqa
-        func.now = func
-        return func
+        new_func.now = func
+        return new_func
     else:
         return original_background(*args, **kwargs)
