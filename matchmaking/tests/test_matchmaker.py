@@ -317,8 +317,8 @@ def test_add_topics_to_matches(mocker):
 
     matches = match_maker._add_topics_to_matches([['A', 'B', 'E'], ['C', 'D']])
     assert matches == [
-        {'match': ['A', 'B', 'E'], 'score': 1, 'topic': 'math'},
-        {'match': ['C', 'D'], 'score': 2, 'topic': 'history'},
+        {'emails': ['A', 'B', 'E'], 'score': 1, 'topic': 'math'},
+        {'emails': ['C', 'D'], 'score': 2, 'topic': 'history'},
     ]
 
 

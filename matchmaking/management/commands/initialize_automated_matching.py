@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 
-from background_task.models import CompletedTask, Task
 from matchmaking.tasks import periodically_request_matches
 
 
@@ -18,26 +17,8 @@ class Command(BaseCommand):
         the pairs that haven't yet set up a match and we'll encourage them to set one up.
     """
 
-    # def add_arguments(self, parser):
-    #     parser.add_argument('slack_handles', type=str, nargs='*', help='a list of slack user names')
+    def add_arguments(self, parser):
+        parser.add_argument('slack_team_id', type=str, help='the slack_team_id ("T41DZFW4T" is penny-university)')
 
     def handle(self, *args, **options):
-        #TODO! make sure to log problems to sentry!
-        #TODO! test tasks happen in the proper order (how?)
-        import ipdb;ipdb.set_trace()
-        periodically_request_matches(slack_team_id)
-
-
-
-#TODO! delete this:w
-def deets():
-    print('\n'.join([f'{t.task_name}:  {t.task_params}' for t in Task.objects.all()]))
-def kill():
-    Task.objects.all().delete()
-def do():
-    periodically_request_matches(
-        slack_team_id='T123',
-        period_in_days=PERIOD_IN_DAYS,
-        days_after_request_to_make_match=DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
-        days_after_match_to_remind=DAYS_AFTER_MATCH_TO_REMIND,
-    )
+        periodically_request_matches(options['slack_team_id'])

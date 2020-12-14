@@ -3,9 +3,13 @@ from unittest.mock import call, patch
 import pytest
 from background_task.signals import task_failed
 
+from matchmaking.matchmaker import MatchMaker
 from matchmaking.tasks import _request_matches_task, periodically_request_matches, PERIOD_IN_DAYS
 from background_task.models import CompletedTask, Task
 
+
+class Boom(RuntimeError):
+    pass
 
 def test_request_matches_correctly_restarts_on_failure(mocker):
     """When request_matches_task is called, it connects to a django signal that will call request_matches_task to
@@ -14,7 +18,8 @@ def test_request_matches_correctly_restarts_on_failure(mocker):
     """
     slack_team_id = 'T12345678'
 
-    mock_data = {'count': 3}
+    fail_in_run = 3
+    mock_data = {'count': fail_in_run}
 
     def fail_after_a_few_calls(*args, **kwargs):
         """This simulates a request_matches_task failure by sending a django signal."""
@@ -39,21 +44,16 @@ def test_request_matches_correctly_restarts_on_failure(mocker):
             )
             completed_task = CompletedTask(task_name=task_name, task_params=task_params)
             task_failed.send(sender=Task.__class__, task_id='doesnt matter', completed_task=completed_task)
-            raise RuntimeError('boom')
+            raise Boom()
 
     with patch('matchmaking.tasks.request_matches', side_effect=fail_after_a_few_calls), \
         patch('matchmaking.tasks._make_matches_task'), \
         patch('matchmaking.tasks.periodically_request_matches') as mock_periodically_request_matches:
 
         # simulate running several times and eventually failing in request_matches
-        fail_happened = False
-        try:
-            while True:
-                _request_matches_task(slack_team_id=slack_team_id)
-        except RuntimeError:
-            fail_happened = True
+        for _ in range(fail_in_run):
+            _request_matches_task(slack_team_id=slack_team_id)
 
-        assert fail_happened is True, 'we should have sent a fake failure, but did not - test is broken'
         for call_args in mock_periodically_request_matches.call_args_list:
             assert call_args == call(slack_team_id), 'task restarted, but with wrong params'
         assert mock_periodically_request_matches.call_count == 1, \
@@ -103,4 +103,33 @@ def test_periodically_request_matches():
         periodically_request_matches(slack_team_id=slack_team_id)
 
     assert mock_request_matches_task.call_count == 1
-    assert mock_request_matches_task.call_args == call(slack_team_id=slack_team_id, repeat=PERIOD_IN_DAYS)
+    assert mock_request_matches_task.call_args == call(slack_team_id=slack_team_id, repeat=PERIOD_IN_DAYS*24*3600)
+
+
+def test_request_matches_task():
+    """Because the background tasks are run immediately in tests, we should hit everything in the entire chain."""
+    with patch('matchmaking.tasks.request_matches') as mock_request_matches, \
+        patch.object(MatchMaker, 'run') as mock_run, \
+        patch('matchmaking.tasks.make_matches') as mock_make_matches, \
+        patch('matchmaking.tasks.remind_matches') as mock_remind_matches:
+        mock_run.return_value = [
+            {'emails': ['a@xyz.com','b@xyz.com'], 'topic': 'history'},
+            {'emails': ['c@xyz.com', 'd@xyz.com'], 'topic': 'match'},
+        ]
+
+        slack_team_id = 'T123456'
+        _request_matches_task(slack_team_id)
+
+        # request_matches
+        assert mock_request_matches.call_count == 1
+        assert mock_request_matches.call_args == call(slack_team_id)
+
+        # make_matches
+        assert mock_make_matches.call_args_list == [
+            call('T123456', ['a@xyz.com', 'b@xyz.com'], 'history'),
+            call('T123456', ['c@xyz.com', 'd@xyz.com'], 'match'),
+        ]
+
+        # remind_matches
+        assert mock_remind_matches.call_count == 1
+        assert mock_remind_matches.call_args == call(slack_team_id=slack_team_id)

@@ -208,4 +208,4 @@ REST_AUTH_SERIALIZERS = {
 # Background Tasks
 CHAT_REMINDER_BEFORE_PENNY_CHAT_MINUTES = 75  # extra 15 minutes to make sure we remind them MORE than an hour in advance
 FOLLOWUP_REMINDER_AFTER_PENNY_CHAT_MINUTES = 30
-MAX_ATTEMPTS = 1  # django background_tasks constant  #TODO! set to some reasonable number
+MAX_ATTEMPTS = 3

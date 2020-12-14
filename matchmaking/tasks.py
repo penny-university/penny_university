@@ -3,10 +3,10 @@ import json
 
 from background_task.signals import task_failed
 from background_task.models import Task
-from sentry_sdk import capture_message
+from sentry_sdk import capture_message, capture_exception
 
 from common.utils import background
-from matchmaking.common import request_matches
+from matchmaking.common import request_matches, make_matches, remind_matches
 from matchmaking.matchmaker import MatchMaker
 
 PERIOD_IN_DAYS = 15
@@ -35,7 +35,7 @@ def periodically_request_matches(slack_team_id):
     _request_matches_task(
         # NOTE it is important to use key word args here because the `set_up_again` refers to the args by name
         slack_team_id=slack_team_id,
-        repeat=PERIOD_IN_DAYS,#TODO! change to days e.g. *3600*24
+        repeat=PERIOD_IN_DAYS*3600*24,  # best I can tell, this arg must be specified in seconds
     )
 
 
@@ -68,32 +68,37 @@ def _request_matches_task(slack_team_id):
         capture_message('setting up request_matches_task again', extras={'slack_team_id': slack_team_id})
         periodically_request_matches(task_params['slack_team_id'])
 
-    # if this task fails, then this callback will reschedule it for next time
-    # the dispatch_uid will ensure that even though task_failed.connect is called each time this task runs,
-    # this callback will only be used once per task
-    task_failed.connect(set_up_again, dispatch_uid=f'request_matches_task_for_{slack_team_id}')
+    try:
+        # if this task fails, then this callback will reschedule it for next time
+        # the dispatch_uid will ensure that even though task_failed.connect is called each time this task runs,
+        # this callback will only be used once per task
+        task_failed.connect(set_up_again, dispatch_uid=f'request_matches_task_for_{slack_team_id}')
 
-    request_matches(slack_team_id)
-    _make_matches_task(schedule=timedelta(seconds=DAYS_AFTER_REQUEST_TO_MAKE_MATCH))#TODO! change to days
+        request_matches(slack_team_id)
+        _make_matches_task(slack_team_id=slack_team_id, schedule=timedelta(days=DAYS_AFTER_REQUEST_TO_MAKE_MATCH))
+    except Exception as e:
+        capture_exception(e)
 
 
 @background
-def _make_matches_task():
+def _make_matches_task(slack_team_id):
     """Runs make_matches and then schedules remind_matches."""
-    #TODO! this is fake
-    print(f'FAKE MAKE MATCHES')
+    try:
+        matches = MatchMaker(
+            match_request_since_date=datetime.now().astimezone(timezone.utc) - timedelta(weeks=2)
+        ).run()
+        for match in matches:
+            make_matches(slack_team_id, match['emails'], match['topic'])
 
-    matches = MatchMaker(
-        match_request_since_date=datetime.now().astimezone(timezone.utc) - timedelta(weeks=2)
-    ).run()
-
-    _remind_matches_task(schedule=timedelta(seconds=DAYS_AFTER_MATCH_TO_REMIND))#TODO! change to days
+        _remind_matches_task(slack_team_id=slack_team_id, schedule=timedelta(days=DAYS_AFTER_MATCH_TO_REMIND))
+    except Exception as e:
+        capture_exception(e)
 
 
 @background
-def _remind_matches_task():
+def _remind_matches_task(slack_team_id):
     """Runs remind_matches."""
-    #TODO! this is fake
-    print('FAKE REMIND MATCHES')
-
-#TODO! for all of these test that they call the expected functions and also schedule the follow-on functions
+    try:
+        remind_matches(slack_team_id=slack_team_id)
+    except Exception as e:
+        capture_exception(e)

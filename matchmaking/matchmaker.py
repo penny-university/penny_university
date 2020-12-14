@@ -371,7 +371,7 @@ class MatchMaker:
             # _match_unmatched
             score, topic = self._pair_score_and_topic(match[0], match[1])
             matches_with_topic.append({
-                'match': match,
+                'emails': match,
                 'score': score,
                 'topic': topic,
             })
