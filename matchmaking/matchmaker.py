@@ -124,8 +124,10 @@ class MatchMaker:
         match_requests_profile_to_topic = {}
         match_requests_topic_to_profile = {}
         for match_request in match_requests:
-            match_requests_profile_to_topic.setdefault(match_request['profile__email'], set()).add(match_request['topic_channel__name'])
-            match_requests_topic_to_profile.setdefault(match_request['topic_channel__name'], set()).add(match_request['profile__email'])
+            match_requests_profile_to_topic.setdefault(match_request['profile__email'], set()). \
+                add(match_request['topic_channel__name'])
+            match_requests_topic_to_profile.setdefault(match_request['topic_channel__name'], set()). \
+                add(match_request['profile__email'])
 
         possible_matches = {}
         for profile_A, topics in match_requests_profile_to_topic.items():

@@ -10,22 +10,22 @@ def test_request_matches(mocker):
     topic_channel = TopicChannelFactory()
     scifi_chan = TopicChannelFactory(
         slack_team_id=topic_channel.slack_team_id,
-        name = 'scifi',
+        name='scifi',
     )
-    frenology_chan = TopicChannelFactory(
+    phrenology_chan = TopicChannelFactory(
         slack_team_id=topic_channel.slack_team_id,
-        name='frenology',
+        name='phrenology',
     )
     other_chan = TopicChannelFactory()  # different slack id
 
     mock_slack_client = mocker.Mock()
     with mocker.patch("matchmaking.common.get_slack_client", return_value=mock_slack_client):
-        request_matches(topic_channel.slack_team_id, channel_names=['scifi', 'frenology'])
+        request_matches(topic_channel.slack_team_id, channel_names=['scifi', 'phrenology'])
 
     assert mock_slack_client.chat_postMessage.call_count == 2
     calls = str(mock_slack_client.chat_postMessage.call_args_list)
     assert scifi_chan.channel_id in calls
-    assert frenology_chan.channel_id in calls
+    assert phrenology_chan.channel_id in calls
     assert topic_channel.channel_id not in calls
     assert other_chan.channel_id not in calls
     assert 'click the button' in calls, 'make sure to include some call to action'
@@ -85,6 +85,7 @@ def test_make_matches(mocker):
     assert profile1 in match.profiles.all()
     assert profile2 in match.profiles.all()
     assert profile3 in match.profiles.all()
+
 
 @pytest.mark.django_db
 def test_remind_matches(mocker):

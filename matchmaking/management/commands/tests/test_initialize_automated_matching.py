@@ -11,6 +11,7 @@ from background_task.models import CompletedTask, Task
 class Boom(RuntimeError):
     pass
 
+
 def test_request_matches_correctly_restarts_on_failure(mocker):
     """When request_matches_task is called, it connects to a django signal that will call request_matches_task to
     restart the cycle. We want to make sure that the restart happens AND that it doesn't restart multiple times (which
@@ -37,18 +38,14 @@ def test_request_matches_correctly_restarts_on_failure(mocker):
 
             # then send failure for some other slack team
             task_name = f'{_request_matches_task.__module__}.{_request_matches_task.__name__}'
-            task_params = (
-                '[[], {'
-                f'"slack_team_id": "SOME_OTHER_TEAM"'
-                '}]'
-            )
+            task_params = '[[], {"slack_team_id": "SOME_OTHER_TEAM"}]'
             completed_task = CompletedTask(task_name=task_name, task_params=task_params)
             task_failed.send(sender=Task.__class__, task_id='doesnt matter', completed_task=completed_task)
             raise Boom()
 
     with patch('matchmaking.tasks.request_matches', side_effect=fail_after_a_few_calls), \
-        patch('matchmaking.tasks._make_matches_task'), \
-        patch('matchmaking.tasks.periodically_request_matches') as mock_periodically_request_matches:
+         patch('matchmaking.tasks._make_matches_task'), \
+         patch('matchmaking.tasks.periodically_request_matches') as mock_periodically_request_matches:
 
         # simulate running several times and eventually failing in request_matches
         for _ in range(fail_in_run):
@@ -75,12 +72,12 @@ def test_periodically_request_matches_handles_too_many_tasks():
     Task.objects.create(
         run_at='2020-10-05 11:11:11Z',
         task_name=f'{_request_matches_task.__module__}.{_request_matches_task.__name__}',
-        task_params=f'"slack_team_id": "SOME_OTHER_TEAM"',
+        task_params='"slack_team_id": "SOME_OTHER_TEAM"',
     )
     Task.objects.create(
         run_at='2020-10-05 11:11:11Z',
         task_name='some.other.task',
-        task_params=f'"whatever": "something"',
+        task_params='"whatever": "something"',
     )
 
     with pytest.raises(RuntimeError):
@@ -103,17 +100,17 @@ def test_periodically_request_matches():
         periodically_request_matches(slack_team_id=slack_team_id)
 
     assert mock_request_matches_task.call_count == 1
-    assert mock_request_matches_task.call_args == call(slack_team_id=slack_team_id, repeat=PERIOD_IN_DAYS*24*3600)
+    assert mock_request_matches_task.call_args == call(slack_team_id=slack_team_id, repeat=PERIOD_IN_DAYS * 24 * 3600)
 
 
 def test_request_matches_task():
     """Because the background tasks are run immediately in tests, we should hit everything in the entire chain."""
     with patch('matchmaking.tasks.request_matches') as mock_request_matches, \
-        patch.object(MatchMaker, 'run') as mock_run, \
-        patch('matchmaking.tasks.make_matches') as mock_make_matches, \
-        patch('matchmaking.tasks.remind_matches') as mock_remind_matches:
+         patch.object(MatchMaker, 'run') as mock_run, \
+         patch('matchmaking.tasks.make_matches') as mock_make_matches, \
+         patch('matchmaking.tasks.remind_matches') as mock_remind_matches:
         mock_run.return_value = [
-            {'emails': ['a@xyz.com','b@xyz.com'], 'topic': 'history'},
+            {'emails': ['a@xyz.com', 'b@xyz.com'], 'topic': 'history'},
             {'emails': ['c@xyz.com', 'd@xyz.com'], 'topic': 'match'},
         ]
 

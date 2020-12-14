@@ -35,7 +35,7 @@ def periodically_request_matches(slack_team_id):
     _request_matches_task(
         # NOTE it is important to use key word args here because the `set_up_again` refers to the args by name
         slack_team_id=slack_team_id,
-        repeat=PERIOD_IN_DAYS*3600*24,  # best I can tell, this arg must be specified in seconds
+        repeat=PERIOD_IN_DAYS * 3600 * 24,  # best I can tell, this arg must be specified in seconds
     )
 
 

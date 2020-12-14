@@ -124,7 +124,7 @@ def test_get_unfulfilled_match_requests():
         match_request_with_successful_match = MatchRequestFactory(profile=SocialProfileFactory())
         MatchFactory(
             profiles=(match_request_with_successful_match.profile, SocialProfileFactory()),
-            #penny_chat is automatically supplied by MatchFactory
+            # penny_chat is automatically supplied by MatchFactory
             date=now - timedelta(weeks=4),
         )
 
