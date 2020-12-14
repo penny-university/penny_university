@@ -19,7 +19,11 @@ class Command(BaseCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument('slack_team_id', type=str, help='the slack_team_id ("T41DZFW4T" is penny-university)')
+        parser.add_argument('--slack_team_id', type=str, help='the slack_team_id ("T41DZFW4T" is penny-university)')
 
     def handle(self, *args, **options):
         periodically_request_matches(options['slack_team_id'])
+        print(
+            'Successfully set up this team for automated matching. Periodically topic channels will be contacted so '
+            'that users can opt into the next round of matches. Set up topic channels with `/penny set-topic` in slack.'
+        )
