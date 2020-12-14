@@ -3,12 +3,7 @@ from unittest.mock import call, patch
 import pytest
 from background_task.signals import task_failed
 
-from matchmaking.management.commands.initialize_automated_matching import (
-    PERIOD_IN_DAYS,
-    DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
-    DAYS_AFTER_MATCH_TO_REMIND,
-)
-from matchmaking.tasks import _request_matches_task, periodically_request_matches
+from matchmaking.tasks import _request_matches_task, periodically_request_matches, PERIOD_IN_DAYS
 from background_task.models import CompletedTask, Task
 
 
@@ -29,10 +24,7 @@ def test_request_matches_correctly_restarts_on_failure(mocker):
             task_name = f'{_request_matches_task.__module__}.{_request_matches_task.__name__}'
             task_params = (
                 '[[], {'
-                f'"slack_team_id": "{slack_team_id}", '
-                f'"period_in_days": {PERIOD_IN_DAYS}, '
-                f'"days_after_request_to_make_match": {DAYS_AFTER_REQUEST_TO_MAKE_MATCH}, '
-                f'"days_after_match_to_remind": {DAYS_AFTER_MATCH_TO_REMIND}'
+                f'"slack_team_id": "{slack_team_id}"'
                 '}]'
             )
             completed_task = CompletedTask(task_name=task_name, task_params=task_params)
@@ -42,10 +34,7 @@ def test_request_matches_correctly_restarts_on_failure(mocker):
             task_name = f'{_request_matches_task.__module__}.{_request_matches_task.__name__}'
             task_params = (
                 '[[], {'
-                f'"slack_team_id": "SOME_OTHER_TEAM", '
-                f'"period_in_days": {PERIOD_IN_DAYS}, '
-                f'"days_after_request_to_make_match": {DAYS_AFTER_REQUEST_TO_MAKE_MATCH}, '
-                f'"days_after_match_to_remind": {DAYS_AFTER_MATCH_TO_REMIND}'
+                f'"slack_team_id": "SOME_OTHER_TEAM"'
                 '}]'
             )
             completed_task = CompletedTask(task_name=task_name, task_params=task_params)
@@ -60,23 +49,13 @@ def test_request_matches_correctly_restarts_on_failure(mocker):
         fail_happened = False
         try:
             while True:
-                _request_matches_task(
-                    slack_team_id=slack_team_id,
-                    period_in_days=PERIOD_IN_DAYS,
-                    days_after_request_to_make_match=DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
-                    days_after_match_to_remind=DAYS_AFTER_MATCH_TO_REMIND,
-                )
+                _request_matches_task(slack_team_id=slack_team_id)
         except RuntimeError:
             fail_happened = True
 
         assert fail_happened is True, 'we should have sent a fake failure, but did not - test is broken'
         for call_args in mock_periodically_request_matches.call_args_list:
-            assert call_args == call(
-                slack_team_id,
-                PERIOD_IN_DAYS,
-                DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
-                DAYS_AFTER_MATCH_TO_REMIND,
-            ), 'task restarted, but with wrong params'
+            assert call_args == call(slack_team_id), 'task restarted, but with wrong params'
         assert mock_periodically_request_matches.call_count == 1, \
             'count = 0 means we did not set the task back up, count > 1 means we sat it up multiple times'
 
@@ -105,12 +84,7 @@ def test_periodically_request_matches_handles_too_many_tasks():
     )
 
     with pytest.raises(RuntimeError):
-        periodically_request_matches(
-            slack_team_id=slack_team_id,
-            period_in_days=PERIOD_IN_DAYS,
-            days_after_request_to_make_match=DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
-            days_after_match_to_remind=DAYS_AFTER_MATCH_TO_REMIND,
-        )
+        periodically_request_matches(slack_team_id=slack_team_id)
 
     remaining_tasks = set([f'{t.task_name}:{t.task_params}' for t in Task.objects.all()])
     assert 'matchmaking.tasks._request_matches_task:"slack_team_id": "T123456"' in remaining_tasks
@@ -126,18 +100,7 @@ def test_periodically_request_matches():
         mock_request_matches_task.__module__ = 'matchmaking.tasks'
         mock_request_matches_task.now.__name__ = '_request_matches_task'
 
-        periodically_request_matches(
-            slack_team_id=slack_team_id,
-            period_in_days=PERIOD_IN_DAYS,
-            days_after_request_to_make_match=DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
-            days_after_match_to_remind=DAYS_AFTER_MATCH_TO_REMIND,
-        )
+        periodically_request_matches(slack_team_id=slack_team_id)
 
     assert mock_request_matches_task.call_count == 1
-    assert mock_request_matches_task.call_args == call(
-        slack_team_id=slack_team_id,
-        period_in_days=PERIOD_IN_DAYS,
-        days_after_request_to_make_match=DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
-        days_after_match_to_remind=DAYS_AFTER_MATCH_TO_REMIND,
-        repeat=PERIOD_IN_DAYS,
-    )
+    assert mock_request_matches_task.call_args == call(slack_team_id=slack_team_id, repeat=PERIOD_IN_DAYS)

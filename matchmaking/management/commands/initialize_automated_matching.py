@@ -3,10 +3,6 @@ from django.core.management.base import BaseCommand
 from background_task.models import CompletedTask, Task
 from matchmaking.tasks import periodically_request_matches
 
-PERIOD_IN_DAYS = 15
-DAYS_AFTER_REQUEST_TO_MAKE_MATCH = 7
-DAYS_AFTER_MATCH_TO_REMIND = 7
-
 
 class Command(BaseCommand):
     help = """Run this command to set up automated matching for a particular slack team. Eventually this command will
@@ -29,11 +25,7 @@ class Command(BaseCommand):
         #TODO! make sure to log problems to sentry!
         #TODO! test tasks happen in the proper order (how?)
         import ipdb;ipdb.set_trace()
-        periodically_request_matches(
-            period_in_days=PERIOD_IN_DAYS,
-            days_after_request_to_make_match=DAYS_AFTER_REQUEST_TO_MAKE_MATCH,
-            days_after_match_to_remind=DAYS_AFTER_MATCH_TO_REMIND,
-        )
+        periodically_request_matches(slack_team_id)
 
 
 

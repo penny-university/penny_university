@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, timezone, datetime
 import json
 
 from background_task.signals import task_failed
@@ -7,9 +7,14 @@ from sentry_sdk import capture_message
 
 from common.utils import background
 from matchmaking.common import request_matches
+from matchmaking.matchmaker import MatchMaker
+
+PERIOD_IN_DAYS = 15
+DAYS_AFTER_REQUEST_TO_MAKE_MATCH = 7
+DAYS_AFTER_MATCH_TO_REMIND = 7
 
 
-def periodically_request_matches(slack_team_id, period_in_days, days_after_request_to_make_match, days_after_match_to_remind):
+def periodically_request_matches(slack_team_id):
     """first check if we already have a task for this slack team"""
     # this is a little lazy way to implement this, and it ties our implementation to background_tasks, but
     # I'd rather not think through and create a whole new model for SlackTeamsWithAutomatedMatchMaking just yet.
@@ -30,10 +35,7 @@ def periodically_request_matches(slack_team_id, period_in_days, days_after_reque
     _request_matches_task(
         # NOTE it is important to use key word args here because the `set_up_again` refers to the args by name
         slack_team_id=slack_team_id,
-        period_in_days=period_in_days,
-        days_after_request_to_make_match=days_after_request_to_make_match,
-        days_after_match_to_remind=days_after_match_to_remind,
-        repeat=period_in_days,#TODO! change to days e.g. *3600*24
+        repeat=PERIOD_IN_DAYS,#TODO! change to days e.g. *3600*24
     )
 
 
@@ -42,7 +44,7 @@ def _request_matches_task_name():
 
 
 @background
-def _request_matches_task(slack_team_id, period_in_days, days_after_request_to_make_match, days_after_match_to_remind):
+def _request_matches_task(slack_team_id):
     """Runs request_matches and then schedules make_matches. Importantly this also connects failure of this task to a
     callback that starts it over again.
     """
@@ -64,12 +66,7 @@ def _request_matches_task(slack_team_id, period_in_days, days_after_request_to_m
             return
 
         capture_message('setting up request_matches_task again', extras={'slack_team_id': slack_team_id})
-        periodically_request_matches(
-            task_params['slack_team_id'],
-            period_in_days,
-            days_after_request_to_make_match,
-            days_after_match_to_remind,
-        )
+        periodically_request_matches(task_params['slack_team_id'])
 
     # if this task fails, then this callback will reschedule it for next time
     # the dispatch_uid will ensure that even though task_failed.connect is called each time this task runs,
@@ -77,20 +74,20 @@ def _request_matches_task(slack_team_id, period_in_days, days_after_request_to_m
     task_failed.connect(set_up_again, dispatch_uid=f'request_matches_task_for_{slack_team_id}')
 
     request_matches(slack_team_id)
-    _make_matches_task(
-        days_after_match_to_remind=days_after_match_to_remind,
-        schedule=timedelta(seconds=days_after_request_to_make_match),#TODO! change to days
-    )
+    _make_matches_task(schedule=timedelta(seconds=DAYS_AFTER_REQUEST_TO_MAKE_MATCH))#TODO! change to days
 
 
 @background
-def _make_matches_task(days_after_match_to_remind):
+def _make_matches_task():
     """Runs make_matches and then schedules remind_matches."""
     #TODO! this is fake
-    print(f'FAKE MAKE MATCHES (will remind in {days_after_match_to_remind} days')
-    _remind_matches_task(
-        schedule=timedelta(seconds=days_after_match_to_remind),#TODO! change to days
-    )
+    print(f'FAKE MAKE MATCHES')
+
+    matches = MatchMaker(
+        match_request_since_date=datetime.now().astimezone(timezone.utc) - timedelta(weeks=2)
+    ).run()
+
+    _remind_matches_task(schedule=timedelta(seconds=DAYS_AFTER_MATCH_TO_REMIND))#TODO! change to days
 
 
 @background
@@ -99,3 +96,4 @@ def _remind_matches_task():
     #TODO! this is fake
     print('FAKE REMIND MATCHES')
 
+#TODO! for all of these test that they call the expected functions and also schedule the follow-on functions
