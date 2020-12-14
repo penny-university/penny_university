@@ -2,7 +2,6 @@ import fetchMock from 'fetch-mock'
 import {
   bootstrap, dispatchLogout, Actions,
 } from '../actions/user'
-import { ChatActions } from '../actions'
 import ApiRoutes from '../constants'
 import { makeMockStore, baseUrl } from './config'
 import { chats } from './data'
@@ -16,11 +15,11 @@ describe('auth flow', () => {
     fetchMock.restore()
   })
 
-  it('should only fetch chats if token doesnt exist', () => {
+  it('should not fetch chats during BOOTSTRAP', () => {
     document.cookie = ''
     const store = makeMockStore()
 
-    const expectedActionTypes = [ChatActions.CHATS_LIST_REQUEST, Actions.BOOTSTRAP]
+    const expectedActionTypes = [Actions.BOOTSTRAP]
     store.dispatch(bootstrap())
 
     expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)
@@ -40,8 +39,7 @@ describe('auth flow', () => {
     const store = makeMockStore()
 
     const expectedActionTypes = [
-      Actions.SET_TOKEN, Actions.FETCH_USER_REQUEST,
-      ChatActions.CHATS_LIST_REQUEST, Actions.BOOTSTRAP,
+      Actions.SET_TOKEN, Actions.FETCH_USER_REQUEST, Actions.BOOTSTRAP,
     ]
     store.dispatch(bootstrap())
     expect(store.getActions().map((a) => a.type)).toEqual(expectedActionTypes)

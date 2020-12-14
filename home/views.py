@@ -40,6 +40,10 @@ def index(request):
     return render(request, 'home/index.html', {'form': form, 'invite_link': settings.SLACK_INVITE_LINK})
 
 
+def privacy(request):
+    return render(request, 'home/privacy.html')
+
+
 def thank_you(request):
     return render(request, 'home/thank_you.html')
 
