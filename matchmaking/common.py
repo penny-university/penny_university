@@ -1,4 +1,5 @@
 from datetime import timezone, timedelta, datetime
+import logging
 
 from common.utils import get_slack_client
 from matchmaking.models import TopicChannel, Match
@@ -10,6 +11,7 @@ REMIND_MATCHES_SINCE_DAYS = 8
 
 def request_matches(slack_team_id, channel_names=None) -> object:
     """Contact all topic channels (or only those specified) and allow users to sign up to be matched for chats."""
+    logging.info(f'request_matches for {slack_team_id}')
     topic_channels = TopicChannel.objects.filter(slack_team_id=slack_team_id)
     if channel_names is not None:
         topic_channels = TopicChannel.objects.filter(name__in=channel_names)
@@ -23,6 +25,7 @@ def request_matches(slack_team_id, channel_names=None) -> object:
 
 def make_matches(slack_team_id, emails, topic_channel_name):
     """Match profiles (corresponding to emails) to meet for Penny Chats for in a given topic channel."""
+    logging.info(f'make_matches for {slack_team_id}')
     profiles = SocialProfile.objects.filter(email__in=emails)
     if len(profiles) < len(emails):
         arg_set = set(emails)
@@ -47,6 +50,7 @@ def make_matches(slack_team_id, emails, topic_channel_name):
 
 def remind_matches(slack_team_id):
     """Find all people that were recently scheduled to meet but haven't yet, and encourage them to meet."""
+    logging.info(f'remind_matches for {slack_team_id}')
     slack_client = get_slack_client(slack_team_id)
     since = datetime.now().astimezone(timezone.utc) - timedelta(days=REMIND_MATCHES_SINCE_DAYS)
     matches_without_penny_chats = Match.objects.filter(penny_chat__isnull=True, date__gte=since)

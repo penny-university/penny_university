@@ -1,5 +1,6 @@
 from datetime import timedelta, timezone, datetime
 import json
+import logging
 
 from background_task.signals import task_failed
 from background_task.models import Task
@@ -32,6 +33,7 @@ def periodically_request_matches(slack_team_id):
                 task.delete()
         raise RuntimeError(f'_request_match_task already exists for {slack_team_id}')
 
+    logging.info(f'set up _request_matches_task_name for {slack_team_id}')
     _request_matches_task(
         # NOTE it is important to use key word args here because the `set_up_again` refers to the args by name
         slack_team_id=slack_team_id,
@@ -49,6 +51,7 @@ def _request_matches_task(slack_team_id):
     callback that starts it over again.
     """
     def set_up_again(**kwargs):
+        logging.info(f'set_up_again for {slack_team_id}')
         if 'completed_task' not in kwargs:
             return
 
@@ -75,6 +78,7 @@ def _request_matches_task(slack_team_id):
         task_failed.connect(set_up_again, dispatch_uid=f'request_matches_task_for_{slack_team_id}')
 
         request_matches(slack_team_id)
+        logging.info(f'set up _make_matches_task for {slack_team_id}')
         _make_matches_task(slack_team_id=slack_team_id, schedule=timedelta(days=DAYS_AFTER_REQUEST_TO_MAKE_MATCH))
     except Exception as e:
         capture_exception(e)
@@ -90,6 +94,7 @@ def _make_matches_task(slack_team_id):
         for match in matches:
             make_matches(slack_team_id, match['emails'], match['topic'])
 
+        logging.info(f'set up _remind_matches_task for {slack_team_id}')
         _remind_matches_task(slack_team_id=slack_team_id, schedule=timedelta(days=DAYS_AFTER_MATCH_TO_REMIND))
     except Exception as e:
         capture_exception(e)
