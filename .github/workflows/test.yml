@@ -52,17 +52,7 @@ jobs:
     - name: Flake8
       run: |
         flake8
-
-  integration-tests:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ '12' ]
-    steps:
-      # 1. Checkout the PR and setup node.
-      # 2. Setup the bot in a QA environment (Heroku, see deploy)
-      # 3. Download Cypress and run it in headless mode w/ cookies as env vars.
-
+        
   test-frontend:
     runs-on: ubuntu-latest
     strategy:
