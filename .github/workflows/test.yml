@@ -52,7 +52,7 @@ jobs:
     - name: Flake8
       run: |
         flake8
-        
+
   test-frontend:
     runs-on: ubuntu-latest
     strategy:
@@ -87,24 +87,24 @@ jobs:
         npm install
         npm run build
   
-  test-integration:
-    runs-on: ubuntu-16.04
-    strategy:
-      matrix:
-        node: [ '12' ]
-    steps:
-      - uses: actions/checkout@v1
-      - name: Deploy to QA
-        run: |
-          git remote add qa https://git.heroku.com/penny-qa.git
-          ./script/deploy_to_qa
-      - name: Install Cypress
-        working-directory: ./penny_university
-        run: |
-          npm install
-      - name: Cypress Run
-        # Not sure what we should do here in the case that integration tests branch out into other folders.
-        working-directory: ./penny_university
-        uses: cypress-io/github-action@v2
-        with:
-          project: ./tests/integration
+  # test-integration:
+  #   runs-on: ubuntu-16.04
+  #   strategy:
+  #     matrix:
+  #       node: [ '12' ]
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - name: Deploy to QA
+  #       run: |
+  #         git remote add qa https://git.heroku.com/penny-qa.git
+  #         ./script/deploy_to_qa
+  #     - name: Install Cypress
+  #       working-directory: ./penny_university
+  #       run: |
+  #         npm install
+  #     - name: Cypress Run
+  #       # Not sure what we should do here in the case that integration tests branch out into other folders.
+  #       working-directory: ./penny_university
+  #       uses: cypress-io/github-action@v2
+  #       with:
+  #         project: ./tests/integration
