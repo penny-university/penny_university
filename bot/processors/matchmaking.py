@@ -8,7 +8,7 @@ from bot.processors.filters import is_block_interaction_event, has_action_id
 from bot.utils import chat_postEphemeral_with_fallback
 from bot.processors.pennychat import PENNY_CHAT_SCHEDULE_MATCH
 from matchmaking.models import TopicChannel, MatchRequest
-from users.models import SocialProfile
+from users.models import SocialProfile, get_or_create_social_profile_from_slack_id
 
 REQUEST_MATCHES = 'request_matches'
 
@@ -141,7 +141,7 @@ class MatchMakingBotModule(BotModule):
         team_id = event['team']['id']
         user_id = event['user']['id']
 
-        profile = SocialProfile.objects.get(slack_id=user_id)
+        profile = get_or_create_social_profile_from_slack_id(slack_user_id=user_id)
         topic_channel = TopicChannel.objects.get(channel_id=channel_id, slack_team_id=team_id)
 
         recent_requests = MatchRequest.objects.filter(
