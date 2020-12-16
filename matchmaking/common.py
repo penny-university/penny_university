@@ -1,15 +1,15 @@
 from datetime import timezone, timedelta, datetime
 import logging
 
+from django.conf import settings
+
 from common.utils import get_slack_client
 from matchmaking.models import TopicChannel, Match
 from bot.processors.matchmaking import create_match_blocks, request_match_blocks
 from users.models import SocialProfile
 
-REMIND_MATCHES_SINCE_DAYS = 8
 
-
-def request_matches(slack_team_id, channel_names=None) -> object:
+def request_matches(slack_team_id, channel_names=None):
     """Contact all topic channels (or only those specified) and allow users to sign up to be matched for chats."""
     logging.info(f'request_matches for {slack_team_id}')
     topic_channels = TopicChannel.objects.filter(slack_team_id=slack_team_id)
@@ -52,7 +52,7 @@ def remind_matches(slack_team_id):
     """Find all people that were recently scheduled to meet but haven't yet, and encourage them to meet."""
     logging.info(f'remind_matches for {slack_team_id}')
     slack_client = get_slack_client(slack_team_id)
-    since = datetime.now().astimezone(timezone.utc) - timedelta(days=REMIND_MATCHES_SINCE_DAYS)
+    since = datetime.now().astimezone(timezone.utc) - timedelta(days=settings.REMIND_MATCHES_SINCE_DAYS)
     matches_without_penny_chats = Match.objects.filter(penny_chat__isnull=True, date__gte=since)
     for match in matches_without_penny_chats:
         blocks = create_match_blocks(match.topic_channel.channel_id, match.conversation_id, reminder=True)

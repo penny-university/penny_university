@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.utils import timezone
 
 from bot.processors.base import BotModule
@@ -146,7 +147,7 @@ class MatchMakingBotModule(BotModule):
         recent_requests = MatchRequest.objects.filter(
             topic_channel=topic_channel,
             profile=profile,
-            date__gte=timezone.now() - timedelta(days=8),  # TODO: this should be some sane constant
+            date__gte=timezone.now() - timedelta(days=settings.REMIND_MATCHES_SINCE_DAYS),
         )
 
         if len(recent_requests) > 0:

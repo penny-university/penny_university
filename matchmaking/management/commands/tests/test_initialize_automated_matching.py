@@ -1,10 +1,11 @@
 from unittest.mock import call, patch
 
-import pytest
+from django.conf import settings
 from background_task.signals import task_failed
+import pytest
 
 from matchmaking.matchmaker import MatchMaker
-from matchmaking.tasks import _request_matches_task, periodically_request_matches, PERIOD_IN_DAYS
+from matchmaking.tasks import _request_matches_task, periodically_request_matches
 from background_task.models import CompletedTask, Task
 
 
@@ -80,8 +81,7 @@ def test_periodically_request_matches_handles_too_many_tasks():
         task_params='"whatever": "something"',
     )
 
-    with pytest.raises(RuntimeError):
-        periodically_request_matches(slack_team_id=slack_team_id)
+    periodically_request_matches(slack_team_id=slack_team_id)
 
     remaining_tasks = set([f'{t.task_name}:{t.task_params}' for t in Task.objects.all()])
     assert 'matchmaking.tasks._request_matches_task:"slack_team_id": "T123456"' in remaining_tasks
@@ -100,7 +100,10 @@ def test_periodically_request_matches():
         periodically_request_matches(slack_team_id=slack_team_id)
 
     assert mock_request_matches_task.call_count == 1
-    assert mock_request_matches_task.call_args == call(slack_team_id=slack_team_id, repeat=PERIOD_IN_DAYS * 24 * 3600)
+    assert mock_request_matches_task.call_args == call(
+        slack_team_id=slack_team_id,
+        repeat=settings.PERIOD_IN_DAYS * 24 * 3600,
+    )
 
 
 def test_request_matches_task():

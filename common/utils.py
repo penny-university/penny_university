@@ -6,7 +6,6 @@ from background_task import background as original_background
 from django.conf import settings
 import slack
 
-
 from penny_university.middleware.integration_test_logging import IntegrationTestLoggingWrapper
 
 
