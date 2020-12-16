@@ -6,3 +6,4 @@ exclude =
 max-line-length = 121
 ignore =
     F401,F403 penny_university/settings/
+    W503, W504

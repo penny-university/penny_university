@@ -2,8 +2,8 @@ import {
   MiddlewareAPI, Dispatch, Middleware, AnyAction,
 } from 'redux'
 import { camelizeKeys, decamelizeKeys } from 'humps'
-import * as selectors from '../selectors'
 import ApiRoutes from '../constants'
+import { CookieHelper } from '../helpers'
 
 const API_ROOT = process.env.REACT_APP_API_ROOT || 'http://localhost:8000/api/'
 
@@ -65,7 +65,7 @@ const api: Middleware<Dispatch> = (store: MiddlewareAPI) => (next: (action: AnyA
 
     const [requestType, successType, failureType] = types
     next({ type: requestType, payload: { meta } })
-    const token = selectors.user.getToken(store.getState())
+    const token = CookieHelper.getToken()
     return callApi(endpoint, method, payload, token).then(
       (response: any) => {
         const metaWithPagination = response.results ? {

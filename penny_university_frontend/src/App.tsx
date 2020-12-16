@@ -57,6 +57,10 @@ const App = (props: Props) => {
         <Alert />
         <Modal />
       </Container>
+      <div style={{ height: '40px' }} />
+      <footer className="fixed-bottom bg-white d-flex justify-content-center align-items-center p-2">
+        <a href="https://www.pennyuniversity.org/privacy/">Privacy Policy</a>
+      </footer>
     </>
   )
 }
