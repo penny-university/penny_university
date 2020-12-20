@@ -87,24 +87,40 @@ jobs:
         npm install
         npm run build
   
-  # test-integration:
-  #   runs-on: ubuntu-16.04
-  #   strategy:
-  #     matrix:
-  #       node: [ '12' ]
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - name: Deploy to QA
-  #       run: |
-  #         git remote add qa https://git.heroku.com/penny-qa.git
-  #         ./script/deploy_to_qa
-  #     - name: Install Cypress
-  #       working-directory: ./penny_university
-  #       run: |
-  #         npm install
-  #     - name: Cypress Run
-  #       # Not sure what we should do here in the case that integration tests branch out into other folders.
-  #       working-directory: ./penny_university
-  #       uses: cypress-io/github-action@v2
-  #       with:
-  #         project: ./tests/integration
+  test-integration:
+    runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        node: [ '12' ]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Add Heroku credentials
+        run: |
+          echo "machine api.heroku.com" > ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEYs }}" >> ~/.netrc
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+      - name: Deploy to QA
+        run: |
+          git remote add qa https://git.heroku.com/penny-qa.git
+          ./script/deploy_to_qa
+      - name: Install Cypress
+        working-directory: ./penny_university
+        run: |
+          npm install
+      - name: Cypress Run
+        # Not sure what we should do here in the case that integration tests branch out into other folders.
+        working-directory: ./penny_university
+        uses: cypress-io/github-action@v2
+        env:
+          COOKIE_B: ${{ secrets.COOKIE_B }}
+          COOKIE_DS: ${{ secrets.COOKIE_DS }}
+          COOKIE_D: ${{ secrets.COOKIE_D }}
+          COOKIE_EC: ${{ secrets.COOKIE_EC }}
+          COOKIE_IAP2: ${{ secrets.COOKIE_IAP2 }}
+          COOKIE_OPTANONCONSENT: ${{ secrets.COOKIE_OPTANONCONSENT }}
+          COOKIE_X: ${{ secrets.COOKIE_X }}
+        with:
+          project: ./tests/integration

@@ -29,3 +29,9 @@ Once you have all variables + cookies adjusted, you can now run the test.
 1. Open Cypress with `yarn run cypress open`.
 2. Pick a browser in the top right to run the tests with (Chrome and Firefox have been proven to work).
 3. Click `penny_chat.spec.js`, and the tests will automatically begin.
+
+## Github Actions
+
+Integration tests are currently run in a Github Action `test.yml` under the job `test-integration`. The process deploys to Heroku environment `penny-qa` and then uses Cypress's Github Action to run a headless version of the tests.
+
+Tests failing due to the bot not being able to sign in? Sign in under `Test Human` with email `colin+qa@c****.me` and update the cookies in the Github Secrets. 
