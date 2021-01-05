@@ -91,6 +91,8 @@ class MatchRequestFactory(DjangoModelFactory):
     profile = factory.SubFactory(SocialProfileFactory)
 
 
+# NOTE: this is the best example of how to fake out models that refer to other models the SubFactory corresponds to a
+# foreign key field and the @factory.post_generation corresponds
 class MatchFactory(DjangoModelFactory):
     class Meta:
         model = Match

@@ -25,5 +25,3 @@ except Exception as e:
 ```
 
 View errors in sentry by running this command in your terminal `heroku addons:open sentry -a penny-university`.
-
-

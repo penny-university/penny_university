@@ -3,12 +3,11 @@ import urllib
 import hashlib
 from datetime import datetime, timedelta
 
-from background_task import background as original_background
 from django.conf import settings
 from pytz import timezone, utc
 from sentry_sdk import capture_exception
 
-from common.utils import get_slack_client
+from common.utils import background, get_slack_client
 from pennychat.models import PennyChatSlackInvitation, Participant
 from users.models import (
     SocialProfile,
@@ -37,21 +36,6 @@ PREVIEW, INVITE, UPDATE, REMIND = 'review', 'invite', 'update', 'remind'
 PENNY_CHAT_DETAILS_BLOCKS_MODES = {PREVIEW, INVITE, UPDATE, REMIND}
 
 MAX_PARTICIPANT_PROFILES = 9
-
-
-def background(*args, **kwargs):
-    """This is just a silly hack because we don't have an easy way of shutting off async for tests.
-
-    Details about what I want https://github.com/arteria/django-background-tasks/issues/234
-    """
-    if getattr(settings, 'TASK_ALWAYS_EAGER', False):
-        func = args[0]
-        # We use .now() in a couple places in code like
-        # https://github.com/penny-university/penny_university/blob/36be6d3c75f8094b454f4041abf7208f833583a4/bot/processors/pennychat.py#L312  # noqa
-        func.now = func
-        return func
-    else:
-        return original_background(*args, **kwargs)
 
 
 @background
