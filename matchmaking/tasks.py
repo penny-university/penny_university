@@ -89,7 +89,7 @@ def _make_matches_task(slack_team_id):
     try:
         matches = MatchMaker(
             match_request_since_date=datetime.now().astimezone(timezone.utc)
-            - timedelta(weeks=settings.MATCH_REQUEST_SINCE_DAYS_AGO)
+            - timedelta(days=settings.MATCH_REQUEST_SINCE_DAYS_AGO)
         ).run()
         for match in matches:
             make_matches(slack_team_id, match['emails'], match['topic'])
