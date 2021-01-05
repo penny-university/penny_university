@@ -179,7 +179,7 @@ class MatchMaker:
 
         Output looks like `MatchRequest.objects.all().values('profile_id', 'profile__email', 'topic_channel__name')`
 
-        NOTE: this is not perfect!
+        NOTE, this is not perfect:
         * Example 1: Users could schedule chats outside of the button we provide and we wouldn't know about it. We would
           erroneously keep scheduling matches for them.
         * Example 2: Users could click the button which currently creates a chat, but then not schedule it. We would

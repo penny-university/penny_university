@@ -33,6 +33,7 @@ def test_request_matches(mocker):
 
 @pytest.mark.django_db
 def test_make_matches(mocker):
+    slack_team_id = 'sl123'
     slack_client = mocker.Mock()
     conversation = {
         'channel': {
@@ -41,18 +42,18 @@ def test_make_matches(mocker):
     }
     slack_client.conversations_open.return_value = conversation
 
-    profile1 = SocialProfileFactory()
-    profile2 = SocialProfileFactory()
-    profile3 = SocialProfileFactory()
+    profile1 = SocialProfileFactory(slack_team_id=slack_team_id)
+    profile2 = SocialProfileFactory(slack_team_id=slack_team_id)
+    profile3 = SocialProfileFactory(slack_team_id=slack_team_id)
 
     channel = TopicChannel.objects.create(
         channel_id='one',
-        slack_team_id='sl123',
+        slack_team_id=slack_team_id,
         name='uno',
     )
 
     with mocker.patch('matchmaking.common.get_slack_client', return_value=slack_client):
-        make_matches(slack_client, [profile1.email, profile2.email, profile3.email], channel.name)
+        make_matches(slack_team_id, [profile1.email, profile2.email, profile3.email], channel.name)
 
     expected_blocks = [
         {

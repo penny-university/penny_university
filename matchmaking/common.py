@@ -25,8 +25,8 @@ def request_matches(slack_team_id, channel_names=None):
 
 def make_matches(slack_team_id, emails, topic_channel_name):
     """Match profiles (corresponding to emails) to meet for Penny Chats for in a given topic channel."""
-    logging.info(f'make_matches for {slack_team_id}')
-    profiles = SocialProfile.objects.filter(email__in=emails)
+    logging.info(f'make_matches for {slack_team_id}: {emails} in  {topic_channel_name}')
+    profiles = SocialProfile.objects.filter(slack_team_id=slack_team_id, email__in=emails)
     if len(profiles) < len(emails):
         arg_set = set(emails)
         result_set = set([profile.email for profile in profiles])
