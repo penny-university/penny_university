@@ -9,8 +9,7 @@ const botChannelSlug = 'D01HB1CNY9H'
 
 // Create the cookies based off integration environment variable
 
-console.log(process.env.INTEGRATION)
-const cookies = process.env.INTEGRATION;
+const cookies = process.env.CYPRESS_INTEGRATION;
 const split_cookies = cookies.split('\n');
 for (let index = 0; index < split_cookies.length; index++) {
     const element = array[index];

@@ -113,14 +113,14 @@ jobs:
       - name: Cypress Run
         uses: cypress-io/github-action@v2
         env:
-          INTEGRATION: |
+          CYPRESS_INTEGRATION: |
             COOKIE_B=.azmcw4cvyxph1qzhlbsxu8gu0
             COOKIE_DS=1608437298
             COOKIE_D=iBbiv1a2Ixu14A7O7CeranbsfNmGX%2FcWQmzUAJSVrIASzxy6LJpkLVSzbeVrn4cztStibH7N7Ia5KAHpTvTmw%2FeoTol8LVMuJiYp7eE5ftiRdYZmIjJS8YAfJU3J9UAL%2BYbZZo3Hb0kGbq1aS2p8AOedMe7BMcp5zg78bQuHG7TNnCmvb9z2G1JowA%3D%3D
             COOKIE_IAP2=treatment
             COOKIE_OPTANONCONSENT=isIABGlobal=false&datestamp=Sat+Dec+19+2020+22%3A09%3A36+GMT-0600+(Central+Standard+Time)&version=6.10.0&hosts=&consentId=176e7236-c06f-4963-b9ec-2ff0628f3bf7&interactionCount=1&landingPath=NotLandingPage&groups=C0004%3A0%2CC0002%3A1%2CC0003%3A1%2CC0001%3A1&AwaitingReconsent=false
             COOKIE_X=azmcw4cvyxph1qzhlbsxu8gu0.1608437123
-          CYPRESS_RECORD_KEY: 0604a229-9293-4e9c-a55d-fb0edd8c1e00
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         with:
           headless: true
           record: true
