@@ -3,6 +3,6 @@
     "cypress": "^5.4.0"
   },
   "dependencies": {
-    "moment": "^2.29.1"
+    "dotenv": "^8.2.0"
   }
 }
