@@ -107,10 +107,10 @@ jobs:
           git remote add qa https://git.heroku.com/penny-qa.git
           ./script/deploy_to_qa
       - name: Install Cypress
-        working-directory: ./penny_university
+        working-directory: ./penny_university/tests/integration
         run: |
           npm install
-          INTEGRATION = "COOKIE_B=.azmcw4cvyxph1qzhlbsxu8gu0
+          export INTEGRATION = "COOKIE_B=.azmcw4cvyxph1qzhlbsxu8gu0
           COOKIE_DS=1608437298
           COOKIE_D=iBbiv1a2Ixu14A7O7CeranbsfNmGX%2FcWQmzUAJSVrIASzxy6LJpkLVSzbeVrn4cztStibH7N7Ia5KAHpTvTmw%2FeoTol8LVMuJiYp7eE5ftiRdYZmIjJS8YAfJU3J9UAL%2BYbZZo3Hb0kGbq1aS2p8AOedMe7BMcp5zg78bQuHG7TNnCmvb9z2G1JowA%3D%3D
           COOKIE_IAP2=treatment
