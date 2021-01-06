@@ -111,6 +111,7 @@ jobs:
         run: |
           npm install
       - name: Cypress Run
+        working-directory: ./penny_university/tests/integration
         uses: cypress-io/github-action@v2
         env:
           INTEGRATION: |
@@ -122,4 +123,3 @@ jobs:
             COOKIE_X=azmcw4cvyxph1qzhlbsxu8gu0.1608437123
         with:
           headless: true
-          project: ./penny_university/tests/integration
