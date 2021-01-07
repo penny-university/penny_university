@@ -16,9 +16,7 @@ You also need to place in your cookies from a normal Slack client.
 
 ### Cookies in Firefox
 
-You can retrieve these cookies in Firefox by signing into your development environment, opening developer tools, and going to the storage tab. There you should find a cookies section where all values you need will be.
-
-If you are working on the Github Action environment, place these all into a secret called INTEGRATION.
+You can retrieve these cookies in Firefox by signing into your development environment, opening developer tools, and going to the storage tab. There you should find a cookies section where all values you need will be. Place these cookies into the `penny_chat.spec.js` - variable `cookies`.
 ### Cookies in Chrome 
 
 Log into your Slack dev workspace, click the lock to the left of the URL, click cookies, and copy the listed values into the fields for each test.
