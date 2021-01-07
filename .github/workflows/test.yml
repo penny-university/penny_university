@@ -106,10 +106,6 @@ jobs:
         run: |
           git remote add qa https://git.heroku.com/penny-qa.git
           ./script/deploy_to_qa
-      - name: Install Cypress
-        working-directory: ./penny_university/tests/integration
-        run: |
-          npm install
       - name: Cypress Run
         uses: cypress-io/github-action@v2
         env:
