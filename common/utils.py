@@ -1,6 +1,8 @@
+import functools
 import json
 from urllib.parse import urlencode
 
+from background_task import background as original_background
 from django.conf import settings
 import slack
 
@@ -32,3 +34,28 @@ def build_url(base, endpoint, **kwargs):
     :param endpoint: Unique token to verify user email
     """
     return f'{base}/{endpoint}?{urlencode(kwargs)}'
+
+
+def background(*args, **kwargs):
+    """Use this anywhere that you would used the background_tasks @background decorator. In production it acts like
+    the underlying background decorator except that it can't take arguments. But when the TASK_ALWAYS_EAGER setting is
+    True, the tasks will be run immediately.
+
+    I'm trying to get a change into the library here https://github.com/arteria/django-background-tasks/issues/234
+    """
+    if getattr(settings, 'TASK_ALWAYS_EAGER', False):
+        func = args[0]
+
+        @functools.wraps(func)
+        def new_func(*args, **kwargs):
+            for kw in ['schedule', 'repeat', 'repeat_until']:
+                if kw in kwargs:
+                    del kwargs[kw]
+            return func(*args, **kwargs)
+
+        # We use .now() in a couple places in code like
+        # https://github.com/penny-university/penny_university/blob/36be6d3c75f8094b454f4041abf7208f833583a4/bot/processors/pennychat.py#L312  # noqa
+        new_func.now = func
+        return new_func
+    else:
+        return original_background(*args, **kwargs)

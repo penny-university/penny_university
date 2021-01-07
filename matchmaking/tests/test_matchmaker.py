@@ -47,21 +47,19 @@ def test_gather_data():
             topic_channel=topic_channel_science
         )
 
-    MatchFactory(
-        topic_channel=topic_channel_art,
-        profiles=(prof1, prof2, prof3),
-        date=now - timedelta(weeks=3),
-    )
-    MatchFactory(
-        topic_channel=topic_channel_science,
-        profiles=(prof4, prof5),
-        date=now - timedelta(weeks=3),
-    )
-    MatchFactory(
-        topic_channel=topic_channel_science,
-        profiles=(prof6, prof_too_old),
-        date=now - timedelta(weeks=3),
-    )
+    with freeze_time(now - timedelta(weeks=3), tz_offset=0):
+        MatchFactory(
+            topic_channel=topic_channel_art,
+            profiles=(prof1, prof2, prof3),
+        )
+        MatchFactory(
+            topic_channel=topic_channel_science,
+            profiles=(prof4, prof5),
+        )
+        MatchFactory(
+            topic_channel=topic_channel_science,
+            profiles=(prof6, prof_too_old),
+        )
 
     match_maker = MatchMaker(match_request_since_date=now - timedelta(weeks=2))
     match_maker._gather_data()
@@ -112,6 +110,44 @@ def test_gather_data():
         'prof3@email.com': {'prof4@email.com', 'prof1@email.com'},
         'prof4@email.com': {'prof1@email.com', 'prof3@email.com'},
     }
+
+
+@pytest.mark.django_db
+def test_get_unfulfilled_match_requests():
+    now = datetime.now().astimezone(timezone.utc)
+    since_date = now - timedelta(weeks=10)
+
+    with freeze_time(now - timedelta(weeks=52), tz_offset=0):
+        old_match_request_with_no_match = MatchRequestFactory(profile=SocialProfileFactory())
+
+    with freeze_time(now - timedelta(weeks=5), tz_offset=0):
+        match_request_with_successful_match = MatchRequestFactory(profile=SocialProfileFactory())
+        MatchFactory(
+            profiles=(match_request_with_successful_match.profile, SocialProfileFactory()),
+            # penny_chat is automatically supplied by MatchFactory
+            date=now - timedelta(weeks=4),
+        )
+
+        match_request_with_unsuccessful_match = MatchRequestFactory(profile=SocialProfileFactory())
+        MatchFactory(
+            profiles=(match_request_with_unsuccessful_match.profile, SocialProfileFactory()),
+            penny_chat=None,
+            date=now - timedelta(weeks=4),
+        )
+
+        match_request_with_no_match = MatchRequestFactory(profile=SocialProfileFactory())
+
+    match_requests_profile_ids = set(
+        [mr['profile_id'] for mr in MatchMaker._get_unfulfilled_match_requests(since_date)]
+    )
+    assert old_match_request_with_no_match.profile_id not in match_requests_profile_ids, \
+        'this profile made a match request too long ago and should not be considered'
+    assert match_request_with_successful_match.profile_id not in match_requests_profile_ids, \
+        'this profile has had a successful match since their last match request and should not be considered'
+    assert match_request_with_unsuccessful_match.profile_id in match_requests_profile_ids, \
+        'this profile has had an unsuccessful match since their last match request (no chat) and should be considered'
+    assert match_request_with_no_match.profile_id in match_requests_profile_ids, \
+        'this profile has not had a match since their last match request and should be considered'
 
 
 def test_pair_score_and_topic__is_memoized(mocker):
@@ -281,8 +317,8 @@ def test_add_topics_to_matches(mocker):
 
     matches = match_maker._add_topics_to_matches([['A', 'B', 'E'], ['C', 'D']])
     assert matches == [
-        {'match': ['A', 'B', 'E'], 'score': 1, 'topic': 'math'},
-        {'match': ['C', 'D'], 'score': 2, 'topic': 'history'},
+        {'emails': ['A', 'B', 'E'], 'score': 1, 'topic': 'math'},
+        {'emails': ['C', 'D'], 'score': 2, 'topic': 'history'},
     ]
 
 
