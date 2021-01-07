@@ -24,7 +24,7 @@ describe('/penny chat', () => {
         cy.get('#penny_chat_description-penny_chat_description').type(chatDescription)
         cy.get('input[aria-label="Select Channels"]').type(`${channelToInvite} {enter}`, { delay: 100, force: true })
         cy.wait(1000)
-        cy.get('.c-button--primary').click()
+        cy.get('.c-wizard_modal__footer').click()
     })
     it('checks penny chat result', () => {
         
