@@ -26,7 +26,7 @@ So why is this so complicated? Well, we are building a Slack bot and the only wa
 Clone the repo: `git clone https://github.com/penny-university/penny_university.git`
 
 ### Set up Django environment:
-* Create virtual env
+* Create virtual env (named `venv`, otherwise it will not be ignored by Git)
 * Install requirements:
     * `pip3 install -r requirements.txt`
     * `pip3 install -r dev-requirements.txt`
