@@ -3,6 +3,7 @@ exclude =
     .git,
     __pycache__,
     node_modules
+    penny_university/settings/jnbrymn.py
 max-line-length = 121
 ignore =
     F401,F403 penny_university/settings/

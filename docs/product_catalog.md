@@ -26,3 +26,4 @@ The goal of this document is to enumerate all the pieces so that we don't lose t
 
 ## Other
 * Bot framework (bot/processors/base.py) This was used to build the greeting and pennychat processors. This file should be treated as if it's a vendored import. Don't include Penny University specific things back in it.
+* Automated Matching (largely in the matchmaking package). To set up, run `/penny set-topic` in slack the channels where matches should be made and then run the management command `./manage.py initialize_automated_matching --slack_team_id=<id>` in order to initiate matching for that slack team. The topic channels will be notified periodically (e.g. every couple weeks) that it's time to sign up for the next round of matches. Then a short time later the users that signed up will be matched with other users based upon their preferences. After that, if they have not set up a chat, they will be reminded once.

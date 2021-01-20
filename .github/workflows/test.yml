@@ -7,7 +7,6 @@ on:
 
 jobs:
   test-backend:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -55,7 +54,6 @@ jobs:
         flake8
 
   test-frontend:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -88,3 +86,31 @@ jobs:
       run: |
         npm install
         npm run build
+  
+  test-integration:
+    runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        node: [ '12' ]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Add Heroku credentials
+        run: |
+          echo "machine api.heroku.com" > ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEYs }}" >> ~/.netrc
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login penny.university.mod@gmail.com" >> ~/.netrc
+          echo "  password ${{ secrets.HEROKU_API_KEY }}" >> ~/.netrc
+      - name: Deploy to QA
+        run: |
+          git remote add qa https://git.heroku.com/penny-qa.git
+          ./script/deploy_to_qa
+      - name: Cypress Run
+        uses: cypress-io/github-action@v2
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+        with:
+          headless: true
+          record: true
+          working-directory: ./penny_university/tests/integration
