@@ -2,7 +2,6 @@ import React from 'react'
 import { shallow, mount } from 'enzyme'
 import { AuthPasswordModal } from '../../components/modal/auth/password'
 
-
 describe('auth password modal', () => {
   it('renders correctly', () => {
     const email = 'test@gmail.com'

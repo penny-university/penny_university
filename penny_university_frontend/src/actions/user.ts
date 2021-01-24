@@ -79,7 +79,6 @@ export const signup = (payload: { email: string, password: string }): AnyAction 
   },
 })
 
-
 export const userExists = (email: string): AnyAction => ({
   type: CALL_API,
   payload: {

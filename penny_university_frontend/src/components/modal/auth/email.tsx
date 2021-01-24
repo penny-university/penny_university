@@ -48,7 +48,6 @@ const AuthEmailModal = ({ userExists }: AuthEmailModalProps) => {
   )
 }
 
-
 const mapStateToProps = () => ({
 })
 

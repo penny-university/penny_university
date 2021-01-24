@@ -2,7 +2,6 @@ import { RootState } from '../reducers'
 import { User } from '../models'
 import { getUser } from './user'
 
-
 const getChats = (state: RootState) => state.entities.chats
 
 const getFollowUps = (state: RootState) => state.entities.followUps

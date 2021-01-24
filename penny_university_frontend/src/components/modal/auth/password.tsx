@@ -52,7 +52,6 @@ export const AuthPasswordModal = ({ email, login, requestPasswordReset }: AuthPa
   )
 }
 
-
 const mapStateToProps = () => ({
 })
 
