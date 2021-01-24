@@ -31,6 +31,7 @@
     "cross-fetch": "^3.0.6",
     "enzyme-to-json": "^3.4.4",
     "eslint-config-react-app": "5.2.1",
+    "eslint-plugin-import": "^2.22.1",
     "humps": "^2.0.1",
     "moment": "^2.24.0",
     "node-sass-chokidar": "^1.5.0",
