@@ -28,9 +28,14 @@ Clone the repo: `git clone https://github.com/penny-university/penny_university.
 ### Set up Django environment:
 * Create virtual env (named `venv`, otherwise it will not be ignored by Git)
 * Install requirements:
-    * `pip3 install -r requirements.txt`
+    * `pip3 install -r requirements.txt` Note: if this fails with ` Error: pg_config executable not found.` try `brew install postgres` and run it again
     * `pip3 install -r dev-requirements.txt`
-* Stick this in your environment: `export DJANGO_SETTINGS_MODULE="penny_university.settings.dev"`
+* Stick all this in your environment:
+   ```
+   export DJANGO_SETTINGS_MODULE="penny_university.settings.dev"
+   export SECRET_KEY=<whatever_you_want_doesnt_matter>
+   export SLACK_API_KEY=xoxb-<we'll get to this soon>
+   ```
 * Run migrations: `./manage.py migrate`
 * Bootstrap database with forum data: `cat dev/penny-university.mbox | ./manage.py import_google_forum --to_database --live_run`
 * **Check:**
@@ -47,18 +52,17 @@ but if not, open a browser window and go to http://localhost:3000.
 * Run tests:
     * `npm test` will run the frontend tests in an interactive "watch" 
 environment. They will run each time you update a test.
-    * To run tests without watching the files, run `CI=true npm test`
-instead.
+    * To run tests without watching the files, run `CI=true npm test` instead.
+    * Note: If you run tests and have some that are failing you might not have the newest version of npm. We found that npm 14 works.
 
 ### Set up Heroku QA/dev:
 * Get account (it's free)
 * Create new app and call it "penny-<your_name>' and then follow instructions. Basically:
-    * `brew install heroku cli`
-    * Add your ssh key
+    * `brew tap heroku/brew && brew install heroku`
+    * Add your ssh key: `heroku keys:add` will work if you have your keys in the usual place
     * Configure Heroku as a git remote: `heroku git:remote -a penny-<your_name>`    
-* Push your dev PennyU into that project: `git push heroku master`
 * Set up environment vars:
-    * `heroku config:set `heroku config:edit -a penny-<your_name>`
+    * `heroku config:edit -a penny-<your_name>`
     ```
     DATABASE_URL=<already supplied>
     DJANGO_SETTINGS_MODULE=penny_university.settings.qa
@@ -68,6 +72,9 @@ instead.
     SLACK_API_KEY=xoxb-<we'll get to this soon>
     FRONT_END_HOST=https://penny-<your_name>.herokuapp.com
     ```
+    * visit https://penny-<your_name>.herokuapp.com and see that it worked
+    * When you need to get out of the editor that comes up (whether you need to save or just abort) do control X and then hit return at the next window. It will then take you back to your terminal and ask you if you want to save. Type yes.
+* Push your dev PennyU into that project: `git push heroku master`
 * **Check:** visit https://penny-<your_name>.herokuapp.com/ and make sure it loads
 * NOTE: The above instructions don't set up the React app on QA. To do this refer to the notes in the maintenance guide.
 
@@ -102,13 +109,12 @@ instead.
         * channel:history
         * channels:read
         * groups:read
-* Under "Event Subscriptions">"Subscribe to events on behalf of users" add event names `member_joined_channel` and `message.channels` 
-* Install the bot in your App. (Note that if you have problems with auth scopes, you'll likely need to reinstall.)
-* Stick the "Bot User OAuth Access Token" into your Heroku config as the `SLACK_API_KEY`
+* Under "Event Subscriptions">set the request URL to "https://penny-<your_name>.herokuapp.com/bot/hook/"> "Subscribe to events on behalf of users" add event names `member_joined_channel` and `message.channels` 
+* Install the bot in your App. You an pick any channel in the window that comes up after you install. (Note that if you have problems with auth scopes, you'll likely need to reinstall.)
+* Stick the "Bot User OAuth Access Token" into your Heroku config in your terminal. You can do `heroku config:set SLACK_API_KEY=<your-key>` if you want to avoid using nano again.
 * Set up slack callback hook URLs to point to Heroku QA
     * Subscribe to messages in public channels:
         * Make your Heroku app is awake (e.g. visit the home page) because the server will be expected to respond to a request from Slack.
-        * In the "Event Subscriptions" tab set the request URL to "https://penny-<your_name>.herokuapp.com/bot/hook/".
         * Make sure that it says that the request is "Verified". (It will be verified if the Heroku app responds to a test request. It is set up to do so.)
     * Create bot command: 
         * In the "Slash Commands" section create a command called `/penny`.
@@ -124,7 +130,7 @@ instead.
         
 ### Set up horrible/clever passthrough to local dev:
 * Set up tunneling:
-    * Install `ngrok` and get an account (https://ngrok.com/).
+    * Install `ngrok`
     * Set up this alias in your environment `alias grok='open "https://penny-john.herokuapp.com/forward?host=" | pbcopy && ngrok http 8000'`
 * Turn on tunnel:
     * Run `grok` alias. 
