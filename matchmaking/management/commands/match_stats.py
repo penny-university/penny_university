@@ -2,6 +2,7 @@ from collections import Counter
 from matchmaking.models import MatchRequest, Match
 from django.core.management.base import BaseCommand
 
+
 class Command(BaseCommand):
     help = """Print Automate Matchmaker Stats"""
 
@@ -21,7 +22,8 @@ class Command(BaseCommand):
         matches = list(Match.objects.filter(date__gte=date))
         num_matches = len(matches)
         penny_chats_that_met = [m.penny_chat.title for m in matches if m.penny_chat]
-
+        num_penny_chats_that_met = len(penny_chats_that_met)
+        penny_chats_that_met = '\n    '.join(penny_chats_that_met)
         print(f'''
 Since {date}:
 
@@ -31,5 +33,9 @@ who_requests_matches = {who_requests_matches}
 
 num_matches = {num_matches}
 
-penny_chats_that_met = {penny_chats_that_met}
+num_penny_chats_that_met = {num_penny_chats_that_met}
+
+penny_chats_that_met = 
+    {penny_chats_that_met}
+
 ''')
